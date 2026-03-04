@@ -1,0 +1,206 @@
+<?php
+
+use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\AdminSlotController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
+// use Illuminate\Support\Facades\Auth;
+
+
+use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerBookingController;
+use App\Http\Controllers\CustomerDashboardController;
+use App\Http\Controllers\CustomerProfileController;
+use App\Http\Controllers\UserAdminController;
+use App\Http\Controllers\UserCustomController;
+
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+Route::get('/', function () {
+
+    if (Auth::guard('customer')->check()) {
+        return redirect()->route('customer.dashboard');
+    }
+
+    if (Auth::guard('admin')->check()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return view('landing');
+})->name('landing');
+
+
+Route::prefix('customer')->middleware('nocache')->group(function () {
+    Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
+    Route::post('/register', [CustomerAuthController::class, 'register']);
+
+    Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
+    Route::post('/login', [CustomerAuthController::class, 'login']);
+
+    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
+    // Route::post('/logout', function () {
+    //     Auth::guard('customer')->logout();
+    //     return redirect()->route('landing');
+    // })->name('customer.logout');
+});
+
+// Route::prefix('customer')
+//     ->middleware(['auth:customer', 'nocache'])
+//     ->group(function () {
+//         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
+//             ->name('customer.dashboard');
+
+//         Route::get('/profile/complete', [CustomerProfileController::class, 'showCompleteProfile'])
+//             ->name('customer.complete.profile');
+
+//         Route::post('/profile/complete', [CustomerProfileController::class, 'completeProfile'])
+//             ->name('customer.profile.complete.store');
+//         // Route::get('/booking/create', [CustomerBookingController::class, 'create'])
+//         //     ->name('customer.booking.create');
+
+//         Route::resource('bookings', CustomerBookingController::class);
+//         Route::get('/create', [CustomerBookingController::class, 'create'])
+//             ->name('customer.create');
+
+
+//         Route::post('/booking/store', [CustomerBookingController::class, 'store'])
+//             ->name('customer.booking.store');
+//         Route::post('/store', [CustomerBookingController::class, 'store'])
+//             ->name('customer.store');
+
+//         Route::get('/customer/booking/{id}', [CustomerBookingController::class, 'show'])
+//             ->name('customer.booking.show');
+
+//         Route::get('/customer/booking/{id}/print', [CustomerBookingController::class, 'print'])
+//             ->name('customer.booking.print');
+
+//                     // STEP 1 - pilih tanggal
+//         Route::get('/booking/date', [CustomerBookingController::class, 'selectDate'])
+//             ->name('booking.date');
+
+//         // STEP 2 - pilih sesi
+//         Route::get('/booking/session/{date}', [CustomerBookingController::class, 'selectSession'])
+//             ->name('booking.session');
+
+//         // STEP 3 - input product
+//         Route::get('/booking/create/{slot}', [CustomerBookingController::class, 'create'])
+//             ->name('booking.create');
+//     });
+
+Route::prefix('customer')
+    ->middleware(['auth:customer', 'nocache'])
+    ->group(function () {
+        Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
+            ->name('customer.dashboard');
+        Route::get('/create', [CustomerBookingController::class, 'create'])
+            ->name('customer.create');
+        Route::get('/profile/complete', [CustomerProfileController::class, 'showCompleteProfile'])
+            ->name('customer.complete.profile');
+        Route::post('/profile/complete', [CustomerProfileController::class, 'completeProfile'])
+            ->name('customer.profile.complete.store');
+
+
+        // STEP 1 - pilih tanggal
+        // Route::get('/booking/date', [CustomerBookingController::class, 'selectDate'])
+        //     ->name('customer.booking.date');
+
+        // STEP 2 - pilih sesi
+        // Route::get('/booking/session/{date}', [CustomerBookingController::class, 'selectSession'])
+        //     ->name('customer.booking.session');
+
+        // STEP 3 - input product
+        Route::get('/booking/create/', [CustomerBookingController::class, 'create'])
+            ->name('customer.booking.create');
+
+        // STORE BOOKING
+        Route::post('/booking/store', [CustomerBookingController::class, 'store'])
+            ->name('customer.booking.store');
+
+        // DETAIL
+        Route::get('/booking/{id}', [CustomerBookingController::class, 'show'])
+            ->name('customer.booking.show');
+
+        // PRINT
+        Route::get('/booking/{id}/print', [CustomerBookingController::class, 'print'])
+            ->name('customer.booking.print');
+
+        // Route Profile
+        // Di dalam web.php, ubah menjadi seperti ini:
+        Route::get('/profile', [UserCustomController::class, 'index'])->name('customer.profile');
+        Route::get('/profile/edit', [UserCustomController::class, 'edit'])->name('customer.profile.edit');
+        Route::put('/profile/update', [UserCustomController::class, 'update'])->name('customer.profile.update');
+        Route::put('/profile/password', [UserCustomController::class, 'updatePassword'])->name('customer.profile.password');
+        Route::get('/history', [UserCustomController::class, 'history'])->name('customer.history');
+    });
+
+
+
+Route::prefix('admin')->middleware('nocache')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login']);
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+});
+
+Route::prefix('admin')
+    ->middleware(['auth:admin', 'nocache'])
+    ->group(function () {
+
+        // Route::get('/dashboard', function () {
+        //     return view('admin.dashboard.index');
+        // })->name('admin.dashboard');
+        Route::get('/dashboard', [AdminBookingController::class, 'index'])->name('admin.dashboard');
+
+        Route::get('/bookings', [AdminBookingController::class, 'allOrder'])
+            ->name('admin.bookings');
+        Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
+
+        // Route::post('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])
+        //     ->name('admin.bookings.update');
+        Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])
+            ->name('admin.bookings.update');
+
+        Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
+
+        Route::get('/slots', [AdminSlotController::class, 'index'])
+            ->name('admin.slots.index');
+
+        Route::post('/slots', [AdminSlotController::class, 'store'])
+            ->name('admin.slots.store');
+
+        Route::put('/slots/{slot}', [AdminSlotController::class, 'update'])
+            ->name('admin.slots.update');
+
+        // Route::get('/slots/calendar', [AdminSlotController::class, 'calendar'])
+        //     ->name('admin.slots.calendar');
+
+        Route::get('/pallets', [AdminBookingController::class, 'palletIndex'])->name('admin.pallets.index');
+        Route::post('/pallets/store', [AdminBookingController::class, 'palletStore'])->name('admin.pallets.store');
+        Route::post('/pallets/generate', [AdminBookingController::class, 'palletGenerate'])->name('admin.pallets.generate');
+        Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
+
+        Route::post('/slots/generate', [AdminSlotController::class, 'generate'])
+            ->name('admin.slots.generate');
+
+
+        Route::delete('/slots/{slot}', [AdminSlotController::class, 'destroy'])
+            ->name('admin.slots.destroy');
+
+        // Route::resource('/profile', UserAdminController::class);
+
+        Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
+        Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
+
+
+        Route::get('/profile', [UserAdminController::class, 'index'])->name('admin.profile');
+        Route::get('/profile/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');
+        Route::put('/profile/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
+        Route::get('/profile/create', [UserAdminController::class, 'create'])->name('admin.profile.create');
+        Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
+        Route::get('/profile/list', [UserAdminController::class, 'profileList'])
+            ->name('admin.profile.profileList');
+        Route::get('/profile/destroy', [UserAdminController::class, 'destroy'])->name('admin.profile.destroy');
+        Route::put('/profile/password', [UserAdminController::class, 'updatePassword'])->name('admin.profile.password');
+    });
