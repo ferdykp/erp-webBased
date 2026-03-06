@@ -18,7 +18,14 @@ class BookingProduct extends Model
         'dmax',
         'dimension_pack',
         'gross_weight_per_pcs',
-        'expect_temp'
+        'expect_temp',
+
+        'vol_per_pcs',
+        'vol_total',
+        'net_weight_pcs',
+        'total_net_weight',
+        'gross_weight_pcs',
+        'total_gross_weight'
     ];
 
     public function booking(): BelongsTo

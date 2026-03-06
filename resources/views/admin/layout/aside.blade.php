@@ -36,7 +36,7 @@
                 class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.bookings*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white' }}">
                 <div class="flex items-center gap-3">
                     <i class="w-5 text-center fas fa-book-bookmark"></i>
-                    <span class="font-medium">Order List</span>
+                    <span class="font-medium">Cargo Management</span>
                 </div>
                 <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
                     :class="open ? 'rotate-180' : ''"></i>
@@ -49,7 +49,7 @@
                 </a>
                 <a href="{{ route('admin.bookings.status', 'pending') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->route('status') == 'pending' ? 'text-amber-500 font-bold' : 'text-gray-500 hover:text-white' }}">
-                    Pending
+                    Incoming Order
                 </a>
                 <a href="{{ route('admin.bookings.status', 'approved') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->route('status') == 'approved' ? 'text-emerald-500 font-bold' : 'text-gray-500 hover:text-white' }}">
@@ -65,6 +65,26 @@
                 </a>
             </div>
         </div>
+
+        <div x-data="{ open: {{ request()->routeIs('admin.bookings*') ? 'true' : 'false' }} }">
+            <button @click="open = !open"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.bookings*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white' }}">
+                <div class="flex items-center gap-3">
+                    <i class="w-5 text-center fas fa-book-bookmark"></i>
+                    <span class="font-medium">Business Management</span>
+                </div>
+                <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
+                    :class="open ? 'rotate-180' : ''"></i>
+            </button>
+
+            <div x-show="open" x-cloak x-collapse class="pl-4 mt-1 ml-4 space-y-1 border-l border-gray-800">
+                <a href="{{ route('admin.bookings') }}"
+                    class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.bookings') && !request()->route('status') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
+                    Details All Orders
+                </a>
+            </div>
+        </div>
+
 
         {{-- <a href="{{ route('admin.slots.index') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.slots.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">

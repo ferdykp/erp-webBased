@@ -99,8 +99,91 @@
                                 </div>
                             </div>
                         </div>
+
+
+                        {{-- <div class="grid grid-cols-3 gap-3"> --}}
+                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
+                                    Volume / pcs</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-box-open"></i>
+                                    <input readonly type="number" step="0.001" name="vol_per_pcs"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
+                                    Volume</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-tags"></i>
+                                    <input readonly type="number" step="0.001" name="vol_total"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
+                                    Net Weight / pcs</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-box-open"></i>
+                                    <input type="number" step="0.001" name="net_weight_pcs"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
+                                    Net Weight</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-tags"></i>
+                                    <input type="number" step="0.001" name="total_net_weight"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
+                                    Gross Weight / pcs</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-box-open"></i>
+                                    <input type="number" step="0.001" name="gross_weight_pcs"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
+                                    Gross Weight</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-tags"></i>
+                                    <input type="number" step="0.001" name="total_gross_weight"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
+                                </div>
+                            </div>
+                        </div>
+
+
                         {{-- Form Confirmation --}}
-                        <div class="space-y-4">
+                        <div class="mt-5 space-y-4">
                             <label
                                 class="flex items-center gap-4 p-6 transition-all border-2 cursor-pointer border-slate-100 rounded-3xl hover:border-blue-500 group">
                                 <input type="checkbox" required
@@ -109,15 +192,93 @@
                                     mengonfirmasi data fisik yang datang sesuai dengan spesifikasi teknis di
                                     atas.</span>
                             </label>
-                            <input type="text" name="pic_warehouse" required
-                                placeholder="Nama PIC Warehouse Penanggung Jawab"
-                                class="w-full px-8 py-5 text-sm font-bold border-none bg-slate-50 rounded-3xl focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
 
                     {{-- STEP 2: BATCHING & STAFF --}}
                     <div class="hidden step-content" id="step2">
-                        <div class="flex items-center justify-between mb-6">
+                        <div class="mb-8">
+                            <h4 class="mb-5 text-lg font-black text-slate-800">PIC Warehouse</h4>
+
+                            <input type="text" name="pic_warehouse" required
+                                placeholder="Nama PIC Warehouse Penanggung Jawab"
+                                class="w-full px-8 py-5 text-sm font-bold border-none bg-slate-50 rounded-3xl focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+
+                        <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
+
+                            {{-- JUMLAH PALET --}}
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black uppercase tracking-widest text-gray-600">
+                                    Jumlah Palet
+                                </label>
+                                <input type="number" id="pallet_count" min="1"
+                                    class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            {{-- PER PALET --}}
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black uppercase tracking-widest text-gray-600">
+                                    Qty per Palet
+                                </label>
+                                <input type="number" id="per_pallet" min="1"
+                                    class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            {{-- SISA --}}
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black uppercase tracking-widest text-gray-600">
+                                    Sisa Box
+                                </label>
+                                <input type="number" id="pallet_remainder" readonly
+                                    class="w-full px-6 py-4 font-bold bg-gray-100 border-none rounded-2xl">
+                            </div>
+
+                        </div>
+
+                        <div id="pallet_summary"
+                            class="hidden p-6 mt-6 border bg-emerald-50 border-emerald-100 rounded-3xl">
+
+                            <h5 class="mb-4 text-sm font-black tracking-widest uppercase text-emerald-700">
+                                Pallet Distribution Summary
+                            </h5>
+
+                            <div class="grid grid-cols-2 gap-4 mb-4 text-xs font-bold md:grid-cols-4">
+                                <div>
+                                    Total Qty :
+                                    <span id="sum_qty" class="text-slate-700">0</span>
+                                </div>
+
+                                <div>
+                                    Pallet :
+                                    <span id="sum_pallet" class="text-slate-700">0</span>
+                                </div>
+
+                                <div>
+                                    Isi / Pallet :
+                                    <span id="sum_per_pallet" class="text-slate-700">0</span>
+                                </div>
+
+                                <div>
+                                    Sisa :
+                                    <span id="sum_remainder" class="text-slate-700">0</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 text-xs font-bold bg-white rounded-2xl">
+                                <div class="mb-2 text-[10px] tracking-widest uppercase text-gray-400">
+                                    Distribusi Pallet
+                                </div>
+
+                                <div id="pallet_distribution" class="space-y-1 text-slate-700"></div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="flex items-center justify-between my-6">
+
                             <h4 class="text-lg font-black text-slate-800">Pembagian Batch & Porter</h4>
                             <div class="flex items-center gap-4">
                                 <span id="cap_badge"
@@ -139,8 +300,10 @@
                         <h4 class="mb-6 text-lg font-black text-slate-800">Input Lokasi Penempatan</h4>
                         <div class="flex gap-4 p-6 mb-8 border bg-amber-50 border-amber-100 rounded-3xl">
                             <i class="mt-1 fa-solid fa-circle-info text-amber-500"></i>
-                            <p class="text-xs font-bold leading-relaxed text-amber-700">Silahkan input kode palet atau
-                                lokasi secara manual sesuai dengan posisi yang diletakkan oleh porter di lapangan.</p>
+                            <p class="text-xs font-bold leading-relaxed text-amber-700">Silahkan input kode palet
+                                atau
+                                lokasi secara manual sesuai dengan posisi yang diletakkan oleh porter di lapangan.
+                            </p>
                         </div>
                         <div id="placementContainer" class="space-y-4">
                         </div>

@@ -22,11 +22,18 @@ return new class extends Migration
             $table->bigInteger('quantity');
             $table->string('unit');
             // $table->string('target_dose');
-            $table->string('dmin');
-            $table->string('dmax');
+            $table->decimal('dmin');
+            $table->decimal('dmax');
             $table->string('dimension_pack');
             $table->string('gross_weight_per_pcs');
             $table->string('expect_temp')->nullable();
+
+            $table->decimal('vol_per_pcs')->nullable();
+            $table->decimal('vol_total')->nullable();
+            $table->decimal('net_weight_pcs')->nullable();
+            $table->decimal('total_net_weight')->nullable();
+            $table->decimal('gross_weight_pcs')->nullable();
+            $table->decimal('total_gross_weight')->nullable();
             $table->timestamps();
         });
     }
