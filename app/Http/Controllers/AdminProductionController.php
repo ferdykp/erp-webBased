@@ -29,14 +29,15 @@ use Illuminate\Support\Facades\DB;
  *    1. parameterSetting()          → Halaman form parameter setting
  *    2. storeParameter()            → Simpan parameter ke batch
  *
- *  STEP 2 (Batch Queue):
- *    3. batchQueue()                → Halaman batch queue
+ *  STEP 2 (Batch Queue / Process Irradiation):
+ *    3. batchQueue()                → Halaman batch queue (legacy)
  *    4. storeBatch()                → Buat batch baru (pecah quantity)
  *    5. startIrradiation()          → Ubah status batch → processing
+ *    6. offline()                   → Halaman daftar batch In Irradiation
  *
- *  STEP 3 (Offline / Finish):
- *    6. offline()                   → Halaman offline/finish
- *    7. finishBatch()               → Ubah status batch → done
+ *  STEP 3 (Product Finish):
+ *    7. finishPage()                → Halaman daftar batch selesai (done)
+ *    8. finishBatch()               → Ubah status batch → done
  * ==========================================================================
  */
 class AdminProductionController extends Controller
@@ -96,6 +97,88 @@ class AdminProductionController extends Controller
         ]);
 
         return back()->with('success', "Parameter Batch #{$batch->batch_number} berhasil disimpan.");
+    }
+
+    /**
+     * Update process untuk sebuah booking:
+     * - Set parameter produksi (line, dose, beam speed, loading mode)
+     * - Split quantity ke batch baru
+     * - Langsung set status batch ke "processing" (In Irradiation)
+     *
+     * Flow ini merepresentasikan langkah "Process Set → In Irradiation"
+     * dalam satu aksi dari halaman Process Parameter.
+     *
+     * Method : POST
+     * Route  : /admin/production/process
+     * Name   : admin.production.process
+     */
+    public function processBooking(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'quantity' => 'required|numeric|min:0.01',
+            'production_line_id' => 'required|exists:production_lines,id',
+            'target_dose' => 'required|numeric|min:0',
+            'beam_speed' => 'required|numeric|min:0',
+            'loading_mode' => 'required|string|max:255',
+        ]);
+
+        $booking = Booking::with(['products', 'batches'])->findOrFail($request->booking_id);
+
+        // Hitung total quantity yang diizinkan dari booking_products
+        $totalProductQty = $booking->products->sum('quantity');
+
+        // Hitung total quantity batch yang sudah ada
+        $existingBatchQty = $booking->batches->sum('quantity');
+
+        // Sisa kapasitas
+        $remainingCapacity = $totalProductQty - $existingBatchQty;
+
+        // Validasi ketat: jumlah baru tidak boleh melebihi sisa
+        if ($request->quantity > $remainingCapacity) {
+            return back()->with(
+                'error',
+                "Gagal! Quantity batch ({$request->quantity}) melebihi sisa kapasitas ({$remainingCapacity}). " .
+                "Total qty produk: {$totalProductQty}, sudah terbagi: {$existingBatchQty}."
+            );
+        }
+
+        $batch = null;
+
+        DB::transaction(function () use ($request, $booking, &$batch) {
+            // Tentukan nomor batch berikutnya
+            $nextBatchNumber = ($booking->batches->max('batch_number') ?? 0) + 1;
+
+            // Ambil unit dari produk pertama
+            $unit = $booking->products->first()->unit ?? 'box';
+
+            // Buat batch baru sekaligus set parameter & status processing
+            $batch = BookingBatch::create([
+                'booking_id' => $booking->id,
+                'batch_number' => $nextBatchNumber,
+                'quantity' => $request->quantity,
+                'unit' => $unit,
+                'status' => 'processing',
+                'production_line_id' => $request->production_line_id,
+                'target_dose' => $request->target_dose,
+                'beam_speed' => $request->beam_speed,
+                'loading_mode' => $request->loading_mode,
+            ]);
+
+            // Jika booking masih approved, ubah ke processing
+            if ($booking->status === 'approved') {
+                $booking->update(['status' => 'processing']);
+            }
+        });
+
+        if ($batch === null) {
+            return back()->with('error', 'Gagal memproses produksi. Silakan coba lagi.');
+        }
+
+        return back()->with(
+            'success',
+            "Proses untuk Booking #{$booking->booking_code} → Batch #{$batch->batch_number} In Irradiation."
+        );
     }
 
     // =====================================================================
@@ -237,6 +320,26 @@ class AdminProductionController extends Controller
             ->get();
 
         return view('admin.production.offline', compact('bookings'));
+    }
+
+    /**
+     * Halaman Product Finish.
+     *
+     * Menampilkan batch-batch yang sudah "done" (Offline / Finish)
+     * dalam bentuk tabel agar bisa direview detailnya.
+     *
+     * Method : GET
+     * Route  : /admin/production/finish
+     * Name   : admin.production.finish
+     */
+    public function finishPage()
+    {
+        $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
+            ->whereIn('status', ['processing', 'completed'])
+            ->latest()
+            ->get();
+
+        return view('admin.production.finish', compact('bookings'));
     }
 
     /**

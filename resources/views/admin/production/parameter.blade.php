@@ -1,6 +1,6 @@
 @extends('admin.layout.app')
 
-@section('title', 'Process Parameter Setting')
+@section('title', 'Process Parameter')
 
 @section('content')
 
@@ -9,9 +9,9 @@
         {{-- HEADER --}}
         <div class="flex flex-col gap-6 px-2 md:flex-row md:items-center md:justify-between">
             <div>
-                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Process Parameter Setting</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500">Set parameter mesin penyinaran per batch: Production
-                    Line, Target Dose, Beam Speed, Loading Mode.</p>
+                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Process Parameter</h2>
+                <p class="mt-1 text-sm font-medium text-slate-500">Step 1: Process Set &amp; split batch sebelum masuk ke tahap
+                    <span class="font-semibold">In Irradiation</span>.</p>
             </div>
             <button onclick="document.getElementById('createMachineModal').classList.replace('hidden','flex')"
                 class="flex items-center gap-2 px-6 py-3 text-sm font-black text-white bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 transition-all shadow-blue-100">
@@ -50,126 +50,106 @@
             </div>
         </div>
 
-        {{-- ═══ BOOKING CARDS WITH PARAMETER FORMS ═══ --}}
-        @forelse ($bookings as $booking)
-            @php $product = $booking->products->first(); @endphp
-            <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] overflow-hidden"
-                x-data="{ expanded: true }">
+        {{-- ═══ PROCESS PARAMETER TABLE (PER BOOKING) ═══ --}}
+        <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
+            <h3 class="mb-4 text-lg font-black text-slate-700">
+                <i class="fa-solid fa-sliders mr-2 text-blue-600"></i>Daftar Booking Untuk Process Set
+            </h3>
 
-                {{-- Booking Header --}}
-                <div class="flex flex-col gap-4 p-8 cursor-pointer md:flex-row md:items-center md:justify-between hover:bg-slate-50/50"
-                    @click="expanded = !expanded">
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center justify-center w-12 h-12 font-black text-blue-700 bg-blue-50 rounded-2xl">
-                            {{ strtoupper(substr($booking->customer->name ?? '?', 0, 1)) }}
-                        </div>
-                        <div>
-                            <p class="text-lg font-black text-slate-800">{{ $booking->customer->name ?? 'Guest' }}</p>
-                            <span class="px-3 py-1 bg-slate-100 text-slate-600 font-mono text-xs font-bold rounded-lg">
-                                #{{ $booking->booking_code }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Produk</p>
-                            <p class="text-sm font-bold text-slate-700">{{ $product->product_name ?? '-' }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Total Qty</p>
-                            <p class="text-sm font-bold text-slate-700">{{ $product->quantity ?? 0 }} {{ $product->unit ?? '' }}
-                            </p>
-                        </div>
-                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"
-                            :class="expanded ? 'rotate-180' : ''"></i>
-                    </div>
+            @if ($bookings->isEmpty())
+                <div class="py-12 text-center">
+                    <p class="text-sm text-slate-400">Belum ada booking dengan status <span class="font-semibold">Approved /
+                            Processing</span>.</p>
                 </div>
-
-                {{-- Batch Parameter Forms --}}
-                <div x-show="expanded" x-cloak x-collapse>
-                    <div class="px-8 pb-8 space-y-4">
-                        @forelse ($booking->batches as $batch)
-                            <div class="p-6 bg-slate-50 border border-slate-100 rounded-[2rem]">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <span class="px-3 py-1 text-xs font-black text-blue-700 bg-blue-100 rounded-lg">
-                                        Batch #{{ $batch->batch_number }}
-                                    </span>
-                                    <span class="text-xs font-bold text-slate-400">{{ $batch->quantity }} {{ $batch->unit }}</span>
-                                    @if($batch->productionLine)
-                                        <span class="px-2 py-0.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 rounded-md">
-                                            {{ $batch->productionLine->name }}
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <form action="{{ route('admin.production.batches.parameter.update', $batch->id) }}" method="POST"
-                                    class="grid grid-cols-1 gap-4 md:grid-cols-5 items-end">
-                                    @csrf @method('PUT')
-
-                                    <div>
-                                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Production
-                                            Line</label>
-                                        <select name="production_line_id"
-                                            class="w-full px-3 py-2.5 text-xs font-bold border-none bg-white rounded-xl focus:ring-2 focus:ring-blue-500">
-                                            <option value="">-- Pilih Mesin --</option>
-                                            @foreach ($productionLines as $machine)
-                                                <option value="{{ $machine->id }}" {{ $batch->production_line_id == $machine->id ? 'selected' : '' }}>
-                                                    {{ $machine->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Target Dose
-                                            (kGy)</label>
-                                        <input type="number" step="0.0001" name="target_dose" value="{{ $batch->target_dose }}"
-                                            placeholder="0.0000"
-                                            class="w-full px-3 py-2.5 text-xs font-bold border-none bg-white rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Beam Speed
-                                            (m/s)</label>
-                                        <input type="number" step="0.0001" name="beam_speed" value="{{ $batch->beam_speed }}"
-                                            placeholder="0.0000"
-                                            class="w-full px-3 py-2.5 text-xs font-bold border-none bg-white rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Loading
-                                            Mode</label>
-                                        <input type="text" name="loading_mode" value="{{ $batch->loading_mode }}" placeholder="-"
-                                            class="w-full px-3 py-2.5 text-xs font-bold border-none bg-white rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-
-                                    <button type="submit"
-                                        class="px-4 py-2.5 text-[10px] font-black text-white uppercase bg-blue-600 rounded-xl hover:bg-blue-700 transition-all active:scale-95">
-                                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan
-                                    </button>
-                                </form>
-                            </div>
-                        @empty
-                            <div class="p-8 text-center">
-                                <p class="text-sm text-slate-400 italic">Belum ada batch. Buat batch terlebih dahulu di menu
-                                    <strong>Batch Queue</strong>.
-                                </p>
-                            </div>
-                        @endforelse
-                    </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-separate border-spacing-y-3">
+                        <thead>
+                            <tr class="text-[10px] font-black tracking-[0.18em] text-slate-500 uppercase">
+                                <th class="px-6 py-3">Booking</th>
+                                <th class="px-6 py-3">Customer</th>
+                                <th class="px-6 py-3">Product</th>
+                                <th class="px-6 py-3 text-center">Total Qty</th>
+                                <th class="px-6 py-3 text-center">Sudah Dibatch</th>
+                                <th class="px-6 py-3 text-center">Sisa</th>
+                                <th class="px-6 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($bookings as $booking)
+                                @php
+                                    $product = $booking->products->first();
+                                    $totalProductQty = $booking->products->sum('quantity');
+                                    $totalBatchQty = $booking->batches->sum('quantity');
+                                    $remaining = $totalProductQty - $totalBatchQty;
+                                    $unit = $product->unit ?? '';
+                                @endphp
+                                <tr class="bg-white rounded-2xl shadow-sm border border-slate-100">
+                                    <td class="px-6 py-4 align-middle">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-black text-xs">
+                                                {{ strtoupper(substr($booking->customer->name ?? '?', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}</p>
+                                                <p class="text-[11px] font-semibold text-slate-400">{{ ucfirst($booking->status) }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 align-middle">
+                                        <p class="text-sm font-bold text-slate-700">
+                                            {{ $booking->customer->name ?? 'Guest' }}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 align-middle">
+                                        <p class="text-sm font-bold text-slate-700">
+                                            {{ $product->product_name ?? '-' }}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 text-center align-middle">
+                                        <p class="text-sm font-bold text-slate-700">
+                                            {{ $totalProductQty }} {{ $unit }}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 text-center align-middle">
+                                        <p class="text-sm font-bold text-blue-600">
+                                            {{ $totalBatchQty }} {{ $unit }}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 text-center align-middle">
+                                        <p
+                                            class="text-sm font-bold {{ $remaining > 0 ? 'text-amber-600' : 'text-emerald-600' }}">
+                                            {{ max($remaining, 0) }} {{ $unit }}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 text-right align-middle">
+                                        <button
+                                            onclick="openUpdateProcessModal(this)"
+                                            data-booking-id="{{ $booking->id }}"
+                                            data-booking-code="{{ $booking->booking_code }}"
+                                            data-customer-name="{{ $booking->customer->name ?? 'Guest' }}"
+                                            data-product-name="{{ $product->product_name ?? '-' }}"
+                                            data-remaining="{{ max($remaining, 0) }}"
+                                            data-unit="{{ $unit }}"
+                                            @if($remaining <= 0) disabled @endif
+                                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase rounded-xl border
+                                                {{ $remaining > 0
+                                                    ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white cursor-pointer'
+                                                    : 'border-slate-300 text-slate-300 cursor-not-allowed' }}
+                                                transition-all active:scale-95">
+                                            <i class="fa-solid fa-sliders"></i>
+                                            Update Process
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        @empty
-            <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-16 text-center">
-                <div class="flex flex-col items-center gap-4">
-                    <div class="flex items-center justify-center w-20 h-20 rounded-full bg-slate-100">
-                        <i class="text-3xl fa-solid fa-sliders text-slate-300"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-slate-600">Belum Ada Booking Aktif</h3>
-                    <p class="text-sm text-slate-400">Booking dengan status Approved atau Processing akan muncul di sini.</p>
-                </div>
-            </div>
-        @endforelse
+            @endif
+        </div>
     </div>
 
     {{-- ═══ CREATE MACHINE MODAL ═══ --}}
@@ -226,9 +206,147 @@
         </div>
     </div>
 
+    {{-- ═══ UPDATE PROCESS MODAL (PROCESS SET + SPLIT BATCH) ═══ --}}
+    <div id="updateProcessModal"
+        class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
+        <div class="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl p-10 space-y-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-800">Update Process</h3>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Step 1: isi parameter produksi, lalu split quantity ke batch baru.
+                        Setelah submit, batch akan masuk status <span class="font-semibold text-blue-600">In
+                            Irradiation</span>.
+                    </p>
+                </div>
+                <button type="button" onclick="closeUpdateProcessModal()"
+                    class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            {{-- Booking Summary --}}
+            <div class="p-4 border border-slate-100 rounded-2xl bg-slate-50/60 flex flex-wrap gap-4 items-center">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase">Booking</p>
+                    <p id="processBookingCode" class="text-sm font-black text-slate-800">#-</p>
+                </div>
+                <div class="h-10 w-px bg-slate-200 hidden md:block"></div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase">Customer</p>
+                    <p id="processCustomerName" class="text-sm font-bold text-slate-700">-</p>
+                </div>
+                <div class="h-10 w-px bg-slate-200 hidden md:block"></div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase">Product</p>
+                    <p id="processProductName" class="text-sm font-bold text-slate-700">-</p>
+                </div>
+                <div class="h-10 w-px bg-slate-200 hidden md:block"></div>
+                <div class="flex-1">
+                    <p id="processRemainingInfo" class="text-[11px] font-semibold text-amber-600"></p>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.production.process') }}" method="POST" class="space-y-6">
+                @csrf
+                <input type="hidden" name="booking_id" value="">
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    <div class="md:col-span-2">
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Production Line</label>
+                        <select name="production_line_id"
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                            <option value="">-- Pilih Mesin --</option>
+                            @foreach ($productionLines as $machine)
+                                <option value="{{ $machine->id }}">{{ $machine->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Target Dose (kGy)</label>
+                        <input type="number" step="0.0001" name="target_dose" placeholder="0.0000"
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Beam Speed (m/s)</label>
+                        <input type="number" step="0.0001" name="beam_speed" placeholder="0.0000"
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-end">
+                    <div class="md:col-span-2">
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Loading Mode</label>
+                        <input type="text" name="loading_mode" placeholder="Isi mode loading (misal: single-side)"
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Quantity Untuk Batch
+                            Baru</label>
+                        <input type="number" name="quantity" min="0.01" step="any" placeholder="Qty..."
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 mt-4 md:flex-row md:justify-end">
+                    <button type="button" onclick="closeUpdateProcessModal()"
+                        class="px-6 py-3 text-xs font-black uppercase rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-6 py-3 text-xs font-black uppercase rounded-xl bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-100">
+                        <i class="fa-solid fa-play mr-2"></i>
+                        Process &amp; In Irradiation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
-    <script>     function openEditMachineModal(id, name) {         document.getElementById('editMachineName').value = name;         document.getElementById('editMachineForm').action = `/admin/production-lines/${id}`;         document.getElementById('editMachineModal').classList.replace('hidden', 'flex');     }
+    <script>
+        function openEditMachineModal(id, name) {
+            document.getElementById('editMachineName').value = name;
+            document.getElementById('editMachineForm').action = `/admin/production-lines/${id}`;
+            document.getElementById('editMachineModal').classList.replace('hidden', 'flex');
+        }
+
+        function openUpdateProcessModal(button) {
+            const bookingId = button.getAttribute('data-booking-id');
+            const bookingCode = button.getAttribute('data-booking-code');
+            const customerName = button.getAttribute('data-customer-name');
+            const productName = button.getAttribute('data-product-name');
+            const remaining = button.getAttribute('data-remaining');
+            const unit = button.getAttribute('data-unit');
+
+            const modal = document.getElementById('updateProcessModal');
+            modal.querySelector('#processBookingCode').textContent = `#${bookingCode}`;
+            modal.querySelector('#processCustomerName').textContent = customerName;
+            modal.querySelector('#processProductName').textContent = productName;
+            modal.querySelector('#processRemainingInfo').textContent =
+                `${remaining} ${unit} tersisa untuk di-split ke batch.`;
+
+            const qtyInput = modal.querySelector('input[name="quantity"]');
+            qtyInput.max = remaining;
+            qtyInput.value = remaining > 0 ? remaining : '';
+
+            modal.querySelector('input[name="booking_id"]').value = bookingId;
+
+            modal.classList.replace('hidden', 'flex');
+        }
+
+        function closeUpdateProcessModal() {
+            document.getElementById('updateProcessModal').classList.replace('flex', 'hidden');
+        }
     </script>
 @endpush

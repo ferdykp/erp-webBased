@@ -217,13 +217,15 @@ Route::prefix('admin')
                 ->except(['show', 'create', 'edit'])
                 ->names('admin.production-lines');
 
-            // Step 1 – Process Parameter Setting
+            // Step 1 – Process Parameter Setting (Process Set)
             Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])
                 ->name('admin.production.parameter');
             Route::put('/production/batches/{batch}/parameter', [AdminProductionController::class, 'storeParameter'])
                 ->name('admin.production.batches.parameter.update');
+            Route::post('/production/process', [AdminProductionController::class, 'processBooking'])
+                ->name('admin.production.process');
 
-            // Step 2 – Batch Queue
+            // Step 2 – Batch Queue (legacy, tidak muncul di sidebar)
             Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])
                 ->name('admin.production.batch-queue');
             Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])
@@ -231,9 +233,13 @@ Route::prefix('admin')
             Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])
                 ->name('admin.production.batches.start');
 
-            // Step 3 – Offline / Finish
+            // Step 2 – Process Product Irradiation (In Irradiation)
             Route::get('/production/offline', [AdminProductionController::class, 'offline'])
                 ->name('admin.production.offline');
+
+            // Step 3 – Product Finish
+            Route::get('/production/finish', [AdminProductionController::class, 'finishPage'])
+                ->name('admin.production.finish');
             Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])
                 ->name('admin.production.batches.finish');
         });

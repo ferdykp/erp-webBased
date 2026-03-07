@@ -88,15 +88,15 @@
             <div x-show="open" x-cloak x-collapse class="pl-4 mt-1 ml-4 space-y-1 border-l border-gray-800">
                 <a href="{{ route('admin.production.parameter') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.parameter') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
-                    Process Parameter Setting
-                </a>
-                <a href="{{ route('admin.production.batch-queue') }}"
-                    class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.batch-queue') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
-                    Batch Queue
+                    Process Parameter
                 </a>
                 <a href="{{ route('admin.production.offline') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.offline') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
-                    Offline / Finish
+                    Process Product Irradiation
+                </a>
+                <a href="{{ route('admin.production.finish') }}"
+                    class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.finish') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
+                    Product Finish
                 </a>
             </div>
         </div>
