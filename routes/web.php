@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\AdminProductionController;
+use App\Http\Controllers\AdminProductionLineController;
 use App\Http\Controllers\AdminSlotController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -106,11 +108,11 @@ Route::prefix('customer')
         // STEP 1 - pilih tanggal
         // Route::get('/booking/date', [CustomerBookingController::class, 'selectDate'])
         //     ->name('customer.booking.date');
-
+    
         // STEP 2 - pilih sesi
         // Route::get('/booking/session/{date}', [CustomerBookingController::class, 'selectSession'])
         //     ->name('customer.booking.session');
-
+    
         // STEP 3 - input product
         Route::get('/booking/create/', [CustomerBookingController::class, 'create'])
             ->name('customer.booking.create');
@@ -175,7 +177,7 @@ Route::prefix('admin')
 
         // Route::get('/slots/calendar', [AdminSlotController::class, 'calendar'])
         //     ->name('admin.slots.calendar');
-
+    
         Route::get('/pallets', [AdminBookingController::class, 'palletIndex'])->name('admin.pallets.index');
         Route::post('/pallets/store', [AdminBookingController::class, 'palletStore'])->name('admin.pallets.store');
         Route::post('/pallets/generate', [AdminBookingController::class, 'palletGenerate'])->name('admin.pallets.generate');
@@ -189,7 +191,7 @@ Route::prefix('admin')
             ->name('admin.slots.destroy');
 
         // Route::resource('/profile', UserAdminController::class);
-
+    
         Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
         Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
 
@@ -203,4 +205,36 @@ Route::prefix('admin')
             ->name('admin.profile.profileList');
         Route::get('/profile/destroy', [UserAdminController::class, 'destroy'])->name('admin.profile.destroy');
         Route::put('/profile/password', [UserAdminController::class, 'updatePassword'])->name('admin.profile.password');
+
+        // ====================================================================
+        // Layer 3 – Production Management
+        // Akses dibatasi untuk role: technologist, production_engineer, admin
+        // ====================================================================
+        Route::middleware(['role:technologist,production_engineer,admin'])->group(function () {
+
+            // Master Data Mesin Penyinaran (CRUD)
+            Route::resource('production-lines', AdminProductionLineController::class)
+                ->except(['show', 'create', 'edit'])
+                ->names('admin.production-lines');
+
+            // Step 1 – Process Parameter Setting
+            Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])
+                ->name('admin.production.parameter');
+            Route::put('/production/batches/{batch}/parameter', [AdminProductionController::class, 'storeParameter'])
+                ->name('admin.production.batches.parameter.update');
+
+            // Step 2 – Batch Queue
+            Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])
+                ->name('admin.production.batch-queue');
+            Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])
+                ->name('admin.production.batches.store');
+            Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])
+                ->name('admin.production.batches.start');
+
+            // Step 3 – Offline / Finish
+            Route::get('/production/offline', [AdminProductionController::class, 'offline'])
+                ->name('admin.production.offline');
+            Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])
+                ->name('admin.production.batches.finish');
+        });
     });
