@@ -93,12 +93,56 @@ class AdminBookingController extends Controller
 
     //     return back()->with('success', 'Status updated' . ($request->status === 'completed' ? ' and pallet released' : ''));
     // }
+    public function businessIndex()
+    {
+        $bookings = Booking::with(['customer', 'products'])
+            ->latest()
+            ->paginate(10);
+
+        $pageTitle = "Business Monitoring & Approval";
+        return view('admin.business.index', compact('bookings', 'pageTitle'));
+    }
+
+    public function businessDetail($id)
+    {
+        $booking = Booking::with(['customer', 'products', 'batches', 'pallets'])->findOrFail($id);
+        $isSpecial = false;
+        $reasons = [];
+        $product = $booking->products->first();
+
+        if ($product) {
+            // Contoh Kriteria Anomaly: Dosis > 50 kGy atau ada suhu khusus
+            if ($product->dmax > 50) {
+                $isSpecial = true;
+                $reasons[] = "High Dose Request (>50 kGy)";
+            }
+            if (!empty($product->expect_temp) && $product->expect_temp < 10) {
+                $isSpecial = true;
+                $reasons[] = "Sensitive Temperature Control Required";
+            }
+            if ($product->product_type == 'Experiment' || $product->product_type == 'New Product') {
+                $isSpecial = true;
+                $reasons[] = "Non-Standard Product Category";
+            }
+        }
+
+        return view('admin.business.detail', compact('booking', 'isSpecial', 'reasons'));
+    }
+
+    public function businessApprove(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+        $booking->update(['status' => 'approved']);
+
+        return redirect()->route('admin.business.index')
+            ->with('success', "Order #{$booking->booking_code} telah disetujui secara teknis/bisnis.");
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
         $newStatus = $request->status;
 
-        // Tambahkan validasi sederhana jika perlu
         $booking->update(['status' => $newStatus]);
 
         if ($newStatus === 'completed') {
@@ -111,7 +155,6 @@ class AdminBookingController extends Controller
 
         return back()->with('success', "Status berhasil diperbarui ke " . strtoupper($newStatus));
     }
-
 
     public function checkIn(Request $request)
     {
@@ -127,35 +170,29 @@ class AdminBookingController extends Controller
 
         if (!$booking) return back()->with('error', 'Booking tidak ditemukan');
 
-        // VALIDASI STATUS: Hanya status 'pending' yang boleh melakukan check-in
         if ($booking->status !== 'pending') {
             return back()->with('error', 'Gagal! Order ini sudah melewati tahap Check-in.');
         }
 
         try {
             DB::transaction(function () use ($booking, $request) {
-                // PEMBERSIHAN DATA (Mencegah Double-double)
-                // Jika admin mengulang proses sebelum status berubah, bersihkan data lama
                 $booking->batches()->delete();
 
-                // Reset status palet yang sebelumnya mungkin sudah terikat ke booking ini
                 Pallet::where('current_booking_id', $booking->id)->update([
                     'status' => 'empty',
                     'current_booking_id' => null,
                     'filled_boxes' => 0
                 ]);
 
-                // UPDATE DATA UTAMA
                 $booking->update([
                     'arrival_time' => now(),
                     'pic_warehouse' => $request->pic_warehouse,
-                    'status' => 'approved', // Pindah status ke Approved
+                    'status' => 'approved', 
                 ]);
 
                 $unit = $booking->products->first()->unit ?? 'box';
 
                 foreach ($request->batch_quantities as $index => $totalBatchQty) {
-                    // Simpan Data Batch Baru
                     $booking->batches()->create([
                         'batch_number' => $index + 1,
                         'quantity' => $totalBatchQty,
@@ -164,7 +201,6 @@ class AdminBookingController extends Controller
                         'status' => 'waiting'
                     ]);
 
-                    // LOGIKA AUTO-SPLIT PALET
                     $remainingInBatch = $totalBatchQty;
                     $startPalletNumber = $request->pallet_ids[$index];
 
@@ -200,18 +236,14 @@ class AdminBookingController extends Controller
         }
     }
 
-
     public function statusPage($status)
     {
-        // Tambahkan 'pallets' di sini agar list palet muncul di modal
         $bookings = Booking::with(['customer', 'products', 'batches', 'pallets'])
             ->where('status', $status)
             ->latest()
             ->paginate(10);
 
         $pageTitle = ucfirst($status) . " Bookings";
-
-        // Variabel pendukung untuk view
         $porters = \App\Models\Porter::where('is_active', true)->get();
         $pallets = Pallet::where('status', 'empty')->get();
 
@@ -223,7 +255,6 @@ class AdminBookingController extends Controller
         $pallets = Pallet::orderBy('pallet_number', 'asc')->get();
         return view('admin.pallets.index', compact('pallets'));
     }
-
 
     public function palletStore(Request $request)
     {
@@ -244,10 +275,8 @@ class AdminBookingController extends Controller
         return back()->with('success', 'Pallet created successfully');
     }
 
-
     public function palletGenerate(Request $request)
     {
-        // Kita tentukan jumlah yang ingin di-generate (bisa dikembangkan jadi input form)
         $maxLines = $request->input('lines', 2);
         $maxSlots = $request->input('slots', 5);
         $maxPallets = 10;
@@ -256,12 +285,9 @@ class AdminBookingController extends Controller
                 for ($lineNum = 1; $lineNum <= $maxLines; $lineNum++) {
                     for ($slot = 1; $slot <= $maxSlots; $slot++) {
                         for ($p = 1; $p <= $maxPallets; $p++) {
-
                             $palletCode = "PLT-L$lineNum-S$slot-P" . str_pad($p, 2, '0', STR_PAD_LEFT);
-
-                            // updateOrCreate akan mencegah error "Duplicate Entry"
                             \App\Models\Pallet::updateOrCreate(
-                                ['pallet_number' => $palletCode], // Kunci pencarian
+                                ['pallet_number' => $palletCode],
                                 [
                                     'line' => $lineNum,
                                     'slot_section' => $slot,
@@ -274,8 +300,7 @@ class AdminBookingController extends Controller
                     }
                 }
             });
-
-            return back()->with('success', 'Struktur gudang berhasil diperbarui tanpa menghapus data lama.');
+            return back()->with('success', 'Struktur gudang berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal generate: ' . $e->getMessage());
         }
@@ -292,29 +317,19 @@ class AdminBookingController extends Controller
     public function previewInvoice($id)
     {
         $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
-
         if (!$booking->arrival_time) {
             return "<div class='p-8 font-bold text-center text-red-500'>Invoice belum tersedia. Barang belum check-in.</div>";
         }
-
-        // Menggunakan file invoice yang sudah Anda buat
         return view('admin.bookings.invoice', compact('booking'));
     }
 
-
     public function downloadInvoice($id)
     {
-        $booking = Booking::with(['products', 'batches', 'customer'])
-            ->findOrFail($id);
-
-        // Pastikan invoice hanya bisa didownload jika sudah check-in (arrival_time tidak null)
+        $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
         if (!$booking->arrival_time) {
-            return back()->with('error', 'Invoice belum tersedia. Silahkan lakukan check-in terlebih dahulu.');
+            return back()->with('error', 'Invoice belum tersedia.');
         }
-
-        $pdf = Pdf::loadView('admin.bookings.invoice', compact('booking'))
-            ->setPaper('a4', 'portrait');
-
+        $pdf = Pdf::loadView('admin.bookings.invoice', compact('booking'))->setPaper('a4', 'portrait');
         return $pdf->download('Invoice-' . $booking->booking_code . '.pdf');
     }
 }

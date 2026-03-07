@@ -30,6 +30,19 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
+        {{-- NEW: BUSINESS MONITORING MENU --}}
+        <a href="{{ route('admin.business.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.business.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
+            <i class="w-5 text-center fas fa-magnifying-glass-chart"></i>
+            <span class="font-medium">Business Monitor</span>
+            @php
+                // Opsional: Hitung jumlah pending approval untuk badge
+                $pendingCount = \App\Models\Booking::where('status', 'pending')->count();
+            @endphp
+            @if($pendingCount > 0)
+                <span class="ml-auto bg-rose-500 text-[10px] px-2 py-0.5 rounded-full text-white">{{ $pendingCount }}</span>
+            @endif
+        </a>
 
         <div x-data="{ open: {{ request()->routeIs('admin.bookings*') ? 'true' : 'false' }} }">
             <button @click="open = !open"
@@ -66,13 +79,6 @@
             </div>
         </div>
 
-        {{-- <a href="{{ route('admin.slots.index') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.slots.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
-            <i class="w-5 text-center fas fa-layer-group"></i>
-            <span class="font-medium">Slot Management</span>
-        </a> --}}
-
-        {{-- Ganti link Calendar dengan ini --}}
         <a href="{{ route('admin.pallets.index') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.pallets.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
             <i class="w-5 text-center fas fa-boxes-stacked"></i>
