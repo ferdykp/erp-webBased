@@ -1,3 +1,61 @@
+function calculateVolumeFromDimension() {
+    const dimension = document.getElementById("check_dimension").innerText;
+
+    if (!dimension || dimension === "-") return;
+
+    const parts = dimension.split("x");
+
+    if (parts.length !== 3) return;
+
+    const length = parseFloat(parts[0]) || 0;
+    const width = parseFloat(parts[1]) || 0;
+    const height = parseFloat(parts[2]) || 0;
+
+    const volumeCm = length * width * height;
+
+    const volumeM = volumeCm / 1000000;
+
+    document.querySelector("[name='vol_per_pcs']").value = volumeM.toFixed(6);
+
+    calculateTotals();
+}
+
+function calculateTotals() {
+    const qty = parseFloat(document.getElementById("check_qty").innerText) || 0;
+    const volPer =
+        parseFloat(document.querySelector("[name='vol_per_pcs']").value) || 0;
+
+    const netPer =
+        parseFloat(document.querySelector("[name='net_weight_pcs']").value) ||
+        0;
+
+    const grossPer =
+        parseFloat(document.querySelector("[name='gross_weight_pcs']").value) ||
+        0;
+
+    document.querySelector("[name='vol_total']").value = (qty * volPer).toFixed(
+        3,
+    );
+
+    document.querySelector("[name='total_net_weight']").value = (
+        qty * netPer
+    ).toFixed(3);
+
+    document.querySelector("[name='total_gross_weight']").value = (
+        qty * grossPer
+    ).toFixed(3);
+}
+
+document
+    .querySelector("[name='vol_per_pcs']")
+    .addEventListener("input", calculateTotals);
+document
+    .querySelector("[name='net_weight_pcs']")
+    .addEventListener("input", calculateTotals);
+document
+    .querySelector("[name='gross_weight_pcs']")
+    .addEventListener("input", calculateTotals);
+
 let currentStep = 1;
 let maxQty = 0;
 
@@ -58,6 +116,10 @@ function openWarehouseModal(code) {
     document
         .getElementById("warehouseModal")
         .classList.replace("hidden", "flex");
+
+    setTimeout(() => {
+        calculateVolumeFromDimension();
+    }, 200);
 }
 
 // 2. NAVIGATION & VALIDATION
@@ -70,18 +132,26 @@ function changeStep(n) {
 
 function validateCurrentStep() {
     if (currentStep === 1) {
-        const pic = document
-            .querySelector('[name="pic_warehouse"]')
-            .value.trim();
+        // const pic = document
+        //     .querySelector('[name="pic_warehouse"]')
+        //     .value.trim();
         const check = document.querySelector(
             '#step1 input[type="checkbox"]',
         ).checked;
-        if (!pic || !check) {
+        if (!check) {
             alert("Mohon isi nama PIC dan centang konfirmasi data!");
             return false;
         }
     }
     if (currentStep === 2) {
+        const pic = document
+            .querySelector('[name="pic_warehouse"]')
+            .value.trim();
+        if (!pic) {
+            alert("Mohon isi nama PIC ");
+            return false;
+        }
+
         const inputs = document.querySelectorAll(".batch-input");
         let total = 0;
         let allFilled = true;
@@ -252,6 +322,81 @@ function preparePlacementFields() {
             lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
         });
     });
+}
+
+function calculatePalletFromPerPallet() {
+    const qty = maxQty;
+
+    const perPallet =
+        parseFloat(document.getElementById("per_pallet").value) || 0;
+
+    if (perPallet <= 0) return;
+
+    const pallet = Math.ceil(qty / perPallet);
+    const remainder = qty % perPallet;
+
+    document.getElementById("pallet_count").value = pallet;
+    document.getElementById("pallet_remainder").value = remainder;
+
+    updatePalletSummary(pallet, perPallet, remainder);
+}
+
+function calculatePalletFromCount() {
+    const qty = maxQty;
+
+    const pallet =
+        parseFloat(document.getElementById("pallet_count").value) || 0;
+
+    if (pallet <= 0) return;
+
+    const perPallet = Math.floor(qty / pallet);
+    const remainder = qty % pallet;
+
+    document.getElementById("per_pallet").value = perPallet;
+    document.getElementById("pallet_remainder").value = remainder;
+
+    updatePalletSummary(pallet, perPallet, remainder);
+}
+
+document
+    .getElementById("per_pallet")
+    .addEventListener("input", calculatePalletFromPerPallet);
+
+document
+    .getElementById("pallet_count")
+    .addEventListener("input", calculatePalletFromCount);
+
+function updatePalletSummary(pallet, perPallet, remainder) {
+    const summary = document.getElementById("pallet_summary");
+
+    if (!pallet || !perPallet) {
+        summary.classList.add("hidden");
+        return;
+    }
+
+    summary.classList.remove("hidden");
+
+    document.getElementById("sum_qty").innerText = maxQty;
+    document.getElementById("sum_pallet").innerText = pallet;
+    document.getElementById("sum_per_pallet").innerText = perPallet;
+    document.getElementById("sum_remainder").innerText = remainder;
+
+    const dist = document.getElementById("pallet_distribution");
+    dist.innerHTML = "";
+
+    for (let i = 1; i <= pallet; i++) {
+        let qty = perPallet;
+
+        if (i === pallet && remainder > 0) {
+            qty = remainder;
+        }
+
+        const row = document.createElement("div");
+
+        row.innerText = `Pallet ${i} - ${qty} box`;
+
+        dist.appendChild(row);
+    }
 }
 
 function updatePetakOptions(idx) {

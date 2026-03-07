@@ -3,17 +3,6 @@
 @section('title', 'Bookings Management')
 
 @section('content')
-    {{-- 1. DATA SOURCE (Wajib ada agar Modal Check-in bisa baca Porter & Palet) --}}
-    {{-- <div id="bookingDataSource" class="hidden">
-        @foreach ($bookings as $b)
-            @php $product = $b->products->first(); @endphp
-            <div data-code="{{ $b->booking_code }}" data-name="{{ $product->product_name ?? '-' }}"
-                data-type="{{ $product->product_type ?? '-' }}" data-qty="{{ $product->quantity ?? 0 }}"
-                data-unit="{{ $product->unit ?? '' }}" data-dose="{{ $product->target_dose ?? '-' }}">
-            </div>
-        @endforeach
-    </div> --}}
-    {{-- resources/views/admin/bookings/index.blade.php --}}
     <div id="bookingDataSource" class="hidden">
         @foreach ($bookings as $b)
             @php $product = $b->products->first(); @endphp
@@ -59,9 +48,9 @@
             <div class="p-6 overflow-x-auto">
                 <table class="w-full text-left border-separate border-spacing-y-3">
                     <thead>
-                        <tr class="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
+                        <tr class="text-[10px] font-black tracking-[0.2em] text-slate-600 uppercase">
                             <th class="px-8 py-4">Customer Details</th>
-                            <th class="px-6 py-4 text-center">Schedule</th>
+                            <th class="px-6 py-4 text-center">Create Booking</th>
                             <th class="px-6 py-4 text-center">Status</th>
                             <th class="px-8 py-4 text-right">Actions</th>
                         </tr>

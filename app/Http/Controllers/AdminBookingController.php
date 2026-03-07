@@ -4,50 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Pallet;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
+use App\Models\Porter;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 
 class AdminBookingController extends Controller
 {
-    // public function index()
-    // {
-    //     // 1. Ambil data booking (Status pending biasanya untuk scanner di dashboard)
-    //     $bookings = Booking::with(['customer', 'products', 'batches'])
-    //         ->latest()
-    //         ->get(); // Gunakan get() jika Dashboard butuh semua data untuk JS scanner
-
-    //     // 2. Ambil Porter (Pemicu utama error jika variabel ini hilang di view)
-    //     $porters = \App\Models\Porter::where('is_active', true)->get();
-
-    //     // 3. Ambil Palet Kosong (Untuk dropdown step 3)
-    //     $pallets = Pallet::where('status', 'empty')
-    //         ->orderBy('line')
-    //         ->orderBy('slot_section')
-    //         ->get();
-
-    //     // Pastikan view-nya sesuai. Jika view dashboard ada di admin.dashboard.index:
-    //     return view('admin.dashboard.index', compact('bookings', 'porters', 'pallets'));
-    // }
     public function index()
     {
-        // Ambil data booking untuk scanner dashboard
         $bookings = Booking::with(['customer', 'products', 'batches'])
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        // VARIABEL WAJIB: Jangan sampai absen
-        $porters = \App\Models\Porter::where('is_active', true)->get();
+        $porters = Porter::where('is_active', true)->get();
 
-        // Ambil data palet kosong untuk Step 3 di Modal Dashboard
         $pallets = Pallet::where('status', 'empty')
             ->orderBy('line')
             ->orderBy('slot_section')
             ->get();
 
-        // Pastikan me-return ke view dashboard
         return view('admin.dashboard.index', compact('bookings', 'porters', 'pallets'));
     }
 
@@ -61,38 +39,13 @@ class AdminBookingController extends Controller
         $pageTitle = "All Order History";
 
         // Kirim data tambahan agar modal detail di halaman index tidak error
-        $porters = \App\Models\Porter::where('is_active', true)->get();
+        $porters = Porter::where('is_active', true)->get();
         $pallets = Pallet::where('status', 'empty')->get();
 
         // Diarahkan ke view table (index.blade.php di folder bookings)
         return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters', 'pallets'));
     }
 
-    // public function updateStatus(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'status' => 'required|string'
-    //     ]);
-
-    //     $booking = Booking::findOrFail($id);
-
-    //     // Simpan perubahan status booking
-    //     $booking->update([
-    //         'status' => $request->status
-    //     ]);
-
-    //     // LOGIKA PENGOSONGAN PALET
-    //     // Jika status diubah menjadi 'completed', cari palet yang terkait dan kosongkan
-    //     if ($request->status === 'completed') {
-    //         \App\Models\Pallet::where('current_booking_id', $booking->id)->update([
-    //             'status' => 'empty',
-    //             'current_booking_id' => null,
-    //             'filled_boxes' => 0 // WAJIB DI-RESET KE 0
-    //         ]);
-    //     }
-
-    //     return back()->with('success', 'Status updated' . ($request->status === 'completed' ? ' and pallet released' : ''));
-    // }
     public function updateStatus(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
@@ -121,19 +74,36 @@ class AdminBookingController extends Controller
             'batch_porters' => 'required|array|min:1',
             'batch_quantities' => 'required|array',
             'pallet_ids' => 'required|array',
+
+            'vol_per_pcs' => 'nullable|numeric',
+            'vol_total' => 'nullable|numeric',
+            'net_weight_pcs' => 'nullable|numeric',
+            'total_net_weight' => 'nullable|numeric',
+            'gross_weight_pcs' => 'nullable|numeric',
+            'total_gross_weight' => 'nullable|numeric',
         ]);
 
         $booking = Booking::with(['products', 'batches', 'pallets'])->where('booking_code', $request->booking_code)->first();
 
         if (!$booking) return back()->with('error', 'Booking tidak ditemukan');
 
-        // VALIDASI STATUS: Hanya status 'pending' yang boleh melakukan check-in
         if ($booking->status !== 'pending') {
             return back()->with('error', 'Gagal! Order ini sudah melewati tahap Check-in.');
         }
 
         try {
             DB::transaction(function () use ($booking, $request) {
+
+                $product = $booking->products->first();
+
+                $product->update([
+                    'vol_per_pcs' => $request->vol_per_pcs,
+                    'vol_total' => $request->vol_total,
+                    'net_weight_pcs' => $request->net_weight_pcs,
+                    'total_net_weight' => $request->total_net_weight,
+                    'gross_weight_pcs' => $request->gross_weight_pcs,
+                    'total_gross_weight' => $request->total_gross_weight,
+                ]);
                 // PEMBERSIHAN DATA (Mencegah Double-double)
                 // Jika admin mengulang proses sebelum status berubah, bersihkan data lama
                 $booking->batches()->delete();
@@ -212,7 +182,7 @@ class AdminBookingController extends Controller
         $pageTitle = ucfirst($status) . " Bookings";
 
         // Variabel pendukung untuk view
-        $porters = \App\Models\Porter::where('is_active', true)->get();
+        $porters = Porter::where('is_active', true)->get();
         $pallets = Pallet::where('status', 'empty')->get();
 
         return view('admin.bookings.index', compact('bookings', 'pageTitle', 'status', 'porters', 'pallets'));
@@ -287,18 +257,6 @@ class AdminBookingController extends Controller
         if ($pallet->status == 'filled') return back()->with('error', 'Cannot delete a filled pallet!');
         $pallet->delete();
         return back()->with('success', 'Pallet deleted');
-    }
-
-    public function previewInvoice($id)
-    {
-        $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
-
-        if (!$booking->arrival_time) {
-            return "<div class='p-8 font-bold text-center text-red-500'>Invoice belum tersedia. Barang belum check-in.</div>";
-        }
-
-        // Menggunakan file invoice yang sudah Anda buat
-        return view('admin.bookings.invoice', compact('booking'));
     }
 
 
