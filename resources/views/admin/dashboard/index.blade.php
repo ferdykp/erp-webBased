@@ -21,12 +21,12 @@
         @endforeach
     </div>
     {{-- Data Inventory: Palet yang berstatus 'empty' --}}
-    <div id="palletInventoryData" class="hidden">
+    {{-- <div id="palletInventoryData" class="hidden">
         @foreach (\App\Models\Pallet::where('status', 'empty')->orderBy('line')->orderBy('slot_section')->orderBy('pallet_number')->get() as $p)
             <div data-line="{{ $p->line }}" data-petak="{{ $p->slot_section }}" data-pallet="{{ $p->pallet_number }}">
             </div>
         @endforeach
-    </div>
+    </div> --}}
 
     <div class="flex items-center justify-between mb-8">
         <div>

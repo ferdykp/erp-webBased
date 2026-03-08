@@ -193,6 +193,10 @@ Route::prefix('admin')
         Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
         Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
 
+        // Tambahkan route ini di bawah route /bookings/checkin
+        Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])
+            ->name('admin.bookings.storePlacement');
+
 
         Route::get('/profile', [UserAdminController::class, 'index'])->name('admin.profile');
         Route::get('/profile/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');

@@ -1,3 +1,6 @@
+function formatNumber(num, maxDecimal = 3) {
+    return parseFloat(num.toFixed(maxDecimal));
+}
 function calculateVolumeFromDimension() {
     const dimension = document.getElementById("check_dimension").innerText;
 
@@ -12,50 +15,58 @@ function calculateVolumeFromDimension() {
     const height = parseFloat(parts[2]) || 0;
 
     const volumeCm = length * width * height;
-
     const volumeM = volumeCm / 1000000;
 
-    document.querySelector("[name='vol_per_pcs']").value = volumeM.toFixed(6);
+    document.querySelector("[name='vol_per_pcs']").value = formatNumber(
+        volumeM,
+        6,
+    );
 
     calculateTotals();
 }
 
 function calculateTotals() {
     const qty = parseFloat(document.getElementById("check_qty").innerText) || 0;
+
     const volPer =
         parseFloat(document.querySelector("[name='vol_per_pcs']").value) || 0;
-
     const netPer =
         parseFloat(document.querySelector("[name='net_weight_pcs']").value) ||
         0;
-
     const grossPer =
         parseFloat(document.querySelector("[name='gross_weight_pcs']").value) ||
         0;
 
-    document.querySelector("[name='vol_total']").value = (qty * volPer).toFixed(
+    document.querySelector("[name='vol_total']").value = formatNumber(
+        qty * volPer,
         3,
     );
 
-    document.querySelector("[name='total_net_weight']").value = (
-        qty * netPer
-    ).toFixed(3);
+    document.querySelector("[name='total_net_weight']").value = formatNumber(
+        qty * netPer,
+        3,
+    );
 
-    document.querySelector("[name='total_gross_weight']").value = (
-        qty * grossPer
-    ).toFixed(3);
+    document.querySelector("[name='total_gross_weight']").value = formatNumber(
+        qty * grossPer,
+        3,
+    );
 }
 
-document
-    .querySelector("[name='vol_per_pcs']")
-    .addEventListener("input", calculateTotals);
-document
-    .querySelector("[name='net_weight_pcs']")
-    .addEventListener("input", calculateTotals);
-document
-    .querySelector("[name='gross_weight_pcs']")
-    .addEventListener("input", calculateTotals);
+const volInput = document.querySelector("[name='vol_per_pcs']");
+if (volInput) {
+    volInput.addEventListener("input", calculateTotals);
+}
 
+const netInput = document.querySelector("[name='net_weight_pcs']");
+if (netInput) {
+    netInput.addEventListener("input", calculateTotals);
+}
+
+const grossInput = document.querySelector("[name='gross_weight_pcs']");
+if (grossInput) {
+    grossInput.addEventListener("input", calculateTotals);
+}
 let currentStep = 1;
 let maxQty = 0;
 
@@ -76,6 +87,8 @@ function openWarehouseModal(code) {
     const dataSource = document.querySelector(
         `#bookingDataSource [data-code="${code}"]`,
     );
+    document.getElementById("modal_booking_id").value =
+        dataSource.getAttribute("data-id");
     if (!dataSource)
         return alert("🚨 Kode Booking tidak valid atau sudah diproses!");
 
@@ -103,14 +116,18 @@ function openWarehouseModal(code) {
         dataSource.getAttribute("data-weight");
 
     // 3. Header & Global Info
-    document.getElementById("total_qty_display").innerText = maxQty;
+    // document.getElementById("total_qty_display").innerText = maxQty;
     document.getElementById("display_booking_code").innerText = code;
     document.getElementById("modal_booking_code").value = code;
 
+    document.getElementById("porterContainer").innerHTML = `
+<select name="porters[]"
+class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
+${generatePorterOptions()}
+</select>
+`;
     // Reset Flow Modal
     currentStep = 1;
-    document.getElementById("batchContainer").innerHTML = "";
-    addBatchField();
     updateStepUI();
 
     document
@@ -120,6 +137,50 @@ function openWarehouseModal(code) {
     setTimeout(() => {
         calculateVolumeFromDimension();
     }, 200);
+}
+
+function generatePorterOptions() {
+    const porterData = document.querySelectorAll("#porterDataSource div");
+
+    let options = '<option value="">Pilih Porter</option>';
+
+    porterData.forEach((p) => {
+        options += `<option value="${p.dataset.name}">
+            ${p.dataset.name}
+        </option>`;
+    });
+
+    return options;
+}
+function addPlacementRow() {
+    const container = document.getElementById("placementContainer");
+
+    const div = document.createElement("div");
+
+    div.className = "grid grid-cols-3 gap-4 p-6 bg-slate-50 rounded-2xl";
+
+    div.innerHTML = `
+
+        <select name="lines[]" class="px-4 py-3 bg-white rounded-xl">
+            <option value="">Line</option>
+            <option value="1">Line 1</option>
+            <option value="2">Line 2</option>
+        </select>
+
+        <select name="petaks[]" class="px-4 py-3 bg-white rounded-xl">
+            <option value="">Petak</option>
+            <option value="1">Petak 1</option>
+            <option value="2">Petak 2</option>
+            <option value="3">Petak 3</option>
+        </select>
+
+        <input type="number"
+            name="pallet_qty[]"
+            placeholder="Jumlah Pallet"
+            class="px-4 py-3 bg-white rounded-xl">
+    `;
+
+    container.appendChild(div);
 }
 
 // 2. NAVIGATION & VALIDATION
@@ -147,45 +208,84 @@ function validateCurrentStep() {
         const pic = document
             .querySelector('[name="pic_warehouse"]')
             .value.trim();
+
         if (!pic) {
-            alert("Mohon isi nama PIC ");
+            alert("Mohon isi nama PIC Warehouse");
             return false;
         }
 
-        const inputs = document.querySelectorAll(".batch-input");
-        let total = 0;
-        let allFilled = true;
+        const porters = document.querySelectorAll('[name="porters[]"]');
 
-        inputs.forEach((i) => {
-            const val = parseFloat(i.value) || 0;
-            total += val;
-            if (val <= 0) allFilled = false;
-        });
-
-        if (inputs.length === 0 || !allFilled) {
-            alert("Semua Qty Batch harus diisi dengan angka positif!");
-            return false;
-        }
-        // Use epsilon for float comparison
-        if (Math.abs(total - maxQty) > 0.001) {
-            alert(
-                `Total batch (${total}) belum sesuai dengan qty booking (${maxQty})!`,
-            );
+        if (porters.length === 0) {
+            alert("Tambahkan minimal 1 porter");
             return false;
         }
 
-        // Validate Porter selections
-        const porters = document.querySelectorAll('[name="batch_porters[]"]');
         let porterFilled = true;
+
         porters.forEach((p) => {
             if (!p.value) porterFilled = false;
         });
+
         if (!porterFilled) {
-            alert("Pilih porter untuk setiap batch!");
+            alert("Semua porter harus dipilih!");
+            return false;
+        }
+    }
+    if (currentStep === 3) {
+        const form = document.getElementById("checkInForm");
+        const bId = document.getElementById("modal_booking_id").value; // Pastikan ID booking ada di hidden input
+        form.action = `/admin/bookings/${bId}/placement`;
+        const container = document.getElementById("placementContainer");
+
+        if (container.children.length === 0) {
+            addPlacementRow();
+        }
+        const inputs = document.querySelectorAll('[name="pallet_qty[]"]');
+
+        let total = 0;
+
+        inputs.forEach((i) => {
+            total += parseInt(i.value) || 0;
+        });
+
+        // const palletTotal =
+        //     parseInt(document.getElementById("pallet_count").value) || 0;
+
+        if (total !== palletTotal) {
+            alert(
+                "Jumlah pallet yang ditempatkan tidak sama dengan total pallet",
+            );
+
             return false;
         }
     }
     return true;
+}
+
+function addPorterField() {
+    const container = document.getElementById("porterContainer");
+
+    const porterData = document.querySelectorAll("#porterDataSource div");
+
+    let options = '<option value="">Pilih Porter</option>';
+
+    porterData.forEach((p) => {
+        options += `<option value="${p.dataset.name}">
+            ${p.dataset.name}
+        </option>`;
+    });
+
+    const select = document.createElement("select");
+
+    select.name = "porters[]";
+
+    select.className =
+        "w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl";
+
+    select.innerHTML = options;
+
+    container.appendChild(select);
 }
 
 function updateStepUI() {
@@ -278,49 +378,216 @@ function updateBatchTotal() {
 }
 
 // 4. PLACEMENT LOGIC
+// function preparePlacementFields() {
+//     const container = document.getElementById("placementContainer");
+//     container.innerHTML = "";
+//     const batchInputs = document.querySelectorAll(".batch-input");
+//     const porterInputs = document.querySelectorAll('[name="batch_porters[]"]');
+
+//     batchInputs.forEach((input, idx) => {
+//         const qty = input.value;
+//         const porter = porterInputs[idx].value || "Unknown";
+//         const div = document.createElement("div");
+//         div.className =
+//             "flex flex-col items-center gap-6 p-6 mb-4 bg-white border-2 shadow-sm border-slate-50 rounded-3xl lg:flex-row";
+
+//         div.innerHTML = `
+//                 <div class="flex-1">
+//                     <span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[8px] font-black rounded-md uppercase">Batch ${idx + 1}</span>
+//                     <h5 class="text-sm font-bold text-slate-800">${porter} (${qty} Unit)</h5>
+//                 </div>
+//                 <div class="grid grid-cols-3 gap-3 flex-[2]">
+//                     <select onchange="updatePetakOptions(${idx})" id="line_${idx}" required
+//                         class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
+//                         <option value="">Line</option>
+//                     </select>
+//                     <select onchange="updatePalletOptions(${idx})" id="petak_${idx}" required
+//                         class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
+//                         <option value="">Petak</option>
+//                     </select>
+//                     <select name="pallet_ids[]" id="pallet_${idx}" required
+//                         class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
+//                         <option value="">Palet</option>
+//                     </select>
+//                 </div>
+//             `;
+//         container.appendChild(div);
+
+//         // Init Lines for this batch
+//         const lineSelect = document.getElementById(`line_${idx}`);
+//         const uniqueLines = [
+//             ...new Set(window.currentInventory.map((i) => i.line)),
+//         ];
+//         uniqueLines.forEach((l) => {
+//             lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
+//         });
+//     });
+// }
+
+// 4. PLACEMENT LOGIC
+// function preparePlacementFields() {
+//     const container = document.getElementById("placementContainer");
+//     container.innerHTML = "";
+
+//     // Ambil jumlah palet yang diinput user di Step 2
+//     const totalPallets =
+//         parseInt(document.getElementById("pallet_count").value) || 0;
+//     const perPallet =
+//         parseInt(document.getElementById("per_pallet").value) || 0;
+//     const porter =
+//         document.querySelector('[name="porters[]"]')?.value || "Porter";
+
+//     for (let i = 0; i < totalPallets; i++) {
+//         // Hitung jumlah box per palet (termasuk sisa box di palet terakhir)
+//         let qty = perPallet;
+//         if (
+//             i === totalPallets - 1 &&
+//             document.getElementById("pallet_remainder").value > 0
+//         ) {
+//             qty = parseInt(document.getElementById("pallet_remainder").value);
+//         }
+
+//         const div = document.createElement("div");
+//         div.className =
+//             "flex flex-col items-center gap-6 p-6 mb-4 bg-white border-2 shadow-sm border-slate-50 rounded-3xl lg:flex-row";
+
+//         div.innerHTML = `
+//             <div class="flex-1">
+//                 <span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[8px] font-black rounded-md uppercase">Pallet ${i + 1}</span>
+//                 <h5 class="text-sm font-bold text-slate-800">${porter}</h5>
+//             </div>
+//             <div class="grid grid-cols-2 gap-3 flex-[2]">
+//                 <select name="lines[]" onchange="updatePetakOptions(${i})" id="line_${i}" required
+//                     class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
+//                     <option value="">Pilih Line</option>
+//                 </select>
+//                 <select name="petaks[]" id="petak_${i}" required
+//                     class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
+//                     <option value="">Pilih Petak</option>
+//                 </select>
+//                 <input type="hidden" name="pallet_qty[]" value="${qty}">
+//             </div>
+//         `;
+//         container.appendChild(div);
+
+//         // Init Lines
+//         const lineSelect = document.getElementById(`line_${i}`);
+//         const uniqueLines = [
+//             ...new Set(window.currentInventory.map((i) => i.line)),
+//         ];
+//         uniqueLines.forEach((l) => {
+//             lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
+//         });
+//     }
+// }
+
+// function updatePetakOptions(idx) {
+//     const line = document.getElementById(`line_${idx}`).value;
+//     const petakSelect = document.getElementById(`petak_${idx}`);
+
+//     petakSelect.innerHTML = '<option value="">Pilih Petak</option>';
+
+//     if (!line) return;
+
+//     // Filter petak berdasarkan line yang dipilih
+//     const filteredPetak = [
+//         ...new Set(
+//             window.currentInventory
+//                 .filter((i) => i.line == line) // Gunakan == untuk menghindari masalah tipe data string/int
+//                 .map((i) => i.petak),
+//         ),
+//     ];
+
+//     filteredPetak.forEach((p) => {
+//         petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
+//     });
+// }
+
+function syncHiddenInputs() {
+    const totalQty = document.getElementById("check_qty").innerText;
+    const perPallet = document.getElementById("per_pallet").value;
+
+    document.getElementById("hidden_total_qty").value = totalQty;
+    document.getElementById("hidden_per_pallet").value = perPallet;
+}
+
+// Panggil fungsi ini setiap kali ada perubahan pada input jumlah
+document
+    .getElementById("per_pallet")
+    .addEventListener("input", syncHiddenInputs);
+
+// 4. PLACEMENT LOGIC
 function preparePlacementFields() {
     const container = document.getElementById("placementContainer");
     container.innerHTML = "";
-    const batchInputs = document.querySelectorAll(".batch-input");
-    const porterInputs = document.querySelectorAll('[name="batch_porters[]"]');
 
-    batchInputs.forEach((input, idx) => {
-        const qty = input.value;
-        const porter = porterInputs[idx].value || "Unknown";
+    // AMBIL NAMA PRODUK DARI ELEMEN UI YANG SUDAH ADA
+    const namaProduk =
+        document.getElementById("check_product_name").innerText || "Produk";
+
+    const palletCount =
+        parseInt(document.getElementById("pallet_count").value) || 0;
+    const perPallet =
+        parseInt(document.getElementById("per_pallet").value) || 0;
+    const remainder =
+        parseInt(document.getElementById("pallet_remainder").value) || 0;
+
+    for (let i = 0; i < palletCount; i++) {
+        let qty =
+            i === palletCount - 1 && remainder > 0 ? remainder : perPallet;
+
         const div = document.createElement("div");
         div.className =
-            "flex flex-col items-center gap-6 p-6 mb-4 bg-white border-2 shadow-sm border-slate-50 rounded-3xl lg:flex-row";
+            "grid grid-cols-3 gap-4 p-4 border bg-slate-50 border-slate-100 rounded-2xl";
 
         div.innerHTML = `
-                <div class="flex-1">
-                    <span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[8px] font-black rounded-md uppercase">Batch ${idx + 1}</span>
-                    <h5 class="text-sm font-bold text-slate-800">${porter} (${qty} Unit)</h5>
-                </div>
-                <div class="grid grid-cols-3 gap-3 flex-[2]">
-                    <select onchange="updatePetakOptions(${idx})" id="line_${idx}" required 
-                        class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-                        <option value="">Line</option>
-                    </select>
-                    <select onchange="updatePalletOptions(${idx})" id="petak_${idx}" required 
-                        class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-                        <option value="">Petak</option>
-                    </select>
-                    <select name="pallet_ids[]" id="pallet_${idx}" required 
-                        class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-                        <option value="">Palet</option>
-                    </select>
-                </div>
-            `;
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase">Pallet ${i + 1}</p>
+                <p class="text-sm font-bold text-slate-800">${qty} Box</p>
+                <input type="hidden" name="pallet_qty[]" value="${qty}">
+            </div>
+            
+            <input type="hidden" name="product_names[]" value="${namaProduk}">
+            
+            <select name="lines[]" onchange="updatePetakOptions(${i})" id="line_${i}" class="px-4 py-2 text-xs font-bold bg-white rounded-lg" required>
+                <option value="">Pilih Line</option>
+                ${generateLineOptions()}
+            </select>
+            <select name="petaks[]" id="petak_${i}" class="px-4 py-3 text-xs font-bold bg-white rounded-lg" required>
+                <option value="">Pilih Petak</option>
+            </select>
+        `;
         container.appendChild(div);
+    }
+}
 
-        // Init Lines for this batch
-        const lineSelect = document.getElementById(`line_${idx}`);
-        const uniqueLines = [
-            ...new Set(window.currentInventory.map((i) => i.line)),
-        ];
-        uniqueLines.forEach((l) => {
-            lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
-        });
+function generateLineOptions() {
+    const uniqueLines = [
+        ...new Set(window.currentInventory.map((i) => i.line)),
+    ];
+    return uniqueLines
+        .map((l) => `<option value="${l}">Line ${l}</option>`)
+        .join("");
+}
+
+function updatePetakOptions(idx) {
+    const line = document.getElementById(`line_${idx}`).value;
+    const petakSelect = document.getElementById(`petak_${idx}`);
+
+    petakSelect.innerHTML = '<option value="">Pilih Petak</option>';
+
+    if (!line) return;
+
+    // Ambil SEMUA petak yang ada di line tersebut, TANPA filter status
+    const availablePetaks = window.currentInventory.filter(
+        (i) => i.line == line,
+    );
+
+    // Gunakan Set untuk menghindari duplikat jika ada data ganda di DOM
+    const uniquePetaks = [...new Set(availablePetaks.map((i) => i.petak))];
+
+    uniquePetaks.forEach((p) => {
+        petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
     });
 }
 
@@ -358,14 +625,15 @@ function calculatePalletFromCount() {
     updatePalletSummary(pallet, perPallet, remainder);
 }
 
-document
-    .getElementById("per_pallet")
-    .addEventListener("input", calculatePalletFromPerPallet);
+const perPalletInput = document.getElementById("per_pallet");
+if (perPalletInput) {
+    perPalletInput.addEventListener("input", calculatePalletFromPerPallet);
+}
 
-document
-    .getElementById("pallet_count")
-    .addEventListener("input", calculatePalletFromCount);
-
+const palletCountInput = document.getElementById("pallet_count");
+if (palletCountInput) {
+    palletCountInput.addEventListener("input", calculatePalletFromCount);
+}
 function updatePalletSummary(pallet, perPallet, remainder) {
     const summary = document.getElementById("pallet_summary");
 
@@ -399,28 +667,28 @@ function updatePalletSummary(pallet, perPallet, remainder) {
     }
 }
 
-function updatePetakOptions(idx) {
-    const line = document.getElementById(`line_${idx}`).value;
-    const petakSelect = document.getElementById(`petak_${idx}`);
-    const palletSelect = document.getElementById(`pallet_${idx}`);
+// function updatePetakOptions(idx) {
+//     const line = document.getElementById(`line_${idx}`).value;
+//     const petakSelect = document.getElementById(`petak_${idx}`);
+//     const palletSelect = document.getElementById(`pallet_${idx}`);
 
-    petakSelect.innerHTML = '<option value="">Petak</option>';
-    palletSelect.innerHTML = '<option value="">Palet</option>';
+//     petakSelect.innerHTML = '<option value="">Petak</option>';
+//     palletSelect.innerHTML = '<option value="">Palet</option>';
 
-    if (!line) return;
+//     if (!line) return;
 
-    const filteredPetak = [
-        ...new Set(
-            window.currentInventory
-                .filter((i) => i.line === line)
-                .map((i) => i.petak),
-        ),
-    ];
+//     const filteredPetak = [
+//         ...new Set(
+//             window.currentInventory
+//                 .filter((i) => i.line === line)
+//                 .map((i) => i.petak),
+//         ),
+//     ];
 
-    filteredPetak.forEach((p) => {
-        petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
-    });
-}
+//     filteredPetak.forEach((p) => {
+//         petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
+//     });
+// }
 
 function updatePalletOptions(idx) {
     const line = document.getElementById(`line_${idx}`).value;
@@ -465,8 +733,24 @@ function handleManualInput() {
     }
 }
 
-let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-    fps: 10,
-    qrbox: 250,
-});
-html5QrcodeScanner.render(onScanSuccess);
+if (typeof Html5QrcodeScanner !== "undefined") {
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+        fps: 10,
+        qrbox: 250,
+    });
+
+    html5QrcodeScanner.render(onScanSuccess);
+}
+
+function setFormAction() {
+    const form = document.getElementById("checkInForm");
+    // Pastikan ID ini terisi saat modal dibuka
+    const bookingId = document.getElementById("modal_booking_id").value;
+
+    if (!bookingId) {
+        alert("ID Booking tidak ditemukan!");
+        return false;
+    }
+
+    form.action = `/admin/bookings/${bookingId}/placement`;
+}

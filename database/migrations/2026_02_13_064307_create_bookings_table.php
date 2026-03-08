@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('pic_warehouse')->nullable();
 
             // Hapus porter_1 dan porter_2, gunakan satu referensi utama
-            $table->string('porter_name')->nullable();
+            // $table->string('porter_name')->nullable();
 
             $table->timestamps();
         });
@@ -27,9 +27,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('bookings');
-        // Schema::table('bookings', function (Blueprint $table) {
-        //     $table->dropForeign(['booking_slot_id']);
-        //     $table->dropColumn(['booking_slot_id', 'ticket_code']);
-        // });
     }
 };

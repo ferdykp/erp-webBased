@@ -17,10 +17,10 @@
 
     <div class="flex items-center gap-4">
 
-        <button class="relative p-2 text-gray-400 transition-colors hover:text-blue-600">
+        {{-- <button class="relative p-2 text-gray-400 transition-colors hover:text-blue-600">
             <i class="text-lg fa-solid fa-bell"></i>
             <span class="absolute w-2 h-2 bg-red-500 border-2 border-white rounded-full top-2 right-2"></span>
-        </button>
+        </button> --}}
 
         <div class="h-6 w-[1px] bg-gray-200 mx-1"></div>
 

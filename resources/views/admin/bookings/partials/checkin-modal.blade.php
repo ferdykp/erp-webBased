@@ -1,326 +1,269 @@
-    <div id="warehouseModal"
-        class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
-        <div
-            class="bg-white w-full max-w-5xl rounded-[3.5rem] shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
+<div id="warehouseModal"
+    class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 md:p-6">
+    <div
+        class="bg-white w-full max-w-5xl rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl relative max-h-[95vh] flex flex-col overflow-hidden">
 
-            {{-- Header & Progress Indicator --}}
-            <div class="px-12 pt-12 pb-6 border-b border-slate-50">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h3 class="text-3xl font-black text-slate-800">Check-in Process</h3>
-                        <p class="text-sm font-medium tracking-widest uppercase text-slate-500">Code: <span
-                                id="display_booking_code" class="text-blue-600"></span></p>
+        {{-- Header & Progress Indicator --}}
+        <div class="px-6 py-8 border-b md:px-12 md:pt-12 md:pb-6 border-slate-50">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-2xl font-black md:text-3xl text-slate-800">Check-in Process</h3>
+                    <p class="text-xs font-medium tracking-widest uppercase text-slate-500">
+                        Code: <span id="display_booking_code" class="text-blue-600"></span>
+                    </p>
+                </div>
+                <button onclick="closeWarehouseModal()"
+                    class="p-3 transition-all bg-slate-50 hover:bg-red-50 rounded-2xl group">
+                    <i class="fa-solid fa-xmark text-slate-400 group-hover:text-red-500"></i>
+                </button>
+            </div>
+
+            {{-- Step Tracker --}}
+            <div class="flex items-center justify-between max-w-2xl mx-auto">
+                @php $steps = [['Verify', 1], ['Batching', 2], ['Placement', 3]]; @endphp
+                @foreach ($steps as $index => $step)
+                    <div class="flex flex-col items-center gap-2 step-item {{ $index == 0 ? 'active' : '' }}"
+                        data-step="{{ $step[1] }}">
+                        <div
+                            class="flex items-center justify-center w-10 h-10 font-bold transition-all rounded-full step-circle {{ $index == 0 ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-slate-100 text-slate-400' }}">
+                            {{ $step[1] }}
+                        </div>
+                        <span
+                            class="text-[9px] md:text-[10px] font-black uppercase text-slate-400">{{ $step[0] }}</span>
                     </div>
-                    <button onclick="closeWarehouseModal()"
-                        class="p-4 transition-all bg-slate-50 hover:bg-red-50 rounded-2xl group">
-                        <i class="fa-solid fa-xmark text-slate-400 group-hover:text-red-500"></i>
-                    </button>
+                    @if (!$loop->last)
+                        <div class="flex-1 h-px mx-2 bg-slate-100 md:mx-4"></div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
+        <form action="{{ route('admin.bookings.checkin') }}" method="POST" id="checkInForm"
+            class="flex flex-col flex-1 overflow-hidden">
+            @csrf
+            <input type="hidden" name="booking_code" id="modal_booking_code">
+
+            <input type="hidden" name="total_qty" id="hidden_total_qty">
+            <input type="hidden" name="per_pallet" id="hidden_per_pallet">
+            <input type="hidden" name="booking_id" id="modal_booking_id">
+
+            <div class="flex-1 px-6 py-8 overflow-y-auto md:px-12 scrollbar-hide">
+
+                {{-- STEP 1: VERIFICATION --}}
+                <div class="step-content" id="step1">
+                    <div class="p-6 md:p-10 bg-blue-50/40 border border-blue-100 rounded-[2rem] md:rounded-[3rem] mb-8">
+                        <h4 class="mb-6 text-base font-black md:text-lg text-slate-800">Mencocokkan Data Aktual</h4>
+
+                        <div class="grid grid-cols-2 gap-6 mb-8 md:grid-cols-4">
+                            @php
+                                $infoFields = [
+                                    ['Product', 'check_product_name', 'text-slate-800'],
+                                    ['Category', 'check_product_type', 'text-slate-600'],
+                                    ['Booked Qty', 'check_qty', 'text-slate-800', 'check_unit'],
+                                    ['Exp. Temp', 'check_temp', 'text-blue-600', '°C'],
+                                ];
+                            @endphp
+                            @foreach ($infoFields as $field)
+                                <div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        {{ $field[0] }}</p>
+                                    <p id="{{ $field[1] }}"
+                                        class="text-sm font-black md:text-base {{ $field[2] }}">-</p>
+                                    @if (isset($field[3]))
+                                        <span id="{{ $field[3] }}" class="text-xs font-bold text-slate-500"></span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 pt-6 border-t border-blue-100/50 md:grid-cols-3">
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Dose
+                                    Range</p>
+                                <p class="text-sm font-black text-emerald-600"><span id="check_dmin">-</span> - <span
+                                        id="check_dmax">-</span> kGy</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Dimension
+                                    / Pack</p>
+                                <p id="check_dimension" class="text-sm font-bold text-slate-700">-</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Weight /
+                                    Pcs</p>
+                                <p class="text-sm font-bold text-slate-700"><span id="check_weight">-</span> kg</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Weight & Volume Inputs --}}
+                    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+                        @php
+                            $inputs = [
+                                ['vol_per_pcs', 'Product Volume / pcs', 'fa-box-open', 'm³', 'readonly'],
+                                ['vol_total', 'Total Volume', 'fa-tags', 'm³', 'readonly'],
+                                ['net_weight_pcs', 'Net Weight / pcs', 'fa-weight-hanging', 'kg', ''],
+                                ['total_net_weight', 'Total Net Weight', 'fa-calculator', 'kg', 'readonly'],
+                                ['gross_weight_pcs', 'Gross Weight / pcs', 'fa-weight-hanging', 'kg', ''],
+                                ['total_gross_weight', 'Total Gross Weight', 'fa-calculator', 'kg', 'readonly'],
+                            ];
+                        @endphp
+                        @foreach ($inputs as $input)
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{{ $input[1] }}</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid {{ $input[2] }}"></i>
+                                    <input type="number" step="0.000001" name="{{ $input[0] }}"
+                                        {{ $input[4] }}
+                                        class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700">
+                                    <span
+                                        class="absolute text-xs font-bold text-gray-400 -translate-y-1/2 right-4 top-1/2">{{ $input[3] }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-8">
+                        <label
+                            class="flex items-center gap-4 p-6 transition-all border-2 cursor-pointer border-slate-50 bg-slate-50/30 rounded-3xl hover:border-blue-500 group">
+                            <input type="checkbox" required
+                                class="w-6 h-6 text-blue-600 transition-all border-gray-200 rounded-lg focus:ring-blue-500">
+                            <span class="text-xs font-bold leading-relaxed text-slate-600 group-hover:text-slate-800">
+                                Saya mengonfirmasi bahwa data fisik yang datang telah sesuai dengan spesifikasi teknis
+                                di atas.
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
-                {{-- Step Tracker --}}
-                <div class="flex items-center justify-between max-w-2xl mx-auto">
-                    <div class="flex flex-col items-center gap-2 step-item active" data-step="1">
-                        <div
-                            class="flex items-center justify-center w-10 h-10 font-bold text-white bg-blue-600 rounded-full shadow-lg step-circle shadow-blue-100">
-                            1</div>
-                        <span class="text-[10px] font-black uppercase text-slate-400">Verify</span>
+                {{-- STEP 2: BATCHING --}}
+                <div class="hidden step-content" id="step2">
+                    <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">PIC
+                                Warehouse</label>
+                            <input type="text" name="pic_warehouse" placeholder="Nama penanggung jawab..." required
+                                class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Porter
+                                Team</label>
+                            <div id="porterContainer" class="space-y-2">
+                                <select name="porters[]"
+                                    class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Pilih Porter Utama</option>
+                                    @foreach ($porters as $p)
+                                        <option value="{{ $p->name }}">{{ $p->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1 h-px mx-4 bg-slate-100"></div>
-                    <div class="flex flex-col items-center gap-2 step-item" data-step="2">
-                        <div
-                            class="flex items-center justify-center w-10 h-10 font-bold rounded-full step-circle bg-slate-100 text-slate-400">
-                            2</div>
-                        <span class="text-[10px] font-black uppercase text-slate-400">Batching</span>
+
+                    <div class="p-8 mb-8 border border-slate-100 bg-slate-50/50 rounded-[2.5rem]">
+                        <h4 class="mb-6 text-sm font-black tracking-widest uppercase text-slate-400">Pallet Planning
+                        </h4>
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Jumlah Palet</label>
+                                <input type="number" id="pallet_count" min="1"
+                                    class="w-full px-6 py-4 font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Qty per
+                                    Palet</label>
+                                <input type="number" id="per_pallet" min="1"
+                                    class="w-full px-6 py-4 font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Sisa Box
+                                    (Manual)</label>
+                                <input type="number" id="pallet_remainder" readonly
+                                    class="w-full px-6 py-4 font-bold border-none bg-slate-100 rounded-2xl text-slate-500">
+                            </div>
+                        </div>
+
+                        {{-- Pallet Summary Card --}}
+                        <div id="pallet_summary"
+                            class="hidden p-6 mt-8 bg-white border shadow-sm border-emerald-100 rounded-3xl animate-in fade-in slide-in-from-bottom-4">
+                            <div class="flex items-center justify-between mb-6">
+                                <h5 class="text-xs font-black tracking-widest uppercase text-emerald-600">Distribution
+                                    Logic</h5>
+                                <span
+                                    class="px-3 py-1 text-[9px] font-black bg-emerald-50 text-emerald-600 rounded-full uppercase">Verified</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
+                                @foreach (['Total Qty' => 'sum_qty', 'Pallets' => 'sum_pallet', 'Isi/Pallet' => 'sum_per_pallet', 'Sisa' => 'sum_remainder'] as $label => $id)
+                                    <div class="p-4 bg-slate-50 rounded-2xl">
+                                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">
+                                            {{ $label }}</p>
+                                        <p id="{{ $id }}" class="text-sm font-black text-slate-800">0</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div id="pallet_distribution"
+                                class="grid grid-cols-1 gap-2 md:grid-cols-2 text-[11px] font-bold text-slate-600">
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1 h-px mx-4 bg-slate-100"></div>
-                    <div class="flex flex-col items-center gap-2 step-item" data-step="3">
-                        <div
-                            class="flex items-center justify-center w-10 h-10 font-bold rounded-full step-circle bg-slate-100 text-slate-400">
-                            3</div>
-                        <span class="text-[10px] font-black uppercase text-slate-400">Placement</span>
+
+                    <div id="batchContainer" class="space-y-3"></div>
+                </div>
+
+                {{-- STEP 3: PLACEMENT --}}
+                {{-- STEP 3: PLACEMENT --}}
+                {{-- <div class="hidden step-content" id="step3">
+                    <div class="flex flex-col gap-6 mb-8 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h4 class="text-lg font-black text-slate-800">Placement Strategy</h4>
+                            <p class="text-xs font-medium text-slate-500">Tentukan lokasi gudang untuk setiap palet.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="placementContainer" class="space-y-4">
+                    </div>
+                </div> --}}
+                {{-- STEP 3: PLACEMENT --}}
+                <div class="hidden step-content" id="step3">
+                    <div class="mb-8">
+                        <h4 class="text-sm font-black tracking-widest uppercase text-slate-800">Assign Location</h4>
+                        <p class="mt-1 text-xs font-bold text-slate-400">Tentukan lokasi rak untuk setiap batch/palet.
+                        </p>
+                    </div>
+
+                    <div id="placementContainer" class="space-y-4">
                     </div>
                 </div>
             </div>
 
-            <form action="{{ route('admin.bookings.checkin') }}" method="POST" id="checkInForm"
-                class="flex flex-col flex-1 overflow-hidden">
-                @csrf
-                <input type="hidden" name="booking_code" id="modal_booking_code">
+            {{-- Navigation Buttons --}}
+            <div class="flex flex-col gap-4 px-6 py-8 border-t md:px-12 bg-slate-50/50 md:flex-row">
+                <button type="button" id="prevBtn" onclick="changeStep(-1)"
+                    class="flex-1 hidden py-5 text-xs font-black uppercase transition-all bg-white border text-slate-500 border-slate-200 rounded-3xl hover:bg-slate-100">
+                    <i class="mr-2 fa-solid fa-arrow-left"></i> Previous
+                </button>
+                <button type="button" id="nextBtn" onclick="changeStep(1)"
+                    class="flex-[2] py-5 text-xs font-black text-white uppercase bg-blue-600 shadow-xl shadow-blue-100 rounded-3xl hover:bg-blue-700 transition-all">
+                    Continue <i class="ml-2 fa-solid fa-arrow-right"></i>
+                </button>
+                <button type="submit" id="finalSubmitBtn" onclick="setFormAction()"
+                    class="flex-[2] hidden py-5 text-xs font-black text-white uppercase bg-emerald-500 rounded-3xl">
+                    Confirm & Complete Check-in
+                </button>
 
-                <div class="flex-1 px-12 py-10 overflow-y-auto scrollbar-hide">
-
-                    {{-- STEP 1: VERIFICATION --}}
-                    <div class="step-content" id="step1">
-                        <div class="p-10 bg-blue-50/40 border border-blue-100 rounded-[3rem] mb-8">
-                            <h4 class="mb-8 text-lg font-black text-slate-800">Mencocokkan Data Aktual</h4>
-
-                            {{-- Row 1: Utama --}}
-                            <div class="grid grid-cols-2 gap-8 mb-8 md:grid-cols-4">
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Product
-                                    </p>
-                                    <p id="check_product_name" class="text-lg font-black text-slate-800">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category
-                                    </p>
-                                    <p id="check_product_type" class="font-bold text-slate-600">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Booked
-                                        Qty</p>
-                                    <p class="font-black text-slate-800"><span id="check_qty">0</span> <span
-                                            id="check_unit"></span></p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expect.
-                                        Temp</p>
-                                    <p class="font-black text-blue-600"><span id="check_temp">-</span>°C</p>
-                                </div>
-                            </div>
-
-                            {{-- Row 2: Detail Teknis --}}
-                            <div class="grid grid-cols-2 gap-8 pt-8 border-t border-blue-100/50 md:grid-cols-3">
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dose
-                                        Range</p>
-                                    <p class="font-black text-emerald-600"><span id="check_dmin">-</span> - <span
-                                            id="check_dmax">-</span> kGy</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dimension
-                                        / Pack</p>
-                                    <p id="check_dimension" class="font-bold text-slate-700">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weight /
-                                        Pcs</p>
-                                    <p class="font-bold text-slate-700"><span id="check_weight">-</span> kg</p>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        {{-- <div class="grid grid-cols-3 gap-3"> --}}
-                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-
-                            <div class="space-y-2">
-                                <label
-                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                    Volume / pcs</label>
-                                <div class="relative">
-                                    <i
-                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-box-open"></i>
-                                    <input readonly type="number" step="0.001" name="vol_per_pcs"
-                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
-                                    Volume</label>
-                                <div class="relative">
-                                    <i
-                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-tags"></i>
-                                    <input readonly type="number" step="0.001" name="vol_total"
-                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-
-                            <div class="space-y-2">
-                                <label
-                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                    Net Weight / pcs</label>
-                                <div class="relative">
-                                    <i
-                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-box-open"></i>
-                                    <input type="number" step="0.001" name="net_weight_pcs"
-                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
-                                    Net Weight</label>
-                                <div class="relative">
-                                    <i
-                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-tags"></i>
-                                    <input type="number" step="0.001" name="total_net_weight"
-                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-
-                            <div class="space-y-2">
-                                <label
-                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                    Gross Weight / pcs</label>
-                                <div class="relative">
-                                    <i
-                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-box-open"></i>
-                                    <input type="number" step="0.001" name="gross_weight_pcs"
-                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label
-                                    class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
-                                    Gross Weight</label>
-                                <div class="relative">
-                                    <i
-                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid fa-tags"></i>
-                                    <input type="number" step="0.001" name="total_gross_weight"
-                                        class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700 {{ $errors->has('field') ? 'border-red-500' : 'border-gray-100' }}">
-                                </div>
-                            </div>
-                        </div>
-
-
-                        {{-- Form Confirmation --}}
-                        <div class="mt-5 space-y-4">
-                            <label
-                                class="flex items-center gap-4 p-6 transition-all border-2 cursor-pointer border-slate-100 rounded-3xl hover:border-blue-500 group">
-                                <input type="checkbox" required
-                                    class="w-6 h-6 text-blue-600 rounded-lg border-slate-200 focus:ring-blue-500">
-                                <span class="text-sm font-bold text-slate-600 group-hover:text-slate-800">Saya
-                                    mengonfirmasi data fisik yang datang sesuai dengan spesifikasi teknis di
-                                    atas.</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {{-- STEP 2: BATCHING & STAFF --}}
-                    <div class="hidden step-content" id="step2">
-                        <div class="mb-8">
-                            <h4 class="mb-5 text-lg font-black text-slate-800">PIC Warehouse</h4>
-
-                            <input type="text" name="pic_warehouse" required
-                                placeholder="Nama PIC Warehouse Penanggung Jawab"
-                                class="w-full px-8 py-5 text-sm font-bold border-none bg-slate-50 rounded-3xl focus:ring-2 focus:ring-blue-500">
-                        </div>
-
-
-                        <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
-
-                            {{-- JUMLAH PALET --}}
-                            <div class="space-y-2">
-                                <label class="text-[11px] font-black uppercase tracking-widest text-gray-600">
-                                    Jumlah Palet
-                                </label>
-                                <input type="number" id="pallet_count" min="1"
-                                    class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
-                            </div>
-
-                            {{-- PER PALET --}}
-                            <div class="space-y-2">
-                                <label class="text-[11px] font-black uppercase tracking-widest text-gray-600">
-                                    Qty per Palet
-                                </label>
-                                <input type="number" id="per_pallet" min="1"
-                                    class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
-                            </div>
-
-                            {{-- SISA --}}
-                            <div class="space-y-2">
-                                <label class="text-[11px] font-black uppercase tracking-widest text-gray-600">
-                                    Sisa Box
-                                </label>
-                                <input type="number" id="pallet_remainder" readonly
-                                    class="w-full px-6 py-4 font-bold bg-gray-100 border-none rounded-2xl">
-                            </div>
-
-                        </div>
-
-                        <div id="pallet_summary"
-                            class="hidden p-6 mt-6 border bg-emerald-50 border-emerald-100 rounded-3xl">
-
-                            <h5 class="mb-4 text-sm font-black tracking-widest uppercase text-emerald-700">
-                                Pallet Distribution Summary
-                            </h5>
-
-                            <div class="grid grid-cols-2 gap-4 mb-4 text-xs font-bold md:grid-cols-4">
-                                <div>
-                                    Total Qty :
-                                    <span id="sum_qty" class="text-slate-700">0</span>
-                                </div>
-
-                                <div>
-                                    Pallet :
-                                    <span id="sum_pallet" class="text-slate-700">0</span>
-                                </div>
-
-                                <div>
-                                    Isi / Pallet :
-                                    <span id="sum_per_pallet" class="text-slate-700">0</span>
-                                </div>
-
-                                <div>
-                                    Sisa :
-                                    <span id="sum_remainder" class="text-slate-700">0</span>
-                                </div>
-                            </div>
-
-                            <div class="p-4 text-xs font-bold bg-white rounded-2xl">
-                                <div class="mb-2 text-[10px] tracking-widest uppercase text-gray-400">
-                                    Distribusi Pallet
-                                </div>
-
-                                <div id="pallet_distribution" class="space-y-1 text-slate-700"></div>
-                            </div>
-
-                        </div>
-
-
-                        <div class="flex items-center justify-between my-6">
-
-                            <h4 class="text-lg font-black text-slate-800">Pembagian Batch & Porter</h4>
-                            <div class="flex items-center gap-4">
-                                <span id="cap_badge"
-                                    class="px-5 py-2 text-xs font-black bg-slate-100 rounded-2xl text-slate-600">
-                                    Total: <span id="current_total_display">0</span> / <span
-                                        id="total_qty_display">0</span>
-                                </span>
-                                <button type="button" onclick="addBatchField()"
-                                    class="px-6 py-2 bg-blue-600 text-white text-[10px] font-black uppercase rounded-xl hover:bg-blue-700">+
-                                    Add Batch</button>
-                            </div>
-                        </div>
-                        <div id="batchContainer" class="space-y-4">
-                        </div>
-                    </div>
-
-                    {{-- STEP 3: MANUAL PLACEMENT --}}
-                    <div class="hidden step-content" id="step3">
-                        <h4 class="mb-6 text-lg font-black text-slate-800">Input Lokasi Penempatan</h4>
-                        <div class="flex gap-4 p-6 mb-8 border bg-amber-50 border-amber-100 rounded-3xl">
-                            <i class="mt-1 fa-solid fa-circle-info text-amber-500"></i>
-                            <p class="text-xs font-bold leading-relaxed text-amber-700">Silahkan input kode palet
-                                atau
-                                lokasi secara manual sesuai dengan posisi yang diletakkan oleh porter di lapangan.
-                            </p>
-                        </div>
-                        <div id="placementContainer" class="space-y-4">
-                        </div>
-                    </div>
-
-                </div>
-
-                {{-- Navigation Buttons --}}
-                <div class="flex gap-4 px-12 py-8 border-t border-slate-50">
-                    <button type="button" id="prevBtn" onclick="changeStep(-1)"
-                        class="flex-1 hidden py-5 text-xs font-black uppercase text-slate-400 bg-slate-50 rounded-3xl hover:bg-slate-100">Previous</button>
-                    <button type="button" id="nextBtn" onclick="changeStep(1)"
-                        class="flex-1 py-5 text-xs font-black text-white uppercase bg-blue-600 shadow-xl rounded-3xl hover:bg-blue-700 shadow-blue-100">Continue</button>
-                    <button type="submit" id="finalSubmitBtn"
-                        class="flex-1 hidden py-5 text-xs font-black text-white uppercase shadow-xl bg-emerald-500 rounded-3xl hover:bg-emerald-600 shadow-emerald-100">Confirm
-                        & Save Arrival</button>
-                </div>
-            </form>
-        </div>
+                <script>
+                    function setFormAction() {
+                        const form = document.getElementById('checkInForm');
+                        // Pastikan Anda menggunakan ID booking yang benar dari hidden input
+                        const bookingId = document.getElementById('modal_booking_code').value;
+                        // SESUAIKAN DENGAN ROUTE DI WEB.PHP
+                        form.action = `/admin/bookings/${bookingId}/placement`;
+                    }
+                </script>
+            </div>
+        </form>
     </div>
+</div>

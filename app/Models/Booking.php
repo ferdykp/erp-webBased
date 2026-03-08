@@ -28,7 +28,7 @@ class Booking extends Model
 
     public function products(): HasMany
     {
-        return $this->hasMany(BookingProduct::class);
+        return $this->hasMany(BookingProduct::class, 'booking_id');
     }
 
     public function pallets(): HasMany
@@ -39,6 +39,12 @@ class Booking extends Model
     public function batches(): HasMany
     {
         return $this->hasMany(BookingBatch::class);
+    }
+
+    // Di dalam class Booking
+    public function placementDetails()
+    {
+        return $this->hasMany(PlacementDetail::class);
     }
     // public function porter(): BelongsTo
     // {

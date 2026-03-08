@@ -6,11 +6,11 @@
     <div id="bookingDataSource" class="hidden">
         @foreach ($bookings as $b)
             @php $product = $b->products->first(); @endphp
-            <div data-code="{{ $b->booking_code }}" data-name="{{ $product->product_name ?? '-' }}"
-                data-type="{{ $product->product_type ?? '-' }}" data-qty="{{ $product->quantity ?? 0 }}"
-                data-unit="{{ $product->unit ?? '' }}" {{-- Tambahkan data teknis di bawah ini --}} data-dmin="{{ $product->dmin ?? '-' }}"
-                data-dmax="{{ $product->dmax ?? '-' }}" data-temp="{{ $product->expect_temp ?? '-' }}"
-                data-dimension="{{ $product->dimension_pack ?? '-' }}"
+            <div data-code="{{ $b->booking_code }}" data-id="{{ $b->id }}"
+                data-name="{{ $product->product_name ?? '-' }}" data-type="{{ $product->product_type ?? '-' }}"
+                data-qty="{{ $product->quantity ?? 0 }}" data-unit="{{ $product->unit ?? '' }}" {{-- Tambahkan data teknis di bawah ini --}}
+                data-dmin="{{ $product->dmin ?? '-' }}" data-dmax="{{ $product->dmax ?? '-' }}"
+                data-temp="{{ $product->expect_temp ?? '-' }}" data-dimension="{{ $product->dimension_pack ?? '-' }}"
                 data-weight="{{ $product->gross_weight_per_pcs ?? '-' }}">
             </div>
         @endforeach
@@ -22,10 +22,18 @@
         @endforeach
     </div>
 
-    <div id="palletInventoryData" class="hidden">
+    {{-- <div id="palletInventoryData" class="hidden">
         @foreach ($pallets as $p)
             <div data-line="{{ $p->line }}" data-petak="{{ $p->slot_section }}"
                 data-pallet="{{ $p->pallet_number }}">
+            </div>
+        @endforeach
+    </div> --}}
+    {{-- Di index.blade.php --}}
+    {{-- Pastikan ini memuat semua data, tidak difilter di controller --}}
+    <div id="palletInventoryData" class="hidden">
+        @foreach ($pallets as $p)
+            <div data-line="{{ $p->line }}" data-petak="{{ $p->slot_section }}" data-status="{{ $p->status }}">
             </div>
         @endforeach
     </div>
