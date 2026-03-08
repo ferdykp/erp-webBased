@@ -9,8 +9,8 @@
         {{-- HEADER --}}
         <div class="flex flex-col gap-6 px-2 md:flex-row md:items-center md:justify-between">
             <div>
-                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Batch Queue</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500">Pecah quantity booking menjadi batch-batch, lalu mulai proses penyinaran.</p>
+                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Queue Task</h2>
+                <p class="mt-1 text-sm font-medium text-slate-500">Daftar batch yang siap untuk dilakukan Start Irradiation.</p>
             </div>
         </div>
 
@@ -85,8 +85,8 @@
 
                         {{-- Existing Batches --}}
                         @foreach ($booking->batches as $batch)
-                            <div class="p-5 bg-white border rounded-[1.5rem] flex flex-col md:flex-row md:items-center md:justify-between gap-4
-                                {{ $batch->status === 'processing' ? 'border-blue-200' : ($batch->status === 'done' ? 'border-emerald-200' : 'border-slate-100') }}">
+                            @if($batch->status === 'waiting')
+                            <div class="p-5 bg-white border rounded-[1.5rem] flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-amber-200">
                                 <div class="flex items-center gap-3">
                                     @php
                                         $icons = ['waiting' => 'fa-clock text-amber-500', 'processing' => 'fa-spinner fa-spin text-blue-500', 'done' => 'fa-check-circle text-emerald-500'];
@@ -126,35 +126,8 @@
                                     @endif
                                 </div>
                             </div>
+                            @endif
                         @endforeach
-
-                        {{-- Add New Batch Form --}}
-                        @if ($remaining > 0)
-                            <div class="p-6 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50/50">
-                                <h4 class="mb-4 text-sm font-black text-slate-700">
-                                    <i class="fa-solid fa-plus mr-2 text-blue-600"></i>Tambah Batch
-                                </h4>
-                                <form action="{{ route('admin.production.batches.store') }}" method="POST"
-                                    class="flex flex-col gap-4 md:flex-row md:items-end">
-                                    @csrf
-                                    <input type="hidden" name="booking_id" value="{{ $booking->id }}">
-
-                                    <div class="flex-1">
-                                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">
-                                            Quantity (maks. {{ $remaining }} {{ $product->unit ?? '' }})
-                                        </label>
-                                        <input type="number" name="quantity" required min="1" max="{{ $remaining }}"
-                                            step="any" placeholder="Masukkan qty..."
-                                            class="w-full px-4 py-3 text-sm font-bold border-none bg-white rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-
-                                    <button type="submit"
-                                        class="px-6 py-3 text-xs font-black text-white uppercase bg-blue-600 rounded-xl hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-100">
-                                        <i class="fa-solid fa-plus mr-1"></i> Buat Batch
-                                    </button>
-                                </form>
-                            </div>
-                        @endif
 
                     </div>
                 </div>

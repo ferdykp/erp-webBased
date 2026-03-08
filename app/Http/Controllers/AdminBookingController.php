@@ -85,7 +85,8 @@ class AdminBookingController extends Controller
 
         $booking = Booking::with(['products', 'batches', 'pallets'])->where('booking_code', $request->booking_code)->first();
 
-        if (!$booking) return back()->with('error', 'Booking tidak ditemukan');
+        if (!$booking)
+            return back()->with('error', 'Booking tidak ditemukan');
 
         if ($booking->status !== 'pending') {
             return back()->with('error', 'Gagal! Order ini sudah melewati tahap Check-in.');
@@ -131,7 +132,7 @@ class AdminBookingController extends Controller
                         'quantity' => $totalBatchQty,
                         'unit' => $unit,
                         'porter_name' => $request->batch_porters[$index],
-                        'status' => 'waiting'
+                        'status' => 'pending'
                     ]);
 
                     // LOGIKA AUTO-SPLIT PALET
@@ -147,7 +148,8 @@ class AdminBookingController extends Controller
                             ->orderBy('pallet_number', 'asc')
                             ->first();
 
-                        if (!$pallet) throw new \Exception("Stok palet tidak mencukupi.");
+                        if (!$pallet)
+                            throw new \Exception("Stok palet tidak mencukupi.");
 
                         $capacity = 10;
                         $fillAmount = ($remainingInBatch >= $capacity) ? $capacity : $remainingInBatch;
@@ -254,7 +256,8 @@ class AdminBookingController extends Controller
     public function palletDestroy($id)
     {
         $pallet = Pallet::findOrFail($id);
-        if ($pallet->status == 'filled') return back()->with('error', 'Cannot delete a filled pallet!');
+        if ($pallet->status == 'filled')
+            return back()->with('error', 'Cannot delete a filled pallet!');
         $pallet->delete();
         return back()->with('success', 'Pallet deleted');
     }
