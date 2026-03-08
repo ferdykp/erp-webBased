@@ -93,14 +93,21 @@ class AdminBookingController extends Controller
 
     //     return back()->with('success', 'Status updated' . ($request->status === 'completed' ? ' and pallet released' : ''));
     // }
-    public function businessIndex()
+    public function businessIndex(Request $request)
     {
-        $bookings = Booking::with(['customer', 'products'])
+        $search = $request->query('search');
+
+        $customers = Customer::with(['bookings.products', 'bookings.batches'])
+            ->when($search, function($query) use ($search) {
+                $query->where('company_name', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('pic_name', 'like', "%{$search}%");
+            })
             ->latest()
             ->paginate(10);
 
-        $pageTitle = "Business Monitoring & Approval";
-        return view('admin.business.index', compact('bookings', 'pageTitle'));
+        $pageTitle = "Customer Business Monitoring";
+        return view('admin.business.index', compact('customers', 'pageTitle', 'search'));
     }
 
     public function businessDetail($id)
