@@ -53,6 +53,19 @@
 
         {{-- TABLE --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[3rem] overflow-hidden">
+            <div class="flex items-center justify-between p-6">
+                <h3 class="text-lg font-semibold text-slate-800">Daftar Order</h3>
+
+                <a href="{{ route('admin.bookings.create') }}"
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold transition-all rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add Order</span>
+                </a>
+            </div>
+
             <div class="p-6 overflow-x-auto">
                 <table class="w-full text-left border-separate border-spacing-y-3">
                     <thead>
