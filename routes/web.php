@@ -209,6 +209,8 @@ Route::prefix('admin')
             ->name('admin.profile.profileList');
         Route::get('/profile/destroy', [UserAdminController::class, 'destroy'])->name('admin.profile.destroy');
         Route::put('/profile/password', [UserAdminController::class, 'updatePassword'])->name('admin.profile.password');
+        Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
+        Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
     });
 
 Route::middleware(['role:technologist,production_engineer,admin'])->group(function () {
