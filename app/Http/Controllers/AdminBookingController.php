@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User; // Pastikan import Model User
 use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\BookingProduct;
+use Illuminate\Support\Str;
+
+
 use App\Models\Pallet;
 use App\Models\Porter;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -575,5 +581,59 @@ class AdminBookingController extends Controller
             ->setPaper('a4', 'portrait');
 
         return $pdf->download('Invoice-' . $booking->booking_code . '.pdf');
+    }
+
+
+    public function create()
+    {
+        // Mengambil user dengan role customer untuk dropdown pilihan admin
+        // $customers = User::where('role', 'admin')->orderBy('name', 'asc')->get();
+        $customers = Customer::orderBy('name', 'asc')->get();
+        return view('admin.bookings.create', compact('customers'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer_id'          => 'required|exists:customers,id',
+            'product_name'         => 'required|string|max:255',
+            'product_type'         => 'required|string|max:255',
+            'quantity'             => 'required|numeric|min:1',
+            'unit'                 => 'required',
+            'dmin'                 => 'required|numeric',
+            'dmax'                 => 'required|numeric',
+            'dim_length'           => 'required|numeric',
+            'dim_width'            => 'required|numeric',
+            'dim_height'           => 'required|numeric',
+            'gross_weight_per_pcs' => 'required|numeric',
+            'expect_temp'          => 'nullable|string',
+        ], [
+            'customer_id.exists'   => 'Customer yang dipilih tidak terdaftar dalam sistem.',
+        ]);
+
+        try {
+            $booking = Booking::create([
+                'customer_id'  => $request->customer_id,
+                'booking_code' => 'BOK-' . strtoupper(Str::random(8)),
+                'status'       => 'pending',
+            ]);
+
+            BookingProduct::create([
+                'booking_id'           => $booking->id,
+                'product_name'         => $request->product_name,
+                'product_type'         => $request->product_type,
+                'quantity'             => $request->quantity,
+                'unit'                 => $request->unit,
+                'dmin'                 => $request->dmin,
+                'dmax'                 => $request->dmax,
+                'dimension_pack'       => $request->dim_length . 'x' . $request->dim_width . 'x' . $request->dim_height,
+                'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
+                'expect_temp'          => $request->expect_temp,
+            ]);
+
+            return redirect()->route('admin.bookings')->with('success', 'Booking berhasil dibuat untuk customer.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }
