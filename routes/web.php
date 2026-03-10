@@ -150,48 +150,31 @@ Route::prefix('admin')
     ->middleware(['auth:admin', 'nocache'])
     ->group(function () {
 
-        // Route::get('/dashboard', function () {
-        //     return view('admin.dashboard.index');
-        // })->name('admin.dashboard');
         Route::get('/dashboard', [AdminBookingController::class, 'index'])->name('admin.dashboard');
 
-        Route::get('/bookings', [AdminBookingController::class, 'allOrder'])
-            ->name('admin.bookings');
+        Route::get('/business', [AdminBookingController::class, 'businessIndex'])->name('admin.business.index');
+        Route::get('/business/{id}/detail', [AdminBookingController::class, 'businessDetail'])->name('admin.business.detail');
+        Route::put('/business/{id}/approve', [AdminBookingController::class, 'businessApprove'])->name('admin.business.approve');
+
+        Route::get('/bookings', [AdminBookingController::class, 'allOrder'])->name('admin.bookings');
         Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
-
-        // Route::post('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])
-        //     ->name('admin.bookings.update');
-        Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])
-            ->name('admin.bookings.update');
-
+        Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update');
         Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
 
-        Route::get('/slots', [AdminSlotController::class, 'index'])
-            ->name('admin.slots.index');
+        // Slot Management
+        Route::get('/slots', [AdminSlotController::class, 'index'])->name('admin.slots.index');
+        Route::post('/slots', [AdminSlotController::class, 'store'])->name('admin.slots.store');
+        Route::put('/slots/{slot}', [AdminSlotController::class, 'update'])->name('admin.slots.update');
+        Route::post('/slots/generate', [AdminSlotController::class, 'generate'])->name('admin.slots.generate');
+        Route::delete('/slots/{slot}', [AdminSlotController::class, 'destroy'])->name('admin.slots.destroy');
 
-        Route::post('/slots', [AdminSlotController::class, 'store'])
-            ->name('admin.slots.store');
-
-        Route::put('/slots/{slot}', [AdminSlotController::class, 'update'])
-            ->name('admin.slots.update');
-
-        // Route::get('/slots/calendar', [AdminSlotController::class, 'calendar'])
-        //     ->name('admin.slots.calendar');
-
+        // Pallet Management
         Route::get('/pallets', [AdminBookingController::class, 'palletIndex'])->name('admin.pallets.index');
         Route::post('/pallets/store', [AdminBookingController::class, 'palletStore'])->name('admin.pallets.store');
         Route::post('/pallets/generate', [AdminBookingController::class, 'palletGenerate'])->name('admin.pallets.generate');
         Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
 
-        Route::post('/slots/generate', [AdminSlotController::class, 'generate'])
-            ->name('admin.slots.generate');
-
-
-        Route::delete('/slots/{slot}', [AdminSlotController::class, 'destroy'])
-            ->name('admin.slots.destroy');
-
-        // Route::resource('/profile', UserAdminController::class);
-
+        // Invoices & Profile
         Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
         Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
 
@@ -205,8 +188,7 @@ Route::prefix('admin')
         Route::put('/profile/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
         Route::get('/profile/create', [UserAdminController::class, 'create'])->name('admin.profile.create');
         Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
-        Route::get('/profile/list', [UserAdminController::class, 'profileList'])
-            ->name('admin.profile.profileList');
+        Route::get('/profile/list', [UserAdminController::class, 'profileList'])->name('admin.profile.profileList');
         Route::get('/profile/destroy', [UserAdminController::class, 'destroy'])->name('admin.profile.destroy');
         Route::put('/profile/password', [UserAdminController::class, 'updatePassword'])->name('admin.profile.password');
         Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
