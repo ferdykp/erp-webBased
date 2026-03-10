@@ -90,6 +90,10 @@
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.parameter') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
                     Process Parameter
                 </a>
+                <a href="{{ route('admin.production.batch-queue') }}"
+                    class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.batch-queue') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
+                    Queue Task
+                </a>
                 <a href="{{ route('admin.production.offline') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->routeIs('admin.production.offline') ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
                     Process Product Irradiation

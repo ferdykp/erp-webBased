@@ -480,7 +480,8 @@ class AdminBookingController extends Controller
     public function palletDestroy($id)
     {
         $pallet = Pallet::findOrFail($id);
-        if ($pallet->status == 'filled') return back()->with('error', 'Cannot delete a filled pallet!');
+        if ($pallet->status == 'filled')
+            return back()->with('error', 'Cannot delete a filled pallet!');
         $pallet->delete();
         return back()->with('success', 'Pallet deleted');
     }

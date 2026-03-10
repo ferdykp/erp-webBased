@@ -62,11 +62,22 @@ class AdminProductionController extends Controller
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
             ->whereIn('status', ['approved', 'processing'])
             ->latest()
-            ->get();
+            ->get()
+            ->filter(function ($booking) {
+                $totalProductQty = $booking->products->sum('quantity');
+                $finalizedBatchQty = $booking->batches->where('status', '!=', 'pending')->sum('quantity');
+                $hasPendingBatches = $booking->batches->where('status', 'pending')->count() > 0;
+
+                // Tampilkan jika:
+                // 1. Masih ada batch pending yang harus di-update parameter-nya
+                // 2. ATAU masih ada quantity produk yang belum dibuatkan batch
+                return $hasPendingBatches || ($totalProductQty > $finalizedBatchQty);
+            });
 
         $productionLines = ProductionLine::orderBy('name')->get();
+        $porters = \App\Models\Porter::where('is_active', true)->get();
 
-        return view('admin.production.parameter', compact('bookings', 'productionLines'));
+        return view('admin.production.parameter', compact('bookings', 'productionLines', 'porters'));
     }
 
     /**
@@ -116,7 +127,8 @@ class AdminProductionController extends Controller
     {
         $request->validate([
             'booking_id' => 'required|exists:bookings,id',
-            'quantity' => 'required|numeric|min:0.01',
+            'batch_quantities' => 'required|array|min:1',
+            'batch_porters' => 'required|array|min:1',
             'production_line_id' => 'required|exists:production_lines,id',
             'target_dose' => 'required|numeric|min:0',
             'beam_speed' => 'required|numeric|min:0',
@@ -125,59 +137,46 @@ class AdminProductionController extends Controller
 
         $booking = Booking::with(['products', 'batches'])->findOrFail($request->booking_id);
 
-        // Hitung total quantity yang diizinkan dari booking_products
         $totalProductQty = $booking->products->sum('quantity');
-
-        // Hitung total quantity batch yang sudah ada
-        $existingBatchQty = $booking->batches->sum('quantity');
-
-        // Sisa kapasitas
+        // Filter out 'pending' batches for calculation because they are about to be replaced
+        $existingBatchQty = $booking->batches->where('status', '!=', 'pending')->sum('quantity');
         $remainingCapacity = $totalProductQty - $existingBatchQty;
 
-        // Validasi ketat: jumlah baru tidak boleh melebihi sisa
-        if ($request->quantity > $remainingCapacity) {
+        $totalRequestedQty = array_sum($request->batch_quantities);
+
+        if ($totalRequestedQty > $remainingCapacity) {
             return back()->with(
                 'error',
-                "Gagal! Quantity batch ({$request->quantity}) melebihi sisa kapasitas ({$remainingCapacity}). " .
-                "Total qty produk: {$totalProductQty}, sudah terbagi: {$existingBatchQty}."
+                "Gagal! Total Quantity batch ($totalRequestedQty) melebihi sisa kapasitas ($remainingCapacity)."
             );
         }
 
-        $batch = null;
+        DB::transaction(function () use ($request, $booking) {
+            // Delete existing pending batches as they are being finalized/replaced
+            $booking->batches()->where('status', 'pending')->delete();
 
-        DB::transaction(function () use ($request, $booking, &$batch) {
-            // Tentukan nomor batch berikutnya
             $nextBatchNumber = ($booking->batches->max('batch_number') ?? 0) + 1;
-
-            // Ambil unit dari produk pertama
             $unit = $booking->products->first()->unit ?? 'box';
 
-            // Buat batch baru sekaligus set parameter & status processing
-            $batch = BookingBatch::create([
-                'booking_id' => $booking->id,
-                'batch_number' => $nextBatchNumber,
-                'quantity' => $request->quantity,
-                'unit' => $unit,
-                'status' => 'processing',
-                'production_line_id' => $request->production_line_id,
-                'target_dose' => $request->target_dose,
-                'beam_speed' => $request->beam_speed,
-                'loading_mode' => $request->loading_mode,
-            ]);
-
-            // Jika booking masih approved, ubah ke processing
-            if ($booking->status === 'approved') {
-                $booking->update(['status' => 'processing']);
+            foreach ($request->batch_quantities as $index => $qty) {
+                BookingBatch::create([
+                    'booking_id' => $booking->id,
+                    'batch_number' => $nextBatchNumber++,
+                    'quantity' => $qty,
+                    'unit' => $unit,
+                    'status' => 'waiting', // Set to waiting so it goes to Queue Task
+                    'porter_name' => $request->batch_porters[$index] ?? null,
+                    'production_line_id' => $request->production_line_id,
+                    'target_dose' => $request->target_dose,
+                    'beam_speed' => $request->beam_speed,
+                    'loading_mode' => $request->loading_mode,
+                ]);
             }
         });
 
-        if ($batch === null) {
-            return back()->with('error', 'Gagal memproses produksi. Silakan coba lagi.');
-        }
-
-        return back()->with(
+        return redirect()->route('admin.production.batch-queue')->with(
             'success',
-            "Proses untuk Booking #{$booking->booking_code} → Batch #{$batch->batch_number} In Irradiation."
+            "Proses untuk Booking #{$booking->booking_code} berhasil disetup menjadi batch dan masuk antrean Queue Task."
         );
     }
 
@@ -200,6 +199,9 @@ class AdminProductionController extends Controller
     {
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
             ->whereIn('status', ['approved', 'processing'])
+            ->whereHas('batches', function ($query) {
+                $query->where('status', 'waiting');
+            })
             ->latest()
             ->get();
 
