@@ -251,27 +251,15 @@ class AdminBookingController extends Controller
             DB::transaction(function () use ($maxLines, $maxSlots) {
                 for ($lineNum = 1; $lineNum <= $maxLines; $lineNum++) {
                     for ($slot = 1; $slot <= $maxSlots; $slot++) {
-                        for ($p = 1; $p <= $maxPallets; $p++) {
-
-                            $palletCode = "PLT-L$lineNum-S$slot-P" . str_pad($p, 2, '0', STR_PAD_LEFT);
-
-                            // updateOrCreate akan mencegah error "Duplicate Entry"
-                            \App\Models\Pallet::updateOrCreate(
-                                ['pallet_number' => $palletCode], // Kunci pencarian
-                                [
-                                    'line' => $lineNum,
-                                    'slot_section' => $slot,
-                                    'status' => 'empty',
-                                    'box_capacity' => 10,
-                                    'filled_boxes' => 0
-                                ]
-                            );
-                        }
+                        // Cukup gunakan kombinasi line & slot
+                        \App\Models\Pallet::updateOrCreate(
+                            ['line' => $lineNum, 'slot_section' => $slot],
+                            ['status' => 'empty', 'filled_boxes' => 0]
+                        );
                     }
                 }
             });
-
-            return back()->with('success', 'Struktur gudang berhasil diperbarui tanpa menghapus data lama.');
+            return back()->with('success', 'Petak gudang berhasil di-generate.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal: ' . $e->getMessage());
         }
