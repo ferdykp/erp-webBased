@@ -1,5 +1,7 @@
 @extends('admin.layout.app')
 
+@section('title', 'Detail Business')
+
 @section('content')
     <div class="w-full pb-10 space-y-8" x-data="{ openModal: false, selectedCustomer: {} }">
 
@@ -155,14 +157,34 @@
                                                     <div class="text-[10px] text-slate-400"
                                                         x-text="'Ref Order: ' + booking.booking_code"></div>
                                                 </td>
-                                                <td class="px-4 py-4 font-medium text-center text-slate-600"
-                                                    x-text="product.quantity + ' Box'"></td>
+                                                <td class="px-4 py-4 font-medium text-center text-slate-600">
+                                                    <span x-text="product.quantity"></span>
+                                                    <span class="capitalize" x-text="product.unit"></span>
+                                                </td>
                                                 <td class="px-4 py-4 text-right">
-                                                    <span
-                                                        :class="product.dmax > 50 ? 'bg-rose-50 text-rose-600' :
-                                                            'bg-slate-50 text-slate-600'"
-                                                        class="px-3 py-1.5 rounded-xl text-[10px] font-black"
-                                                        x-text="product.dmax + ' kGy'"></span>
+                                                    <div class="flex flex-col items-end gap-1">
+                                                        <div class="flex items-center gap-2">
+                                                            <span
+                                                                class="text-[9px] font-bold text-slate-400 uppercase">Min:</span>
+                                                            <span
+                                                                :class="product.dmin > 50 ? 'bg-rose-50 text-rose-600' :
+                                                                    'bg-slate-50 text-slate-600'"
+                                                                class="px-3 py-1.5 rounded-xl text-[10px] font-black min-w-[60px] text-center"
+                                                                x-text="product.dmin + ' kGy'">
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="flex items-center gap-2">
+                                                            <span
+                                                                class="text-[9px] font-bold text-slate-400 uppercase">Max:</span>
+                                                            <span
+                                                                :class="product.dmax > 50 ? 'bg-rose-50 text-rose-600' :
+                                                                    'bg-slate-50 text-slate-600'"
+                                                                class="px-3 py-1.5 rounded-xl text-[10px] font-black min-w-[60px] text-center"
+                                                                x-text="product.dmax + ' kGy'">
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </template>

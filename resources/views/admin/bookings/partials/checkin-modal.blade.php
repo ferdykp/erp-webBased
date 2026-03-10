@@ -240,7 +240,7 @@
             </div>
 
             {{-- STEP 4: VERTICAL INDUSTRIAL FINANCE --}}
-            <div class="hidden p-8 step-content" id="step4"
+            <div class="hidden px-8 step-content" id="step4"
                 style="max-height: 70vh; overflow-y: auto; padding-bottom: 50px;">
                 {{-- Header --}}
                 <div class="mb-4">
@@ -250,18 +250,18 @@
 
                 <div class="flex flex-col gap-4">
                     {{-- 3. CALCULATION LOGIC PANEL --}}
-                    <div class="p-4 mb-8 border border-blue-100 shadow-inner bg-blue-50/50 rounded-2xl">
+                    <div class="p-4 border border-blue-100 shadow-inner bg-blue-50/50 rounded-2xl">
                         <h5 class="text-[9px] font-black text-blue-700 uppercase mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-calculator"></i> Calculation Methodology
                         </h5>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                            <div class="text-[8px] text-slate-500"><b class="text-slate-700">Irradiation:</b> Volume
+                            <div class="text-xs text-slate-500"><b class="text-slate-700">Irradiation:</b> Volume
                                 (m³) × Rate/m³.</div>
-                            <div class="text-[8px] text-slate-500"><b class="text-slate-700">Handling:</b> Qty Pallet
+                            <div class="text-xs text-slate-500"><b class="text-slate-700">Handling:</b> Qty Pallet
                                 × Rate/Pallet.</div>
-                            <div class="text-[8px] text-slate-500"><b class="text-slate-700">Tax:</b> 11% dari
+                            <div class="text-xs text-slate-500"><b class="text-slate-700">Tax:</b> 11% dari
                                 (Irradiation + Handling).</div>
-                            <div class="text-[8px] text-slate-500 italic">*Rounding applied for bank compliance.</div>
+                            <div class="text-xs italic text-slate-500">*Rounding applied for bank compliance.</div>
                         </div>
                     </div>
                     {{-- 1. INPUT TARIF --}}
@@ -316,25 +316,44 @@
                     <div class="p-6 bg-slate-900 rounded-[2.5rem] shadow-xl overflow-hidden">
                         <div class="flex flex-col h-full border border-slate-800 p-5 rounded-[2rem]">
                             <div class="mb-4 text-center">
-                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Proforma
+                                <span class="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">Proforma
                                     Summary</span>
                             </div>
-                            <div class="space-y-2.5 mb-4">
-                                <div class="flex justify-between text-[10px]">
-                                    <span class="text-slate-500">Subtotal Irradiation</span>
-                                    <span class="font-bold text-white" id="sub_irrad">Rp 0</span>
+                            <div class="mb-4 space-y-3">
+                                {{-- Irradiation --}}
+                                <div class="flex flex-col">
+                                    <div class="flex justify-between text-[10px]">
+                                        <span class="text-slate-300">Subtotal Irradiation</span>
+                                        <span class="font-bold text-white" id="sub_irrad">Rp 0</span>
+                                    </div>
+                                    {{-- Penambahan ID detail_irrad --}}
+                                    <div class="flex justify-start">
+                                        <span class="text-xs italic font-medium text-slate-600" id="detail_irrad">0
+                                            m³ x Rp 0</span>
+                                    </div>
                                 </div>
-                                <div class="flex justify-between text-[10px]">
-                                    <span class="text-slate-500">Handling Total</span>
-                                    <span class="font-bold text-white" id="sub_handling">Rp 0</span>
+
+                                {{-- Handling --}}
+                                <div class="flex flex-col">
+                                    <div class="flex justify-between text-[10px]">
+                                        <span class="text-slate-300">Handling Total</span>
+                                        <span class="font-bold text-white" id="sub_handling">Rp 0</span>
+                                    </div>
+                                    {{-- Penambahan ID detail_handling --}}
+                                    <div class="flex justify-start">
+                                        <span class="text-xs italic font-medium text-slate-600" id="detail_handling">0
+                                            Pallet x Rp 0</span>
+                                    </div>
                                 </div>
+
+                                {{-- VAT --}}
                                 <div class="flex justify-between text-[10px] pb-2 border-b border-slate-800">
-                                    <span class="text-slate-500">VAT (11%)</span>
+                                    <span class="text-slate-300">VAT (11%)</span>
                                     <span class="font-bold text-blue-400" id="tax_amount">Rp 0</span>
                                 </div>
                             </div>
                             <div class="pt-4 mt-auto border-t border-slate-800">
-                                <p class="text-[8px] font-black text-emerald-400 uppercase mb-1">Total Payable Amount
+                                <p class="mb-1 text-xs font-black uppercase text-emerald-400">Total Payable Amount
                                 </p>
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-sm font-bold text-emerald-500">Rp</span>

@@ -111,7 +111,18 @@ function calculateIndustrialFinance() {
     // 4. Update UI
     const formatter = new Intl.NumberFormat("id-ID");
 
-    // Update labels rincian
+    // --- BAGIAN PENYESUAIAN RINCIAN PERKALIAN ---
+    if (document.getElementById("detail_irrad")) {
+        document.getElementById("detail_irrad").innerText =
+            `${volTotal.toFixed(3)} m³ x Rp ${formatter.format(rateVol)}`;
+    }
+    if (document.getElementById("detail_handling")) {
+        document.getElementById("detail_handling").innerText =
+            `${palletCount} Pallet x Rp ${formatter.format(ratePallet)}`;
+    }
+    // --------------------------------------------
+
+    // Update labels rincian subtotal
     if (document.getElementById("sub_irrad"))
         document.getElementById("sub_irrad").innerText =
             "Rp " + formatter.format(irradTotal);
@@ -122,7 +133,7 @@ function calculateIndustrialFinance() {
         document.getElementById("tax_amount").innerText =
             "Rp " + formatter.format(tax);
 
-    // Update info teks (Volume / Pallet)
+    // Update info teks (Volume / Pallet) jika ada di elemen lain
     if (document.getElementById("fin_vol_disp"))
         document.getElementById("fin_vol_disp").innerText = volTotal.toFixed(3);
     if (document.getElementById("fin_pal_disp"))
