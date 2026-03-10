@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\Pallet;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -98,7 +99,7 @@ class AdminBookingController extends Controller
         $search = $request->query('search');
 
         $customers = Customer::with(['bookings.products', 'bookings.batches'])
-            ->when($search, function($query) use ($search) {
+            ->when($search, function ($query) use ($search) {
                 $query->where('company_name', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
                     ->orWhere('pic_name', 'like', "%{$search}%");
@@ -194,7 +195,7 @@ class AdminBookingController extends Controller
                 $booking->update([
                     'arrival_time' => now(),
                     'pic_warehouse' => $request->pic_warehouse,
-                    'status' => 'approved', 
+                    'status' => 'approved',
                 ]);
 
                 $unit = $booking->products->first()->unit ?? 'box';
