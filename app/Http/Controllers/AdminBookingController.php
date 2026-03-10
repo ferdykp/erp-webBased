@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User; // Pastikan import Model User
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\BookingProduct;
@@ -71,121 +70,17 @@ class AdminBookingController extends Controller
         return back()->with('success', "Status berhasil diperbarui ke " . strtoupper($newStatus));
     }
 
-
-    // public function checkIn(Request $request)
-    // {
-    //     $request->validate([
-    //         'booking_code' => 'required',
-    //         'pic_warehouse' => 'required|string',
-    //         'batch_porters' => 'required|array|min:1',
-    //         'batch_quantities' => 'required|array',
-    //         'pallet_ids' => 'required|array',
-
-    //         'vol_per_pcs' => 'nullable|numeric',
-    //         'vol_total' => 'nullable|numeric',
-    //         'net_weight_pcs' => 'nullable|numeric',
-    //         'total_net_weight' => 'nullable|numeric',
-    //         'gross_weight_pcs' => 'nullable|numeric',
-    //         'total_gross_weight' => 'nullable|numeric',
-    //     ]);
-
-    //     $booking = Booking::with(['products', 'batches', 'pallets'])->where('booking_code', $request->booking_code)->first();
-
-    //     if (!$booking) return back()->with('error', 'Booking tidak ditemukan');
-
-    //     if ($booking->status !== 'pending') {
-    //         return back()->with('error', 'Gagal! Order ini sudah melewati tahap Check-in.');
-    //     }
-
-    //     try {
-    //         DB::transaction(function () use ($booking, $request) {
-
-    //             $product = $booking->products->first();
-
-    //             $product->update([
-    //                 'vol_per_pcs' => $request->vol_per_pcs,
-    //                 'vol_total' => $request->vol_total,
-    //                 'net_weight_pcs' => $request->net_weight_pcs,
-    //                 'total_net_weight' => $request->total_net_weight,
-    //                 'gross_weight_pcs' => $request->gross_weight_pcs,
-    //                 'total_gross_weight' => $request->total_gross_weight,
-    //             ]);
-    //             // PEMBERSIHAN DATA (Mencegah Double-double)
-    //             // Jika admin mengulang proses sebelum status berubah, bersihkan data lama
-    //             $booking->batches()->delete();
-
-    //             // Reset status palet yang sebelumnya mungkin sudah terikat ke booking ini
-    //             Pallet::where('current_booking_id', $booking->id)->update([
-    //                 'status' => 'empty',
-    //                 'current_booking_id' => null,
-    //                 'filled_boxes' => 0
-    //             ]);
-
-    //             // UPDATE DATA UTAMA
-    //             $booking->update([
-    //                 'arrival_time' => now(),
-    //                 'pic_warehouse' => $request->pic_warehouse,
-    //                 'status' => 'approved', // Pindah status ke Approved
-    //             ]);
-
-    //             $unit = $booking->products->first()->unit ?? 'box';
-
-    //             foreach ($request->batch_quantities as $index => $totalBatchQty) {
-    //                 // Simpan Data Batch Baru
-    //                 $booking->batches()->create([
-    //                     'batch_number' => $index + 1,
-    //                     'quantity' => $totalBatchQty,
-    //                     'unit' => $unit,
-    //                     'porter_name' => $request->batch_porters[$index],
-    //                     'status' => 'waiting'
-    //                 ]);
-
-    //                 // LOGIKA AUTO-SPLIT PALET
-    //                 $remainingInBatch = $totalBatchQty;
-    //                 $startPalletNumber = $request->pallet_ids[$index];
-
-    //                 while ($remainingInBatch > 0) {
-    //                     $pallet = Pallet::where('status', 'empty')
-    //                         ->where(function ($q) use ($startPalletNumber) {
-    //                             $q->where('pallet_number', $startPalletNumber)->orWhere('status', 'empty');
-    //                         })
-    //                         ->orderByRaw("pallet_number = '$startPalletNumber' DESC")
-    //                         ->orderBy('pallet_number', 'asc')
-    //                         ->first();
-
-    //                     if (!$pallet) throw new \Exception("Stok palet tidak mencukupi.");
-
-    //                     $capacity = 10;
-    //                     $fillAmount = ($remainingInBatch >= $capacity) ? $capacity : $remainingInBatch;
-
-    //                     $pallet->update([
-    //                         'status' => 'filled',
-    //                         'current_booking_id' => $booking->id,
-    //                         'filled_boxes' => $fillAmount
-    //                     ]);
-
-    //                     $remainingInBatch -= $fillAmount;
-    //                     $startPalletNumber = null;
-    //                 }
-    //             }
-    //         });
-
-    //         return redirect()->route('admin.dashboard')->with('success', "Check-in sukses! Status berubah menjadi Approved.");
-    //     } catch (\Exception $e) {
-    //         return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-    //     }
-    // }
-
-
     // public function checkIn(Request $request)
     // {
     //     $request->validate([
     //         'booking_code' => 'required',
     //         'pic_warehouse' => 'required|string',
     //         'porters' => 'required|array|min:1',
-    //         'lines' => 'required|array',
-    //         'petaks' => 'required|array',
-    //         'pallet_qty' => 'required|array',
+    //         // 'lines' => 'required|array',
+    //         // 'petaks' => 'required|array',
+    //         // 'pallet_qty' => 'required|array',
+    //         'total_qty' => 'required|numeric', // Tambahkan ini
+    //         'per_pallet' => 'required|numeric',
 
     //         'vol_per_pcs' => 'nullable|numeric',
     //         'vol_total' => 'nullable|numeric',
@@ -229,57 +124,50 @@ class AdminBookingController extends Controller
     //                 'filled_boxes' => 0
     //             ]);
 
-    //             // Update booking
     //             $booking->update([
     //                 'arrival_time' => now(),
     //                 'pic_warehouse' => $request->pic_warehouse,
     //                 'status' => 'approved',
     //             ]);
 
-    //             /*
-    //         ==========================
-    //         PLACEMENT PALLET
-    //         ==========================
-    //         */
+    //             // 2. Clear rencana lama jika ada (agar tidak double)
+    //             $booking->placementDetails()->delete();
 
-    //             // Di dalam checkIn, saat mencari pallet:
-    //             foreach ($request->pallet_qty as $i => $qty) {
-    //                 // Cari wadah berdasarkan line dan slot
-    //                 $pallet = Pallet::where('line', $request->lines[$i])
-    //                     ->where('slot_section', $request->petaks[$i])
-    //                     ->first();
+    //             // 3. Logika Pembagian Logis (Batching)
+    //             // Misalnya: Total 194, Per palet 30 -> 30, 30, 30, 30, 30, 30, 14
+    //             $totalQty = $request->total_qty; // Ambil dari input form
+    //             $perPallet = $request->per_pallet; // Ambil dari input form
 
-    //                 if (!$pallet) {
-    //                     throw new \Exception("Petak di Line {$request->lines[$i]} Slot {$request->petaks[$i]} belum di-generate.");
-    //                 }
+    //             $sequence = 1;
+    //             $remaining = $totalQty;
 
-    //                 // Akumulasi box di wadah tersebut
-    //                 $pallet->filled_boxes += $qty;
-    //                 $pallet->status = 'filled';
-    //                 $pallet->current_booking_id = $booking->id;
-    //                 $pallet->save();
+    //             while ($remaining > 0) {
+    //                 $qty = ($remaining >= $perPallet) ? $perPallet : $remaining;
+
+    //                 $booking->placementDetails()->create([
+    //                     'booking_id' => $booking->id, // Tambahkan ini
+    //                     'sequence' => $sequence,
+    //                     'quantity' => $qty,
+    //                     'status' => 'planned' // Belum ditempatkan di rak
+    //                 ]);
+
+    //                 $remaining -= $qty;
+    //                 $sequence++;
     //             }
     //         });
 
-    //         return redirect()
-    //             ->route('admin.dashboard')
-    //             ->with('success', 'Check-in sukses! Status menjadi Approved.');
+    //         return redirect()->route('admin.dashboard')->with('success', 'Rencana penempatan dibuat. Silahkan tentukan lokasi petak.');
     //     } catch (\Exception $e) {
-
-    //         return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+    //         return back()->with('error', 'Gagal: ' . $e->getMessage());
     //     }
     // }
-
     public function checkIn(Request $request)
     {
         $request->validate([
             'booking_code' => 'required',
             'pic_warehouse' => 'required|string',
             'porters' => 'required|array|min:1',
-            // 'lines' => 'required|array',
-            // 'petaks' => 'required|array',
-            // 'pallet_qty' => 'required|array',
-            'total_qty' => 'required|numeric', // Tambahkan ini
+            'total_qty' => 'required|numeric',
             'per_pallet' => 'required|numeric',
 
             'vol_per_pcs' => 'nullable|numeric',
@@ -290,7 +178,7 @@ class AdminBookingController extends Controller
             'total_gross_weight' => 'nullable|numeric',
         ]);
 
-        $booking = Booking::with(['products'])
+        $booking = Booking::with(['products', 'customer'])
             ->where('booking_code', $request->booking_code)
             ->first();
 
@@ -308,6 +196,12 @@ class AdminBookingController extends Controller
 
                 $product = $booking->products->first();
 
+                /*
+            |--------------------------------------------------------------------------
+            | Update Product Dimension Data
+            |--------------------------------------------------------------------------
+            */
+
                 $product->update([
                     'vol_per_pcs' => $request->vol_per_pcs,
                     'vol_total' => $request->vol_total,
@@ -317,12 +211,25 @@ class AdminBookingController extends Controller
                     'total_gross_weight' => $request->total_gross_weight,
                 ]);
 
-                // Reset pallet jika sebelumnya pernah dipakai
+
+                /*
+            |--------------------------------------------------------------------------
+            | Reset Pallet jika sebelumnya pernah dipakai
+            |--------------------------------------------------------------------------
+            */
+
                 Pallet::where('current_booking_id', $booking->id)->update([
                     'status' => 'empty',
                     'current_booking_id' => null,
                     'filled_boxes' => 0
                 ]);
+
+
+                /*
+            |--------------------------------------------------------------------------
+            | Update Booking Status
+            |--------------------------------------------------------------------------
+            */
 
                 $booking->update([
                     'arrival_time' => now(),
@@ -330,34 +237,116 @@ class AdminBookingController extends Controller
                     'status' => 'approved',
                 ]);
 
-                // 2. Clear rencana lama jika ada (agar tidak double)
+
+                /*
+            |--------------------------------------------------------------------------
+            | Clear Placement Lama
+            |--------------------------------------------------------------------------
+            */
+
                 $booking->placementDetails()->delete();
 
-                // 3. Logika Pembagian Logis (Batching)
-                // Misalnya: Total 194, Per palet 30 -> 30, 30, 30, 30, 30, 30, 14
-                $totalQty = $request->total_qty; // Ambil dari input form
-                $perPallet = $request->per_pallet; // Ambil dari input form
+
+                /*
+            |--------------------------------------------------------------------------
+            | Batching / Pallet Planning
+            |--------------------------------------------------------------------------
+            */
+
+                $totalQty = $request->total_qty;
+                $perPallet = $request->per_pallet;
 
                 $sequence = 1;
                 $remaining = $totalQty;
 
                 while ($remaining > 0) {
+
                     $qty = ($remaining >= $perPallet) ? $perPallet : $remaining;
 
                     $booking->placementDetails()->create([
-                        'booking_id' => $booking->id, // Tambahkan ini
+                        'booking_id' => $booking->id,
                         'sequence' => $sequence,
                         'quantity' => $qty,
-                        'status' => 'planned' // Belum ditempatkan di rak
+                        'status' => 'planned'
                     ]);
 
                     $remaining -= $qty;
                     $sequence++;
                 }
+
+
+                /*
+            |--------------------------------------------------------------------------
+            | Generate Proforma Invoice
+            |--------------------------------------------------------------------------
+            */
+
+                $invoice = Invoice::create([
+                    'booking_id' => $booking->id,
+                    'invoice_number' => 'INV-' . strtoupper(Str::random(8)),
+                    'type' => 'proforma',
+                    'status' => 'draft',
+                    'invoice_date' => now(),
+                ]);
+
+
+                /*
+            |--------------------------------------------------------------------------
+            | Pricing Engine (Basic)
+            |--------------------------------------------------------------------------
+            */
+
+                $volume = $request->vol_total ?? 0;
+
+                $pricePerM3 = 50; // harga default irradiation per m3
+
+                $subtotal = $volume * $pricePerM3;
+
+
+                /*
+            |--------------------------------------------------------------------------
+            | Invoice Item
+            |--------------------------------------------------------------------------
+            */
+
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'description' => 'E-Beam Irradiation Service',
+                    'qty' => $volume,
+                    'unit_price' => $pricePerM3,
+                    'total' => $subtotal
+                ]);
+
+
+                /*
+            |--------------------------------------------------------------------------
+            | Update Invoice Total
+            |--------------------------------------------------------------------------
+            */
+
+                $invoice->update([
+                    'subtotal' => $subtotal,
+                    'total' => $subtotal
+                ]);
+
+
+                /*
+            |--------------------------------------------------------------------------
+            | Log Activity (Opsional ERP Audit Trail)
+            |--------------------------------------------------------------------------
+            */
+
+                activity()
+                    ->performedOn($booking)
+                    ->causedBy(auth()->user())
+                    ->log('Warehouse Check-In completed');
             });
 
-            return redirect()->route('admin.dashboard')->with('success', 'Rencana penempatan dibuat. Silahkan tentukan lokasi petak.');
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('success', 'Check-in berhasil. Rencana pallet dan proforma invoice dibuat.');
         } catch (\Exception $e) {
+
             return back()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
@@ -464,76 +453,6 @@ class AdminBookingController extends Controller
 
         return back()->with('success', 'Pallet created successfully');
     }
-
-
-    // public function palletGenerate(Request $request)
-    // {
-    //     // Kita tentukan jumlah yang ingin di-generate (bisa dikembangkan jadi input form)
-    //     $maxLines = $request->input('lines', 2);
-    //     $maxSlots = $request->input('slots', 5);
-    //     $maxPallets = 10;
-    //     try {
-    //         DB::transaction(function () use ($maxLines, $maxSlots, $maxPallets) {
-    //             for ($lineNum = 1; $lineNum <= $maxLines; $lineNum++) {
-    //                 for ($slot = 1; $slot <= $maxSlots; $slot++) {
-    //                     for ($p = 1; $p <= $maxPallets; $p++) {
-
-    //                         $palletCode = "PLT-L$lineNum-S$slot-P" . str_pad($p, 2, '0', STR_PAD_LEFT);
-
-    //                         // updateOrCreate akan mencegah error "Duplicate Entry"
-    //                         \App\Models\Pallet::updateOrCreate(
-    //                             ['pallet_number' => $palletCode], // Kunci pencarian
-    //                             [
-    //                                 'line' => $lineNum,
-    //                                 'slot_section' => $slot,
-    //                                 'status' => 'empty',
-    //                                 'box_capacity' => 10,
-    //                                 'filled_boxes' => 0
-    //                             ]
-    //                         );
-    //                     }
-    //                 }
-    //             }
-    //         });
-
-    //         return back()->with('success', 'Struktur gudang berhasil diperbarui tanpa menghapus data lama.');
-    //     } catch (\Exception $e) {
-    //         return back()->with('error', 'Gagal generate: ' . $e->getMessage());
-    //     }
-    // }
-
-
-    // public function palletGenerate(Request $request)
-    // {
-    //     $maxLines = $request->input('lines', 2);
-    //     $maxSlots = $request->input('slots', 5);
-
-    //     try {
-    //         DB::transaction(function () use ($maxLines, $maxSlots) {
-    //             for ($lineNum = 1; $lineNum <= $maxLines; $lineNum++) {
-    //                 for ($slot = 1; $slot <= $maxSlots; $slot++) {
-
-    //                     // Cukup buat 1 entri per petak (Line-Slot)
-    //                     $palletCode = "LOC-L{$lineNum}-S{$slot}";
-
-    //                     \App\Models\Pallet::updateOrCreate(
-    //                         ['pallet_number' => $palletCode],
-    //                         [
-    //                             'line' => $lineNum,
-    //                             'slot_section' => $slot,
-    //                             'status' => 'empty',
-    //                             'filled_boxes' => 0
-    //                         ]
-    //                     );
-    //                 }
-    //             }
-    //         });
-
-    //         return back()->with('success', 'Struktur petak gudang berhasil dibuat.');
-    //     } catch (\Exception $e) {
-    //         return back()->with('error', 'Gagal: ' . $e->getMessage());
-    //     }
-    // }
 
     public function palletGenerate(Request $request)
     {

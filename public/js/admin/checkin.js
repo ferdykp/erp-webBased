@@ -1,3 +1,73 @@
+function calculateFinance() {
+    // 1. Ambil data dari input teknis (Step 1 & Step 2)
+    const totalVolume =
+        parseFloat(document.querySelector("[name='vol_total']")?.value) || 0;
+    const totalPallets =
+        parseInt(document.getElementById("pallet_count")?.value) || 0;
+
+    // 2. Update tampilan summary di Step 4 (Input Readonly)
+    const financeVolField = document.querySelector("[name='finance_volume']");
+    const financePalletField = document.querySelector(
+        "[name='finance_pallet']",
+    );
+
+    if (financeVolField) financeVolField.value = totalVolume.toFixed(3);
+    if (financePalletField) financePalletField.value = totalPallets;
+
+    // 3. Ambil nilai tarif dari input user
+    const tariffVolume =
+        parseFloat(document.querySelector("[name='tariff_volume']")?.value) ||
+        0;
+    const tariffPallet =
+        parseFloat(document.querySelector("[name='tariff_pallet']")?.value) ||
+        0;
+    const tariffStorage =
+        parseFloat(document.querySelector("[name='tariff_storage']")?.value) ||
+        0;
+
+    // 4. Hitung Total (Volume * Tarif Vol + Pallet * Tarif Pallet)
+    // Catatan: Tarif Storage biasanya dikali hari, di sini kita asumsikan per hari sebagai basis awal
+    const totalCost = totalVolume * tariffVolume + totalPallets * tariffPallet;
+
+    // 5. Tampilkan ke Grand Total dengan format mata uang IDR sederhana
+    const totalField = document.querySelector("[name='finance_total']");
+    if (totalField) {
+        // Menggunakan format ribuan agar lebih clean: 1.000.000
+        totalField.value = new Intl.NumberFormat("id-ID").format(totalCost);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Listener untuk input tarif
+    const financeInputs = ["tariff_volume", "tariff_pallet", "tariff_storage"];
+    financeInputs.forEach((name) => {
+        document
+            .querySelector(`[name='${name}']`)
+            ?.addEventListener("input", calculateFinance);
+    });
+
+    // Re-calculate saat user mengubah pallet di Step 2
+    const palletInputs = ["per_pallet", "pallet_count"];
+    palletInputs.forEach((id) => {
+        document.getElementById(id)?.addEventListener("input", function () {
+            // Beri sedikit delay agar fungsi perhitungan pallet selesai dulu
+            setTimeout(calculateFinance, 100);
+        });
+    });
+});
+document
+    .querySelector("[name='tariff_volume']")
+    ?.addEventListener("input", calculateFinance);
+
+document
+    .querySelector("[name='tariff_pallet']")
+    ?.addEventListener("input", calculateFinance);
+
+document.addEventListener("input", function (e) {
+    if (e.target.name === "per_pallet" || e.target.name === "pallet_count") {
+        setTimeout(calculateFinance, 200);
+    }
+});
 function formatNumber(num, maxDecimal = 3) {
     return parseFloat(num.toFixed(maxDecimal));
 }
@@ -6,7 +76,9 @@ function calculateVolumeFromDimension() {
 
     if (!dimension || dimension === "-") return;
 
-    const parts = dimension.split("x");
+    // const parts = dimension.split("x");
+
+    const parts = dimension.toLowerCase().replace(/\s/g, "").split("x");
 
     if (parts.length !== 3) return;
 
@@ -184,11 +256,26 @@ function addPlacementRow() {
 }
 
 // 2. NAVIGATION & VALIDATION
+// function changeStep(n) {
+//     if (n === 1 && !validateCurrentStep()) return;
+//     currentStep += n;
+//     updateStepUI();
+//     if (currentStep === 3) preparePlacementFields();
+// }
 function changeStep(n) {
     if (n === 1 && !validateCurrentStep()) return;
+
     currentStep += n;
     updateStepUI();
-    if (currentStep === 3) preparePlacementFields();
+
+    if (currentStep === 3) {
+        preparePlacementFields();
+    }
+
+    if (currentStep === 4) {
+        // Trigger kalkulasi saat masuk ke halaman payment
+        calculateFinance();
+    }
 }
 
 function validateCurrentStep() {
@@ -252,13 +339,13 @@ function validateCurrentStep() {
         // const palletTotal =
         //     parseInt(document.getElementById("pallet_count").value) || 0;
 
-        if (total !== palletTotal) {
-            alert(
-                "Jumlah pallet yang ditempatkan tidak sama dengan total pallet",
-            );
+        // if (total !== palletTotal) {
+        //     alert(
+        //         "Jumlah pallet yang ditempatkan tidak sama dengan total pallet",
+        //     );
 
-            return false;
-        }
+        //     return false;
+        // }
     }
     return true;
 }
@@ -314,12 +401,19 @@ function updateStepUI() {
     document
         .getElementById("prevBtn")
         .classList.toggle("hidden", currentStep === 1);
+    // document
+    //     .getElementById("nextBtn")
+    //     .classList.toggle("hidden", currentStep === 3);
+    // document
+    //     .getElementById("finalSubmitBtn")
+    //     .classList.toggle("hidden", currentStep !== 3);
     document
         .getElementById("nextBtn")
-        .classList.toggle("hidden", currentStep === 3);
+        .classList.toggle("hidden", currentStep === 4);
+
     document
         .getElementById("finalSubmitBtn")
-        .classList.toggle("hidden", currentStep !== 3);
+        .classList.toggle("hidden", currentStep !== 4);
 }
 
 // 3. BATCH MANAGEMENT

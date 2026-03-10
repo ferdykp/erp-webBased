@@ -46,6 +46,11 @@ class Booking extends Model
     {
         return $this->hasMany(PlacementDetail::class);
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
     // public function porter(): BelongsTo
     // {
     //     // Kita hubungkan kolom porter_name di bookings ke kolom name di porters

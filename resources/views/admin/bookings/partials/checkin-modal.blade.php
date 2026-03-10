@@ -20,7 +20,7 @@
 
             {{-- Step Tracker --}}
             <div class="flex items-center justify-between max-w-2xl mx-auto">
-                @php $steps = [['Verify', 1], ['Batching', 2], ['Placement', 3]]; @endphp
+                @php $steps = [['Verify', 1], ['Batching', 2], ['Placement', 3], ['Payment', 4]]; @endphp
                 @foreach ($steps as $index => $step)
                     <div class="flex flex-col items-center gap-2 step-item {{ $index == 0 ? 'active' : '' }}"
                         data-step="{{ $step[1] }}">
@@ -235,6 +235,116 @@
                     </div>
 
                     <div id="placementContainer" class="space-y-4">
+                    </div>
+                </div>
+            </div>
+
+            {{-- STEP 4: PAYMENT / PROFORMA INVOICE --}}
+            <div class="hidden px-9 step-content" id="step4">
+                {{-- Section Header: Dibuat lebih ringkas --}}
+                <div class="mb-4">
+                    <h4 class="text-xs font-black tracking-widest uppercase text-slate-800">Proforma Invoice</h4>
+                    <p class="text-[10px] font-bold text-slate-400">Input tarif untuk kalkulasi estimasi biaya.</p>
+                </div>
+
+                {{-- Grid: Menggunakan gap lebih kecil (gap-4) agar hemat ruang vertikal --}}
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+
+                    {{-- SISI KIRI: INPUT TARIF --}}
+                    <div class="lg:col-span-7">
+                        <div class="p-5 md:p-6 bg-blue-50/40 border border-blue-100 rounded-[2rem] shadow-sm">
+                            <div class="flex items-center gap-2 mb-4">
+                                <div
+                                    class="flex items-center justify-center w-6 h-6 text-blue-600 bg-white rounded-lg shadow-sm">
+                                    <i class="text-[10px] fa-solid fa-file-invoice-dollar"></i>
+                                </div>
+                                <h5 class="text-[9px] font-black tracking-widest uppercase text-blue-600">Service
+                                    Tariffs</h5>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                {{-- Input: Irradiation --}}
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Irradiation /
+                                        m³</label>
+                                    <div class="relative group">
+                                        <span
+                                            class="absolute text-[10px] font-bold transition-colors -translate-y-1/2 text-slate-400 left-3 top-1/2 group-focus-within:text-blue-500">Rp</span>
+                                        <input type="number" name="tariff_volume" placeholder="0"
+                                            class="w-full py-2.5 pl-10 pr-4 text-sm font-bold transition-all bg-white border-none shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+
+                                {{-- Input: Handling --}}
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Handling /
+                                        Pallet</label>
+                                    <div class="relative group">
+                                        <span
+                                            class="absolute text-[10px] font-bold transition-colors -translate-y-1/2 text-slate-400 left-3 top-1/2 group-focus-within:text-blue-500">Rp</span>
+                                        <input type="number" name="tariff_pallet" placeholder="0"
+                                            class="w-full py-2.5 pl-10 pr-4 text-sm font-bold transition-all bg-white border-none shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+
+                                {{-- Input: Storage --}}
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Storage /
+                                        Day</label>
+                                    <div class="relative group">
+                                        <span
+                                            class="absolute text-[10px] font-bold transition-colors -translate-y-1/2 text-slate-400 left-3 top-1/2 group-focus-within:text-blue-500">Rp</span>
+                                        <input type="number" name="tariff_storage" placeholder="0"
+                                            class="w-full py-2.5 pl-10 pr-4 text-sm font-bold transition-all bg-white border-none shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- SISI KANAN: SUMMARY --}}
+                    <div class="lg:col-span-5 pb-7">
+                        <div
+                            class="p-6 bg-slate-900 rounded-[2rem] shadow-xl flex flex-col justify-between relative overflow-hidden h-full min-h-[220px]">
+                            <div class="relative z-10">
+                                <h5
+                                    class="text-[9px] font-black tracking-widest uppercase text-slate-400 mb-4 text-center">
+                                    Estimation Summary</h5>
+
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                                        <span class="text-[10px] font-bold uppercase text-slate-400">Volume</span>
+                                        <div class="text-right">
+                                            <input readonly name="finance_volume"
+                                                class="w-16 p-0 text-xs font-black text-right text-white bg-transparent border-none focus:ring-0"
+                                                value="0.00">
+                                            <span class="text-[9px] text-slate-500">m³</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                                        <span class="text-[10px] font-bold uppercase text-slate-400">Pallets</span>
+                                        <div class="text-right">
+                                            <input readonly name="finance_pallet"
+                                                class="w-16 p-0 text-xs font-black text-right text-white bg-transparent border-none focus:ring-0"
+                                                value="0">
+                                            <span class="text-[9px] text-slate-500">Units</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative z-10 pt-4 mt-4 border-t border-slate-800">
+                                <p class="text-[8px] font-black text-emerald-400 uppercase tracking-widest mb-1">Grand
+                                    Total</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-lg font-bold text-emerald-500">Rp</span>
+                                    <input readonly name="finance_total"
+                                        class="w-full p-0 text-xl font-black leading-none text-white bg-transparent border-none focus:ring-0"
+                                        value="0">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
