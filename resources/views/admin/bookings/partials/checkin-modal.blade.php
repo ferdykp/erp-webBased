@@ -47,7 +47,7 @@
             <input type="hidden" name="per_pallet" id="hidden_per_pallet">
             <input type="hidden" name="booking_id" id="modal_booking_id">
 
-            <div class="flex-1 px-6 py-8 overflow-y-auto md:px-12 scrollbar-hide">
+            <div class="flex-1 px-6 py-3 overflow-y-auto md:px-12 scrollbar-hide">
 
                 {{-- STEP 1: VERIFICATION --}}
                 <div class="step-content" id="step1">
@@ -239,116 +239,117 @@
                 </div>
             </div>
 
-            {{-- STEP 4: PAYMENT / PROFORMA INVOICE --}}
-            <div class="hidden px-9 step-content" id="step4">
-                {{-- Section Header: Dibuat lebih ringkas --}}
+            {{-- STEP 4: VERTICAL INDUSTRIAL FINANCE --}}
+            <div class="hidden p-8 step-content" id="step4"
+                style="max-height: 70vh; overflow-y: auto; padding-bottom: 50px;">
+                {{-- Header --}}
                 <div class="mb-4">
-                    <h4 class="text-xs font-black tracking-widest uppercase text-slate-800">Proforma Invoice</h4>
-                    <p class="text-[10px] font-bold text-slate-400">Input tarif untuk kalkulasi estimasi biaya.</p>
+                    <h4 class="text-xs font-black tracking-widest uppercase text-slate-800">Financial Calculation</h4>
+                    <p class="text-[10px] font-bold text-slate-400">Input tarif untuk estimasi biaya layanan.</p>
                 </div>
 
-                {{-- Grid: Menggunakan gap lebih kecil (gap-4) agar hemat ruang vertikal --}}
-                <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
-
-                    {{-- SISI KIRI: INPUT TARIF --}}
-                    <div class="lg:col-span-7">
-                        <div class="p-5 md:p-6 bg-blue-50/40 border border-blue-100 rounded-[2rem] shadow-sm">
-                            <div class="flex items-center gap-2 mb-4">
-                                <div
-                                    class="flex items-center justify-center w-6 h-6 text-blue-600 bg-white rounded-lg shadow-sm">
-                                    <i class="text-[10px] fa-solid fa-file-invoice-dollar"></i>
+                <div class="flex flex-col gap-4">
+                    {{-- 3. CALCULATION LOGIC PANEL --}}
+                    <div class="p-4 mb-8 border border-blue-100 shadow-inner bg-blue-50/50 rounded-2xl">
+                        <h5 class="text-[9px] font-black text-blue-700 uppercase mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-calculator"></i> Calculation Methodology
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                            <div class="text-[8px] text-slate-500"><b class="text-slate-700">Irradiation:</b> Volume
+                                (m³) × Rate/m³.</div>
+                            <div class="text-[8px] text-slate-500"><b class="text-slate-700">Handling:</b> Qty Pallet
+                                × Rate/Pallet.</div>
+                            <div class="text-[8px] text-slate-500"><b class="text-slate-700">Tax:</b> 11% dari
+                                (Irradiation + Handling).</div>
+                            <div class="text-[8px] text-slate-500 italic">*Rounding applied for bank compliance.</div>
+                        </div>
+                    </div>
+                    {{-- 1. INPUT TARIF --}}
+                    <div class="p-5 bg-white border border-slate-200 rounded-[2rem] shadow-sm">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {{-- Tarif Irradiation --}}
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-[9px] font-black text-slate-400 uppercase tracking-tight">Irradiation
+                                    Rate / m³</label>
+                                <div class="relative group">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 group-focus-within:text-blue-500 transition-colors">Rp</span>
+                                    <input type="text" name="tariff_volume" id="tariff_volume" placeholder="0"
+                                        oninput="handleCurrencyInput(this)"
+                                        class="w-full py-2.5 pl-10 pr-4 text-xs font-bold bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all">
                                 </div>
-                                <h5 class="text-[9px] font-black tracking-widest uppercase text-blue-600">Service
-                                    Tariffs</h5>
                             </div>
 
-                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                {{-- Input: Irradiation --}}
-                                <div class="space-y-1">
-                                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Irradiation /
-                                        m³</label>
-                                    <div class="relative group">
-                                        <span
-                                            class="absolute text-[10px] font-bold transition-colors -translate-y-1/2 text-slate-400 left-3 top-1/2 group-focus-within:text-blue-500">Rp</span>
-                                        <input type="number" name="tariff_volume" placeholder="0"
-                                            class="w-full py-2.5 pl-10 pr-4 text-sm font-bold transition-all bg-white border-none shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                </div>
-
-                                {{-- Input: Handling --}}
-                                <div class="space-y-1">
-                                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Handling /
-                                        Pallet</label>
-                                    <div class="relative group">
-                                        <span
-                                            class="absolute text-[10px] font-bold transition-colors -translate-y-1/2 text-slate-400 left-3 top-1/2 group-focus-within:text-blue-500">Rp</span>
-                                        <input type="number" name="tariff_pallet" placeholder="0"
-                                            class="w-full py-2.5 pl-10 pr-4 text-sm font-bold transition-all bg-white border-none shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                </div>
-
-                                {{-- Input: Storage --}}
-                                <div class="space-y-1 md:col-span-2">
-                                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Storage /
-                                        Day</label>
-                                    <div class="relative group">
-                                        <span
-                                            class="absolute text-[10px] font-bold transition-colors -translate-y-1/2 text-slate-400 left-3 top-1/2 group-focus-within:text-blue-500">Rp</span>
-                                        <input type="number" name="tariff_storage" placeholder="0"
-                                            class="w-full py-2.5 pl-10 pr-4 text-sm font-bold transition-all bg-white border-none shadow-sm rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
+                            {{-- Handling Fee --}}
+                            <div class="space-y-1.5">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-tight">Handling
+                                    Fee / Pallet</label>
+                                <div class="relative group">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 group-focus-within:text-blue-500 transition-colors">Rp</span>
+                                    <input type="text" name="tariff_pallet" id="tariff_pallet" placeholder="0"
+                                        oninput="handleCurrencyInput(this)"
+                                        class="w-full py-2.5 pl-10 pr-4 text-xs font-bold bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all">
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {{-- SISI KANAN: SUMMARY --}}
-                    <div class="lg:col-span-5 pb-7">
+                        {{-- Tax Switch --}}
                         <div
-                            class="p-6 bg-slate-900 rounded-[2rem] shadow-xl flex flex-col justify-between relative overflow-hidden h-full min-h-[220px]">
-                            <div class="relative z-10">
-                                <h5
-                                    class="text-[9px] font-black tracking-widest uppercase text-slate-400 mb-4 text-center">
-                                    Estimation Summary</h5>
+                            class="flex items-center justify-between p-3 mt-4 border border-slate-100 bg-slate-50 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-receipt text-slate-400 text-[10px]"></i>
+                                <span class="text-[10px] font-black text-slate-500 uppercase">Apply VAT (PPN
+                                    11%)</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="tax_toggle" checked class="sr-only peer">
+                                <div
+                                    class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
 
-                                <div class="space-y-3">
-                                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-                                        <span class="text-[10px] font-bold uppercase text-slate-400">Volume</span>
-                                        <div class="text-right">
-                                            <input readonly name="finance_volume"
-                                                class="w-16 p-0 text-xs font-black text-right text-white bg-transparent border-none focus:ring-0"
-                                                value="0.00">
-                                            <span class="text-[9px] text-slate-500">m³</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-                                        <span class="text-[10px] font-bold uppercase text-slate-400">Pallets</span>
-                                        <div class="text-right">
-                                            <input readonly name="finance_pallet"
-                                                class="w-16 p-0 text-xs font-black text-right text-white bg-transparent border-none focus:ring-0"
-                                                value="0">
-                                            <span class="text-[9px] text-slate-500">Units</span>
-                                        </div>
-                                    </div>
+                    {{-- 2. SUMMARY BOX --}}
+                    <div class="p-6 bg-slate-900 rounded-[2.5rem] shadow-xl overflow-hidden">
+                        <div class="flex flex-col h-full border border-slate-800 p-5 rounded-[2rem]">
+                            <div class="mb-4 text-center">
+                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Proforma
+                                    Summary</span>
+                            </div>
+                            <div class="space-y-2.5 mb-4">
+                                <div class="flex justify-between text-[10px]">
+                                    <span class="text-slate-500">Subtotal Irradiation</span>
+                                    <span class="font-bold text-white" id="sub_irrad">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-[10px]">
+                                    <span class="text-slate-500">Handling Total</span>
+                                    <span class="font-bold text-white" id="sub_handling">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-[10px] pb-2 border-b border-slate-800">
+                                    <span class="text-slate-500">VAT (11%)</span>
+                                    <span class="font-bold text-blue-400" id="tax_amount">Rp 0</span>
                                 </div>
                             </div>
-
-                            <div class="relative z-10 pt-4 mt-4 border-t border-slate-800">
-                                <p class="text-[8px] font-black text-emerald-400 uppercase tracking-widest mb-1">Grand
-                                    Total</p>
+                            <div class="pt-4 mt-auto border-t border-slate-800">
+                                <p class="text-[8px] font-black text-emerald-400 uppercase mb-1">Total Payable Amount
+                                </p>
                                 <div class="flex items-baseline gap-1">
-                                    <span class="text-lg font-bold text-emerald-500">Rp</span>
-                                    <input readonly name="finance_total"
-                                        class="w-full p-0 text-xl font-black leading-none text-white bg-transparent border-none focus:ring-0"
+                                    <span class="text-sm font-bold text-emerald-500">Rp</span>
+                                    <input readonly id="finance_total_display"
+                                        class="w-full p-0 text-xl font-black text-white bg-transparent border-none focus:ring-0"
                                         value="0">
+                                    <input type="hidden" name="finance_total" id="finance_total_hidden">
                                 </div>
                             </div>
                         </div>
                     </div>
+
+
                 </div>
             </div>
-
             {{-- Navigation Buttons --}}
             <div class="flex flex-col gap-4 px-6 py-8 border-t md:px-12 bg-slate-50/50 md:flex-row">
                 <button type="button" id="prevBtn" onclick="changeStep(-1)"

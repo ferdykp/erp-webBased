@@ -1,72 +1,174 @@
-function calculateFinance() {
-    // 1. Ambil data dari input teknis (Step 1 & Step 2)
-    const totalVolume =
-        parseFloat(document.querySelector("[name='vol_total']")?.value) || 0;
-    const totalPallets =
-        parseInt(document.getElementById("pallet_count")?.value) || 0;
+// function calculateFinance() {
+//     // 1. Ambil data dari input teknis (Step 1 & Step 2)
+//     const totalVolume =
+//         parseFloat(document.querySelector("[name='vol_total']")?.value) || 0;
+//     const totalPallets =
+//         parseInt(document.getElementById("pallet_count")?.value) || 0;
 
-    // 2. Update tampilan summary di Step 4 (Input Readonly)
-    const financeVolField = document.querySelector("[name='finance_volume']");
-    const financePalletField = document.querySelector(
-        "[name='finance_pallet']",
-    );
+//     // 2. Update tampilan summary di Step 4 (Input Readonly)
+//     const financeVolField = document.querySelector("[name='finance_volume']");
+//     const financePalletField = document.querySelector(
+//         "[name='finance_pallet']",
+//     );
 
-    if (financeVolField) financeVolField.value = totalVolume.toFixed(3);
-    if (financePalletField) financePalletField.value = totalPallets;
+//     if (financeVolField) financeVolField.value = totalVolume.toFixed(3);
+//     if (financePalletField) financePalletField.value = totalPallets;
 
-    // 3. Ambil nilai tarif dari input user
-    const tariffVolume =
-        parseFloat(document.querySelector("[name='tariff_volume']")?.value) ||
-        0;
-    const tariffPallet =
-        parseFloat(document.querySelector("[name='tariff_pallet']")?.value) ||
-        0;
-    const tariffStorage =
-        parseFloat(document.querySelector("[name='tariff_storage']")?.value) ||
-        0;
+//     // 3. Ambil nilai tarif dari input user
+//     const tariffVolume =
+//         parseFloat(document.querySelector("[name='tariff_volume']")?.value) ||
+//         0;
+//     const tariffPallet =
+//         parseFloat(document.querySelector("[name='tariff_pallet']")?.value) ||
+//         0;
+//     const tariffStorage =
+//         parseFloat(document.querySelector("[name='tariff_storage']")?.value) ||
+//         0;
 
-    // 4. Hitung Total (Volume * Tarif Vol + Pallet * Tarif Pallet)
-    // Catatan: Tarif Storage biasanya dikali hari, di sini kita asumsikan per hari sebagai basis awal
-    const totalCost = totalVolume * tariffVolume + totalPallets * tariffPallet;
+//     // 4. Hitung Total (Volume * Tarif Vol + Pallet * Tarif Pallet)
+//     // Catatan: Tarif Storage biasanya dikali hari, di sini kita asumsikan per hari sebagai basis awal
+//     const totalCost = totalVolume * tariffVolume + totalPallets * tariffPallet;
 
-    // 5. Tampilkan ke Grand Total dengan format mata uang IDR sederhana
-    const totalField = document.querySelector("[name='finance_total']");
-    if (totalField) {
-        // Menggunakan format ribuan agar lebih clean: 1.000.000
-        totalField.value = new Intl.NumberFormat("id-ID").format(totalCost);
+//     // 5. Tampilkan ke Grand Total dengan format mata uang IDR sederhana
+//     const totalField = document.querySelector("[name='finance_total']");
+//     if (totalField) {
+//         // Menggunakan format ribuan agar lebih clean: 1.000.000
+//         totalField.value = new Intl.NumberFormat("id-ID").format(totalCost);
+//     }
+// }
+
+// document.addEventListener("DOMContentLoaded", function () {
+//     // Listener untuk input tarif
+//     const financeInputs = ["tariff_volume", "tariff_pallet", "tariff_storage"];
+//     financeInputs.forEach((name) => {
+//         document
+//             .querySelector(`[name='${name}']`)
+//             ?.addEventListener("input", calculateFinance);
+//     });
+
+//     // Re-calculate saat user mengubah pallet di Step 2
+//     const palletInputs = ["per_pallet", "pallet_count"];
+//     palletInputs.forEach((id) => {
+//         document.getElementById(id)?.addEventListener("input", function () {
+//             // Beri sedikit delay agar fungsi perhitungan pallet selesai dulu
+//             setTimeout(calculateFinance, 100);
+//         });
+//     });
+// });
+// document
+//     .querySelector("[name='tariff_volume']")
+//     ?.addEventListener("input", calculateFinance);
+
+// document
+//     .querySelector("[name='tariff_pallet']")
+//     ?.addEventListener("input", calculateFinance);
+
+// document.addEventListener("input", function (e) {
+//     if (e.target.name === "per_pallet" || e.target.name === "pallet_count") {
+//         setTimeout(calculateFinance, 200);
+//     }
+// });
+
+function handleCurrencyInput(el) {
+    let value = el.value.replace(/\D/g, "");
+    if (value !== "") {
+        el.value = new Intl.NumberFormat("id-ID").format(value);
+    } else {
+        el.value = "";
     }
+    calculateIndustrialFinance();
+}
+
+function parseCurrency(str) {
+    if (!str) return 0;
+    // Mengubah format "1.500.000" kembali menjadi angka murni 1500000
+    return parseFloat(str.toString().replace(/\./g, "")) || 0;
+}
+
+function calculateIndustrialFinance() {
+    // 1. Ambil data dari Step 1 & 2
+    const volTotal =
+        parseFloat(document.querySelector("[name='vol_total']").value) || 0;
+    const palletCount =
+        parseInt(document.getElementById("pallet_count").value) || 0;
+
+    // 2. Ambil tarif (dengan parsing format titik)
+    const rateVol = parseCurrency(
+        document.getElementById("tariff_volume").value,
+    );
+    const ratePallet = parseCurrency(
+        document.getElementById("tariff_pallet").value,
+    );
+    const isTaxed = document.getElementById("tax_toggle")?.checked;
+
+    // 3. Kalkulasi
+    const irradTotal = volTotal * rateVol;
+    const handlingTotal = palletCount * ratePallet;
+    const subtotal = irradTotal + handlingTotal;
+    const tax = isTaxed ? subtotal * 0.11 : 0;
+    const grandTotal = Math.round(subtotal + tax);
+
+    // 4. Update UI
+    const formatter = new Intl.NumberFormat("id-ID");
+
+    // Update labels rincian
+    if (document.getElementById("sub_irrad"))
+        document.getElementById("sub_irrad").innerText =
+            "Rp " + formatter.format(irradTotal);
+    if (document.getElementById("sub_handling"))
+        document.getElementById("sub_handling").innerText =
+            "Rp " + formatter.format(handlingTotal);
+    if (document.getElementById("tax_amount"))
+        document.getElementById("tax_amount").innerText =
+            "Rp " + formatter.format(tax);
+
+    // Update info teks (Volume / Pallet)
+    if (document.getElementById("fin_vol_disp"))
+        document.getElementById("fin_vol_disp").innerText = volTotal.toFixed(3);
+    if (document.getElementById("fin_pal_disp"))
+        document.getElementById("fin_pal_disp").innerText = palletCount;
+
+    // Update Grand Total
+    const displayTotal = document.getElementById("finance_total_display");
+    const hiddenTotal = document.getElementById("finance_total_hidden");
+
+    if (displayTotal) displayTotal.value = formatter.format(grandTotal);
+    if (hiddenTotal) hiddenTotal.value = grandTotal;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Listener untuk input tarif
-    const financeInputs = ["tariff_volume", "tariff_pallet", "tariff_storage"];
-    financeInputs.forEach((name) => {
+    // Listeners untuk semua input finansial di Step 4
+    const financeIds = [
+        "tariff_volume",
+        "tariff_pallet",
+        "tariff_storage",
+        "min_charge_val",
+    ];
+    financeIds.forEach((id) => {
+        document
+            .getElementById(id)
+            ?.addEventListener("input", calculateIndustrialFinance);
+    });
+
+    // Listener PPN Toggle
+    document
+        .getElementById("tax_toggle")
+        ?.addEventListener("change", calculateIndustrialFinance);
+
+    // Listeners untuk sinkronisasi Volume & Berat (Step 1)
+    ["vol_per_pcs", "net_weight_pcs", "gross_weight_pcs"].forEach((name) => {
         document
             .querySelector(`[name='${name}']`)
-            ?.addEventListener("input", calculateFinance);
+            ?.addEventListener("input", calculateTotals);
     });
 
-    // Re-calculate saat user mengubah pallet di Step 2
-    const palletInputs = ["per_pallet", "pallet_count"];
-    palletInputs.forEach((id) => {
+    // Re-calculate Finance otomatis saat berpindah step atau mengubah pallet
+    ["per_pallet", "pallet_count"].forEach((id) => {
         document.getElementById(id)?.addEventListener("input", function () {
-            // Beri sedikit delay agar fungsi perhitungan pallet selesai dulu
-            setTimeout(calculateFinance, 100);
+            // Beri jeda 50ms agar perhitungan pallet selesai dulu
+            setTimeout(calculateIndustrialFinance, 50);
         });
     });
-});
-document
-    .querySelector("[name='tariff_volume']")
-    ?.addEventListener("input", calculateFinance);
-
-document
-    .querySelector("[name='tariff_pallet']")
-    ?.addEventListener("input", calculateFinance);
-
-document.addEventListener("input", function (e) {
-    if (e.target.name === "per_pallet" || e.target.name === "pallet_count") {
-        setTimeout(calculateFinance, 200);
-    }
 });
 function formatNumber(num, maxDecimal = 3) {
     return parseFloat(num.toFixed(maxDecimal));
@@ -274,7 +376,8 @@ function changeStep(n) {
 
     if (currentStep === 4) {
         // Trigger kalkulasi saat masuk ke halaman payment
-        calculateFinance();
+        // calculateFinance();
+        calculateIndustrialFinance();
     }
 }
 

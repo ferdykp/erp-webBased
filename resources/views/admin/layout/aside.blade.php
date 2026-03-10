@@ -69,14 +69,14 @@
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->route('status') == 'approved' ? 'text-emerald-500 font-bold' : 'text-gray-500 hover:text-white' }}">
                     Approved
                 </a>
-                <a href="{{ route('admin.bookings.status', 'processing') }}"
+                {{-- <a href="{{ route('admin.bookings.status', 'processing') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->route('status') == 'processing' ? 'text-blue-500 font-bold' : 'text-gray-500 hover:text-white' }}">
                     On Process
                 </a>
                 <a href="{{ route('admin.bookings.status', 'completed') }}"
                     class="block px-4 py-2 text-sm rounded-lg transition-all {{ request()->route('status') == 'completed' ? 'text-indigo-500 font-bold' : 'text-gray-500 hover:text-white' }}">
                     Completed
-                </a>
+                </a> --}}
             </div>
         </div>
 

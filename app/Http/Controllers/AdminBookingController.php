@@ -92,6 +92,58 @@ class AdminBookingController extends Controller
         return back()->with('success', "Status berhasil diperbarui ke " . strtoupper($newStatus));
     }
 
+    public function businessIndex(Request $request)
+    {
+        $search = $request->query('search');
+
+        $customers = Customer::with(['bookings.products', 'bookings.batches'])
+            ->when($search, function ($query) use ($search) {
+                $query->where('company_name', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('pic_name', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+
+        $pageTitle = "Customer Business Monitoring";
+        return view('admin.business.index', compact('customers', 'pageTitle', 'search'));
+    }
+
+    public function businessDetail($id)
+    {
+        $booking = Booking::with(['customer', 'products', 'batches', 'pallets'])->findOrFail($id);
+        $isSpecial = false;
+        $reasons = [];
+        $product = $booking->products->first();
+
+        if ($product) {
+            // Contoh Kriteria Anomaly: Dosis > 50 kGy atau ada suhu khusus
+            if ($product->dmax > 50) {
+                $isSpecial = true;
+                $reasons[] = "High Dose Request (>50 kGy)";
+            }
+            if (!empty($product->expect_temp) && $product->expect_temp < 10) {
+                $isSpecial = true;
+                $reasons[] = "Sensitive Temperature Control Required";
+            }
+            if ($product->product_type == 'Experiment' || $product->product_type == 'New Product') {
+                $isSpecial = true;
+                $reasons[] = "Non-Standard Product Category";
+            }
+        }
+
+        return view('admin.business.detail', compact('booking', 'isSpecial', 'reasons'));
+    }
+
+    public function businessApprove(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+        $booking->update(['status' => 'approved']);
+
+        return redirect()->route('admin.business.index')
+            ->with('success', "Order #{$booking->booking_code} telah disetujui secara teknis/bisnis.");
+    }
+
 
     public function checkIn(Request $request)
     {
