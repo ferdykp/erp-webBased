@@ -46,6 +46,7 @@
             <input type="hidden" name="total_qty" id="hidden_total_qty">
             <input type="hidden" name="per_pallet" id="hidden_per_pallet">
             <input type="hidden" name="booking_id" id="modal_booking_id">
+            <input type="hidden" name="finance_total" id="finance_total_hidden">
 
             <div class="flex-1 px-6 py-3 overflow-y-auto md:px-12 scrollbar-hide">
 
@@ -384,7 +385,7 @@
                     Confirm & Complete Check-in
                 </button>
 
-                <script>
+                {{-- <script>
                     function setFormAction() {
                         const form = document.getElementById('checkInForm');
                         // Pastikan Anda menggunakan ID booking yang benar dari hidden input
@@ -392,7 +393,7 @@
                         // SESUAIKAN DENGAN ROUTE DI WEB.PHP
                         form.action = `/admin/bookings/${bookingId}/placement`;
                     }
-                </script>
+                </script> --}}
             </div>
         </form>
     </div>

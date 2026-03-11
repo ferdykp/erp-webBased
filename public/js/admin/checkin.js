@@ -434,10 +434,14 @@ function validateCurrentStep() {
         }
     }
     if (currentStep === 3) {
-        const form = document.getElementById("checkInForm");
-        const bId = document.getElementById("modal_booking_id").value; // Pastikan ID booking ada di hidden input
-        form.action = `/admin/bookings/${bId}/placement`;
+        // const form = document.getElementById("checkInForm");
+        // const bId = document.getElementById("modal_booking_id").value; // Pastikan ID booking ada di hidden input
+        // form.action = `/admin/bookings/${bId}/placement`;
+        // const container = document.getElementById("placementContainer");
         const container = document.getElementById("placementContainer");
+        if (container.children.length === 0) {
+            addPlacementRow();
+        }
 
         if (container.children.length === 0) {
             addPlacementRow();
@@ -950,15 +954,24 @@ if (typeof Html5QrcodeScanner !== "undefined") {
     html5QrcodeScanner.render(onScanSuccess);
 }
 
+// function setFormAction() {
+//     const form = document.getElementById("checkInForm");
+//     // Pastikan ID ini terisi saat modal dibuka
+//     const bookingId = document.getElementById("modal_booking_id").value;
+
+//     if (!bookingId) {
+//         alert("ID Booking tidak ditemukan!");
+//         return false;
+//     }
+
+//     form.action = `/admin/bookings/${bookingId}/placement`;
+// }
 function setFormAction() {
     const form = document.getElementById("checkInForm");
-    // Pastikan ID ini terisi saat modal dibuka
-    const bookingId = document.getElementById("modal_booking_id").value;
 
-    if (!bookingId) {
-        alert("ID Booking tidak ditemukan!");
-        return false;
-    }
+    // Perbaikan URL: Tambahkan /bookings/ sebelum checkin
+    form.action = "/admin/bookings/checkin";
 
-    form.action = `/admin/bookings/${bookingId}/placement`;
+    // Pastikan log ini muncul di console browser (F12) untuk verifikasi
+    console.log("Form action set to: " + form.action);
 }
