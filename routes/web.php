@@ -182,6 +182,13 @@ Route::prefix('admin')
         Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])
             ->name('admin.bookings.storePlacement');
 
+        Route::get('/customerList', [CustomerProfileController::class, 'index'])->name('admin.customerList.index');
+        Route::post('customerList/create', [CustomerProfileController::class, 'create'])->name('admin.customerList.create');
+        Route::post(
+            '/customerList/store',
+            [CustomerProfileController::class, 'store']
+        )->name('admin.customerList.store');
+
 
         Route::get('/profile', [UserAdminController::class, 'index'])->name('admin.profile');
         Route::get('/profile/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');
