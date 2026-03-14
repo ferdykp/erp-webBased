@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingBatch;
-use App\Models\BookingProduct;
+// use App\Models\BookingProduct;
 use App\Models\ProductionLine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -245,7 +245,7 @@ class AdminProductionController extends Controller
             return back()->with(
                 'error',
                 "Gagal! Quantity batch ({$request->quantity}) melebihi sisa kapasitas ({$remainingCapacity}). " .
-                "Total qty produk: {$totalProductQty}, sudah terbagi: {$existingBatchQty}."
+                    "Total qty produk: {$totalProductQty}, sudah terbagi: {$existingBatchQty}."
             );
         }
 

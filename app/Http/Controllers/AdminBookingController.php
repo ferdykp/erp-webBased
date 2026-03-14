@@ -420,30 +420,28 @@ class AdminBookingController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validasi
         $request->validate([
-            'customer_id'          => 'required|exists:customers,id',
-            'product_name'         => 'required|string|max:255',
-            'product_type'         => 'required|string|max:255',
-            'quantity'             => 'required|numeric|min:1',
-            'unit'                 => 'required',
-            'dmin'                 => 'required|numeric',
-            'dmax'                 => 'required|numeric',
-            'dim_length'           => 'required|numeric',
-            'dim_width'            => 'required|numeric',
-            'dim_height'           => 'required|numeric',
-            'gross_weight_per_pcs' => 'required|numeric',
-            'expect_temp'          => 'nullable|string',
-        ], [
-            'customer_id.exists'   => 'Customer yang dipilih tidak terdaftar dalam sistem.',
+            'customer_id'    => 'required|exists:customers,id',
+            'product_name'   => 'required|string',
+            'quantity'       => 'required|numeric',
+            'dimension_pack' => 'required|string', // Format: 20x20x20
+            'vol_total'      => 'required|numeric',
+            'payment_status' => 'required|in:paid,unpaid',
         ]);
 
         try {
+            DB::beginTransaction();
+
+            // 2. Create Master Booking
             $booking = Booking::create([
                 'customer_id'  => $request->customer_id,
                 'booking_code' => 'BOK-' . strtoupper(Str::random(8)),
                 'status'       => 'pending',
+                'payment_status' => $request->payment_status,
             ]);
 
+            // 3. Create Booking Product (Data Aktual)
             BookingProduct::create([
                 'booking_id'           => $booking->id,
                 'product_name'         => $request->product_name,
@@ -452,14 +450,21 @@ class AdminBookingController extends Controller
                 'unit'                 => $request->unit,
                 'dmin'                 => $request->dmin,
                 'dmax'                 => $request->dmax,
-                'dimension_pack'       => $request->dim_length . 'x' . $request->dim_width . 'x' . $request->dim_height,
-                'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
+                'dimension_pack'       => $request->dimension_pack,
+                'vol_per_pcs'          => $request->vol_per_pcs,
+                'vol_total'            => $request->vol_total,
+                'net_weight_pcs'       => $request->net_weight_pcs,
+                'total_net_weight'     => $request->total_net_weight,
+                'gross_weight_pcs'     => $request->gross_weight_pcs,
+                'total_gross_weight'   => $request->total_gross_weight,
                 'expect_temp'          => $request->expect_temp,
             ]);
 
-            return redirect()->route('admin.bookings')->with('success', 'Booking berhasil dibuat untuk customer.');
+            DB::commit();
+            return redirect()->route('admin.bookings')->with('success', 'Order #' . $booking->booking_code . ' berhasil dibuat.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
