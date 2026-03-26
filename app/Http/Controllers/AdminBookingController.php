@@ -436,9 +436,11 @@ class AdminBookingController extends Controller
             // 2. Create Master Booking
             $booking = Booking::create([
                 'customer_id'  => $request->customer_id,
-                'booking_code' => 'BOK-' . strtoupper(Str::random(8)),
+                // 'booking_code' => 'BOK-' . strtoupper(Str::random(8)),
+                'booking_code' => 'EB-' . strtoupper(\Str::random(6)),
                 'status'       => 'pending',
                 'payment_status' => $request->payment_status,
+                'qr_token' => \Str::uuid(),
             ]);
 
             // 3. Create Booking Product (Data Aktual)
@@ -455,7 +457,7 @@ class AdminBookingController extends Controller
                 'vol_total'            => $request->vol_total,
                 'net_weight_pcs'       => $request->net_weight_pcs,
                 'total_net_weight'     => $request->total_net_weight,
-                'gross_weight_pcs'     => $request->gross_weight_pcs,
+                'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
                 'total_gross_weight'   => $request->total_gross_weight,
                 'expect_temp'          => $request->expect_temp,
             ]);

@@ -268,27 +268,81 @@ window.currentInventory = getInventoryData();
 
 // public/js/admin/checkin.js
 
+// function openWarehouseModal(code) {
+//     const dataSource = document.querySelector(
+//         `#bookingDataSource [data-code="${code}"]`,
+//     );
+//     document.getElementById("modal_booking_id").value =
+//         dataSource.getAttribute("data-id");
+//     if (!dataSource)
+//         return alert("🚨 Kode Booking tidak valid atau sudah diproses!");
+
+//     maxQty = parseFloat(dataSource.getAttribute("data-qty")) || 0;
+
+//     // 1. Populate Data Dasar
+//     document.getElementById("check_product_name").innerText =
+//         dataSource.getAttribute("data-name");
+//     document.getElementById("check_product_type").innerText =
+//         dataSource.getAttribute("data-type");
+//     document.getElementById("check_qty").innerText = maxQty;
+//     document.getElementById("check_unit").innerText =
+//         dataSource.getAttribute("data-unit");
+
+//     // 2. Populate Data Teknis Lengkap
+//     document.getElementById("check_temp").innerText =
+//         dataSource.getAttribute("data-temp");
+//     document.getElementById("check_dmin").innerText =
+//         dataSource.getAttribute("data-dmin");
+//     document.getElementById("check_dmax").innerText =
+//         dataSource.getAttribute("data-dmax");
+//     document.getElementById("check_dimension").innerText =
+//         dataSource.getAttribute("data-dimension");
+//     document.getElementById("check_weight").innerText =
+//         dataSource.getAttribute("data-weight");
+
+//     // 3. Header & Global Info
+//     // document.getElementById("total_qty_display").innerText = maxQty;
+//     document.getElementById("display_booking_code").innerText = code;
+//     document.getElementById("modal_booking_code").value = code;
+
+//     document.getElementById("porterContainer").innerHTML = `
+// <select name="porters[]"
+// class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
+// ${generatePorterOptions()}
+// </select>
+// `;
+//     // Reset Flow Modal
+//     currentStep = 1;
+//     updateStepUI();
+
+//     document
+//         .getElementById("warehouseModal")
+//         .classList.replace("hidden", "flex");
+
+//     setTimeout(() => {
+//         calculateVolumeFromDimension();
+//     }, 200);
+// }
 function openWarehouseModal(code) {
     const dataSource = document.querySelector(
         `#bookingDataSource [data-code="${code}"]`,
     );
+
+    if (!dataSource) return alert("🚨 Kode Booking tidak valid!");
+
+    // Ambil ID Booking & Qty
     document.getElementById("modal_booking_id").value =
         dataSource.getAttribute("data-id");
-    if (!dataSource)
-        return alert("🚨 Kode Booking tidak valid atau sudah diproses!");
+    const qty = parseFloat(dataSource.getAttribute("data-qty")) || 0;
 
-    maxQty = parseFloat(dataSource.getAttribute("data-qty")) || 0;
-
-    // 1. Populate Data Dasar
+    // 1. Populate Data Ringkasan (Teks Visual)
     document.getElementById("check_product_name").innerText =
         dataSource.getAttribute("data-name");
     document.getElementById("check_product_type").innerText =
         dataSource.getAttribute("data-type");
-    document.getElementById("check_qty").innerText = maxQty;
+    document.getElementById("check_qty").innerText = qty;
     document.getElementById("check_unit").innerText =
         dataSource.getAttribute("data-unit");
-
-    // 2. Populate Data Teknis Lengkap
     document.getElementById("check_temp").innerText =
         dataSource.getAttribute("data-temp");
     document.getElementById("check_dmin").innerText =
@@ -298,31 +352,61 @@ function openWarehouseModal(code) {
     document.getElementById("check_dimension").innerText =
         dataSource.getAttribute("data-dimension");
     document.getElementById("check_weight").innerText =
-        dataSource.getAttribute("data-weight");
+        dataSource.getAttribute("data-net-pcs");
 
-    // 3. Header & Global Info
-    // document.getElementById("total_qty_display").innerText = maxQty;
+    // 2. Populate Input Form Aktual (Menggunakan ID ci_...)
+    // Volume
+    document.getElementById("ci_vol_per_pcs").value =
+        dataSource.getAttribute("data-vol-pcs");
+    document.getElementById("ci_vol_total").value =
+        dataSource.getAttribute("data-vol-total");
+
+    // Net Weight
+    document.getElementById("ci_net_weight_pcs").value =
+        dataSource.getAttribute("data-net-pcs");
+    document.getElementById("ci_total_net_weight").value =
+        dataSource.getAttribute("data-net-total");
+
+    // Gross Weight
+    document.getElementById("ci_gross_weight_pcs").value =
+        dataSource.getAttribute("data-gross-pcs");
+    document.getElementById("ci_total_gross_weight").value =
+        dataSource.getAttribute("data-gross-total");
+
+    // 3. UI Reset
     document.getElementById("display_booking_code").innerText = code;
     document.getElementById("modal_booking_code").value = code;
 
     document.getElementById("porterContainer").innerHTML = `
-<select name="porters[]"
-class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
-${generatePorterOptions()}
-</select>
-`;
-    // Reset Flow Modal
+        <select name="porters[]" class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
+            ${generatePorterOptions()}
+        </select>
+    `;
+
     currentStep = 1;
     updateStepUI();
-
     document
         .getElementById("warehouseModal")
         .classList.replace("hidden", "flex");
-
-    setTimeout(() => {
-        calculateVolumeFromDimension();
-    }, 200);
 }
+// Listener untuk kalkulasi otomatis di Warehouse Modal
+document.addEventListener("input", function (e) {
+    const qty = parseFloat(document.getElementById("check_qty").innerText) || 0;
+
+    if (e.target.id === "ci_net_weight_pcs") {
+        const val = parseFloat(e.target.value) || 0;
+        document.getElementById("ci_total_net_weight").value = (
+            val * qty
+        ).toFixed(2);
+    }
+
+    if (e.target.id === "ci_gross_weight_pcs") {
+        const val = parseFloat(e.target.value) || 0;
+        document.getElementById("ci_total_gross_weight").value = (
+            val * qty
+        ).toFixed(2);
+    }
+});
 
 function generatePorterOptions() {
     const porterData = document.querySelectorAll("#porterDataSource div");

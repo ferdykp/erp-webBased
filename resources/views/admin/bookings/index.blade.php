@@ -3,15 +3,30 @@
 @section('title', 'Bookings Management')
 
 @section('content')
+    {{-- <div id="bookingDataSource" class="hidden">
+        @foreach ($bookings as $b)
+            @php $product = $b->products->first(); @endphp
+            <div data-code="{{ $b->booking_code }}" data-id="{{ $b->id }}"
+                data-name="{{ $product->product_name ?? '-' }}" data-type="{{ $product->product_type ?? '-' }}"
+                data-qty="{{ $product->quantity ?? 0 }}" data-unit="{{ $product->unit ?? '' }}"
+                data-temp="{{ $product->expect_temp ?? '-' }}" data-dimension="{{ $product->dimension_pack ?? '-' }}"
+                data-weight="{{ $product->gross_weight_per_pcs ?? '-' }}">
+            </div>
+        @endforeach
+    </div> --}}
     <div id="bookingDataSource" class="hidden">
         @foreach ($bookings as $b)
             @php $product = $b->products->first(); @endphp
             <div data-code="{{ $b->booking_code }}" data-id="{{ $b->id }}"
                 data-name="{{ $product->product_name ?? '-' }}" data-type="{{ $product->product_type ?? '-' }}"
-                data-qty="{{ $product->quantity ?? 0 }}" data-unit="{{ $product->unit ?? '' }}" {{-- Tambahkan data teknis di bawah ini --}}
-                data-dmin="{{ $product->dmin ?? '-' }}" data-dmax="{{ $product->dmax ?? '-' }}"
-                data-temp="{{ $product->expect_temp ?? '-' }}" data-dimension="{{ $product->dimension_pack ?? '-' }}"
-                data-weight="{{ $product->gross_weight_per_pcs ?? '-' }}">
+                data-qty="{{ $product->quantity ?? 0 }}" data-unit="{{ $product->unit ?? '' }}"
+                data-temp="{{ $product->expect_temp ?? '-' }}" data-dmin="{{ $product->dmin ?? 0 }}"
+                data-dmax="{{ $product->dmax ?? 0 }}" data-dimension="{{ $product->dimension_pack ?? '-' }}"
+                {{-- Tambahkan Baris Ini --}} data-vol-pcs="{{ $product->vol_per_pcs ?? 0 }}"
+                data-vol-total="{{ $product->vol_total ?? 0 }}" data-net-pcs="{{ $product->net_weight_pcs ?? 0 }}"
+                data-net-total="{{ $product->total_net_weight ?? 0 }}"
+                data-gross-pcs="{{ $product->gross_weight_per_pcs ?? 0 }}"
+                data-gross-total="{{ $product->total_gross_weight ?? 0 }}">
             </div>
         @endforeach
     </div>

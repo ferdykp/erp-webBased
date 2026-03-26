@@ -24,7 +24,7 @@ class BookingProduct extends Model
         'vol_total',
         'net_weight_pcs',
         'total_net_weight',
-        'gross_weight_pcs',
+        // 'gross_weight_pcs',
         'total_gross_weight'
     ];
 

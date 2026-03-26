@@ -98,7 +98,7 @@
                     </div>
 
                     {{-- Weight & Volume Inputs --}}
-                    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+                    {{-- <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
                         @php
                             $inputs = [
                                 ['vol_per_pcs', 'Product Volume / pcs', 'fa-box-open', 'm³', 'readonly'],
@@ -118,6 +118,70 @@
                                         class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid {{ $input[2] }}"></i>
                                     <input type="number" step="0.000001" name="{{ $input[0] }}"
                                         {{ $input[4] }}
+                                        class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700">
+                                    <span
+                                        class="absolute text-xs font-bold text-gray-400 -translate-y-1/2 right-4 top-1/2">{{ $input[3] }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div> --}}
+                    {{-- Weight & Volume Inputs pada Check-in Modal --}}
+                    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+                        @php
+                            $inputs = [
+                                // [name, label, icon, unit, attributes, ID_TAMBAHAN]
+                                [
+                                    'vol_per_pcs',
+                                    'Product Volume / pcs',
+                                    'fa-box-open',
+                                    'm³',
+                                    'readonly',
+                                    'ci_vol_per_pcs',
+                                ],
+                                ['vol_total', 'Total Volume', 'fa-tags', 'm³', 'readonly', 'ci_vol_total'],
+                                [
+                                    'net_weight_pcs',
+                                    'Net Weight / pcs',
+                                    'fa-weight-hanging',
+                                    'kg',
+                                    '',
+                                    'ci_net_weight_pcs',
+                                ],
+                                [
+                                    'total_net_weight',
+                                    'Total Net Weight',
+                                    'fa-calculator',
+                                    'kg',
+                                    'readonly',
+                                    'ci_total_net_weight',
+                                ],
+                                [
+                                    'gross_weight_pcs',
+                                    'Gross Weight / pcs',
+                                    'fa-weight-hanging',
+                                    'kg',
+                                    '',
+                                    'ci_gross_weight_pcs',
+                                ],
+                                [
+                                    'total_gross_weight',
+                                    'Total Gross Weight',
+                                    'fa-calculator',
+                                    'kg',
+                                    'readonly',
+                                    'ci_total_gross_weight',
+                                ],
+                            ];
+                        @endphp
+                        @foreach ($inputs as $input)
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{{ $input[1] }}</label>
+                                <div class="relative">
+                                    <i
+                                        class="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2 fa-solid {{ $input[2] }}"></i>
+                                    <input type="number" step="0.000001" name="{{ $input[0] }}"
+                                        id="{{ $input[5] }}" {{-- ID Unik untuk Check-in --}} {{ $input[4] }}
                                         class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 transition-all outline-none font-bold text-gray-700">
                                     <span
                                         class="absolute text-xs font-bold text-gray-400 -translate-y-1/2 right-4 top-1/2">{{ $input[3] }}</span>
