@@ -41,6 +41,10 @@
         <form action="{{ route('admin.bookings.checkin') }}" method="POST" id="checkInForm"
             class="flex flex-col flex-1 overflow-hidden">
             @csrf
+            <input type="hidden" id="final_qty">
+            <input type="hidden" id="final_dmin">
+            <input type="hidden" id="final_total_price" name="total_price">
+
             <input type="hidden" name="booking_code" id="modal_booking_code">
 
             <input type="hidden" name="total_qty" id="hidden_total_qty">
@@ -240,16 +244,14 @@
             </div>
 
             {{-- STEP 4: VERTICAL INDUSTRIAL FINANCE --}}
-            <div class="hidden p-8 step-content" id="step4"
+            {{-- <div class="hidden p-8 step-content" id="step4"
                 style="max-height: 70vh; overflow-y: auto; padding-bottom: 50px;">
-                {{-- Header --}}
                 <div class="mb-4">
                     <h4 class="text-xs font-black tracking-widest uppercase text-slate-800">Financial Calculation</h4>
                     <p class="text-[10px] font-bold text-slate-400">Input tarif untuk estimasi biaya layanan.</p>
                 </div>
 
                 <div class="flex flex-col gap-4">
-                    {{-- 3. CALCULATION LOGIC PANEL --}}
                     <div class="p-4 mb-8 border border-blue-100 shadow-inner bg-blue-50/50 rounded-2xl">
                         <h5 class="text-[9px] font-black text-blue-700 uppercase mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-calculator"></i> Calculation Methodology
@@ -264,10 +266,8 @@
                             <div class="text-[8px] text-slate-500 italic">*Rounding applied for bank compliance.</div>
                         </div>
                     </div>
-                    {{-- 1. INPUT TARIF --}}
                     <div class="p-5 bg-white border border-slate-200 rounded-[2rem] shadow-sm">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {{-- Tarif Irradiation --}}
                             <div class="space-y-1.5">
                                 <label
                                     class="text-[9px] font-black text-slate-400 uppercase tracking-tight">Irradiation
@@ -281,7 +281,6 @@
                                 </div>
                             </div>
 
-                            {{-- Handling Fee --}}
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-tight">Handling
                                     Fee / Pallet</label>
@@ -295,7 +294,6 @@
                             </div>
                         </div>
 
-                        {{-- Tax Switch --}}
                         <div
                             class="flex items-center justify-between p-3 mt-4 border border-slate-100 bg-slate-50 rounded-xl">
                             <div class="flex items-center gap-2">
@@ -312,7 +310,6 @@
                         </div>
                     </div>
 
-                    {{-- 2. SUMMARY BOX --}}
                     <div class="p-6 bg-slate-900 rounded-[2.5rem] shadow-xl overflow-hidden">
                         <div class="flex flex-col h-full border border-slate-800 p-5 rounded-[2rem]">
                             <div class="mb-4 text-center">
@@ -349,6 +346,109 @@
 
 
                 </div>
+            </div> --}}
+            <div class="hidden p-8 step-content" id="step4"
+                style="max-height: 70vh; overflow-y: auto; padding-bottom: 50px;">
+
+                {{-- HEADER --}}
+                <div class="mb-4 text-center">
+                    <h4 class="text-xs font-black tracking-widest uppercase text-slate-800">
+                        Payment Calculation
+                    </h4>
+                    <p class="text-[10px] font-bold text-slate-400">
+                        Perhitungan biaya berdasarkan dose, berat, dan quantity
+                    </p>
+                </div>
+
+                {{-- 🔹 RINCIAN BIAYA --}}
+                <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm mb-4">
+
+                    <div class="flex items-center justify-between px-6 py-3 border-b bg-slate-50">
+                        <span class="text-[10px] font-black uppercase text-slate-500">
+                            Rincian Biaya
+                        </span>
+                        <span class="text-[10px] font-bold py-1 px-3 bg-blue-100 text-blue-700 rounded-full">
+                            Rp 500 / dose
+                        </span>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+
+                        {{-- SUBTOTAL --}}
+                        <div class="flex items-start justify-between text-slate-600">
+                            <div>
+                                <p class="text-xs font-bold uppercase">Harga Dasar (Subtotal)</p>
+                                <p class="text-[10px] text-slate-400 italic">
+                                    500 × <span id="calc_qty">0</span>
+                                    × <span id="calc_nett">0</span>
+                                    × <span id="calc_dmin">0</span>
+                                </p>
+                            </div>
+                            <span class="font-bold" id="display_subtotal">Rp 0</span>
+                        </div>
+
+                        {{-- TAX --}}
+                        <div class="flex items-center justify-between text-slate-600">
+                            <p class="text-xs font-bold uppercase text-slate-400">
+                                Pajak (PPN)
+                            </p>
+                            <span class="font-bold text-slate-400" id="display_tax">Rp 0</span>
+                        </div>
+
+                        {{-- TOTAL --}}
+                        <div class="flex items-center justify-between pt-4 border-t border-dashed">
+                            <p class="text-sm font-black uppercase text-slate-800">
+                                Total Bayar
+                            </p>
+                            <h4 class="text-2xl font-black text-blue-600" id="display_total_price">
+                                Rp 0
+                            </h4>
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- 🔹 PPN OPTION --}}
+                <div class="p-4 mb-4 border bg-slate-50 rounded-2xl border-slate-100">
+                    <label class="block mb-2 text-[10px] font-black text-slate-500 uppercase text-center">
+                        Gunakan PPN?
+                    </label>
+
+                    <div class="flex gap-3">
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="use_ppn" value="0" checked onchange="calculatePrice()">
+                            <span class="text-xs font-bold text-slate-600">Tanpa PPN</span>
+                        </label>
+
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="use_ppn" value="0.11" onchange="calculatePrice()">
+                            <span class="text-xs font-bold text-blue-600">PPN 11%</span>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- 🔹 PAYMENT STATUS --}}
+                <div class="p-4 mb-4 border border-emerald-100 bg-emerald-50/30 rounded-2xl">
+                    <h4 class="mb-2 text-xs font-black uppercase text-slate-800">
+                        Status Pembayaran
+                    </h4>
+
+                    <div class="flex gap-2">
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="payment_status" value="unpaid" checked>
+                            <span class="text-xs font-bold text-slate-600">Bayar Nanti</span>
+                        </label>
+
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="payment_status" value="paid">
+                            <span class="text-xs font-bold text-blue-600">Lunas</span>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- 🔹 TOTAL (HIDDEN FOR BACKEND) --}}
+                <input type="hidden" name="finance_total" id="finance_total_hidden">
+
             </div>
             {{-- Navigation Buttons --}}
             <div class="flex flex-col gap-4 px-6 py-8 border-t md:px-12 bg-slate-50/50 md:flex-row">
@@ -360,12 +460,16 @@
                     class="flex-[2] py-5 text-xs font-black text-white uppercase bg-blue-600 shadow-xl shadow-blue-100 rounded-3xl hover:bg-blue-700 transition-all">
                     Continue <i class="ml-2 fa-solid fa-arrow-right"></i>
                 </button>
-                <button type="submit" id="finalSubmitBtn" onclick="setFormAction()"
+                {{-- <button type="submit" id="finalSubmitBtn" onclick="setFormAction()"
+                    class="flex-[2] hidden py-5 text-xs font-black text-white uppercase bg-emerald-500 rounded-3xl">
+                    Confirm & Complete Check-in
+                </button> --}}
+                <button type="submit" id="finalSubmitBtn"
                     class="flex-[2] hidden py-5 text-xs font-black text-white uppercase bg-emerald-500 rounded-3xl">
                     Confirm & Complete Check-in
                 </button>
 
-                <script>
+                {{-- <script>
                     function setFormAction() {
                         const form = document.getElementById('checkInForm');
                         // Pastikan Anda menggunakan ID booking yang benar dari hidden input
@@ -373,7 +477,7 @@
                         // SESUAIKAN DENGAN ROUTE DI WEB.PHP
                         form.action = `/admin/bookings/${bookingId}/placement`;
                     }
-                </script>
+                </script> --}}
             </div>
         </form>
     </div>

@@ -402,4 +402,49 @@ class AdminBookingController extends Controller
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function storePlacement(Request $request, $bookingId)
+    {
+        // Validasi input array dari form
+        $request->validate([
+            'product_names' => 'required|array', // Pastikan name="product_names[]" di form
+            'lines' => 'required|array',
+            'petaks' => 'required|array',
+            'pallet_qty' => 'required|array',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request, $bookingId) {
+                // Hapus data lama milik booking ini agar tidak duplikat saat edit
+                \App\Models\PalletContent::where('booking_id', $bookingId)->delete();
+
+                foreach ($request->lines as $index => $line) {
+                    $petak = $request->petaks[$index];
+                    $qty = $request->pallet_qty[$index];
+                    $productName = $request->product_names[$index];
+
+                    // Cari master lokasi palet
+                    $slot = \App\Models\Pallet::where('line', (string)$line)
+                        ->where('slot_section', (int)$petak)
+                        ->first();
+
+                    if (!$slot) {
+                        throw new \Exception("Slot Line {$line} Petak {$petak} tidak terdaftar di sistem!");
+                    }
+
+                    // Simpan detail produk di lokasi tersebut
+                    \App\Models\PalletContent::create([
+                        'pallet_id'    => $slot->id,
+                        'booking_id'   => $bookingId,
+                        'product_name' => $productName,
+                        'quantity'     => $qty
+                    ]);
+                }
+            });
+
+            return back()->with('success', 'Penempatan produk di petak berhasil disimpan.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
+    }
 }

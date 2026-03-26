@@ -69,6 +69,105 @@
 //     }
 // });
 
+function syncStep1ToStep4() {
+    const qtyEl = document.getElementById("check_qty");
+    const dminEl = document.getElementById("check_dmin");
+    const nettEl = document.querySelector('[name="net_weight_pcs"]');
+
+    const qty = parseFloat(qtyEl?.innerText.replace(/[^0-9.]/g, "")) || 0;
+    const dmin = parseFloat(dminEl?.innerText.replace(/[^0-9.]/g, "")) || 0;
+    const nett = parseFloat(nettEl?.value) || 0;
+
+    // simpan ke hidden
+    if (document.getElementById("final_qty"))
+        document.getElementById("final_qty").value = qty;
+
+    if (document.getElementById("final_dmin"))
+        document.getElementById("final_dmin").value = dmin;
+
+    // update UI
+    document.getElementById("calc_qty").innerText = qty;
+    document.getElementById("calc_dmin").innerText = dmin;
+    document.getElementById("calc_nett").innerText = nett;
+
+    return { qty, nett, dmin };
+}
+
+function calculatePrice() {
+    // 🔥 sync dulu
+    syncStep1ToStep4();
+
+    const qty = parseFloat(document.getElementById("final_qty").value) || 0;
+    const nett =
+        parseFloat(
+            document.querySelector('input[name="net_weight_pcs"]')?.value,
+        ) || 0;
+    const dmin = parseFloat(document.getElementById("final_dmin").value) || 0;
+
+    const pricePerDose = 500;
+
+    const subtotal = pricePerDose * qty * nett * dmin;
+
+    const ppnRate =
+        parseFloat(
+            document.querySelector('input[name="use_ppn"]:checked')?.value,
+        ) || 0;
+
+    const tax = subtotal * ppnRate;
+    const total = subtotal + tax;
+
+    const formatter = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    });
+
+    // ✅ update UI
+    document.getElementById("display_subtotal").innerText =
+        formatter.format(subtotal);
+    document.getElementById("display_tax").innerText = formatter.format(tax);
+    document.getElementById("display_total_price").innerText =
+        formatter.format(total);
+
+    // ✅ backend
+    document.getElementById("final_total_price").value = total;
+    document.getElementById("finance_total_hidden").value = total;
+
+    console.log("FINAL PRICE:", { qty, nett, dmin, subtotal, tax, total });
+}
+
+function calculateDoseFinance() {
+    const { qty, nett, dmin } = syncStep1ToStep4();
+
+    const pricePerDose = 500;
+
+    const subtotal = pricePerDose * qty * nett * dmin;
+
+    const ppnRate =
+        parseFloat(
+            document.querySelector('input[name="use_ppn"]:checked')?.value,
+        ) || 0;
+
+    const tax = subtotal * ppnRate;
+    const total = subtotal + tax;
+
+    const formatter = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    });
+
+    document.getElementById("display_subtotal").innerText =
+        formatter.format(subtotal);
+    document.getElementById("display_tax").innerText = formatter.format(tax);
+    document.getElementById("display_total_price").innerText =
+        formatter.format(total);
+
+    document.getElementById("finance_total_hidden").value = total;
+
+    console.log("FIXED:", { qty, nett, dmin, subtotal, total });
+}
+
 function handleCurrencyInput(el) {
     let value = el.value.replace(/\D/g, "");
     if (value !== "") {
@@ -76,7 +175,8 @@ function handleCurrencyInput(el) {
     } else {
         el.value = "";
     }
-    calculateIndustrialFinance();
+    //     calculateDoseFinance();
+    calculateDoseFinance();
 }
 
 function parseCurrency(str) {
@@ -85,59 +185,94 @@ function parseCurrency(str) {
     return parseFloat(str.toString().replace(/\./g, "")) || 0;
 }
 
-function calculateIndustrialFinance() {
-    // 1. Ambil data dari Step 1 & 2
-    const volTotal =
-        parseFloat(document.querySelector("[name='vol_total']").value) || 0;
-    const palletCount =
-        parseInt(document.getElementById("pallet_count").value) || 0;
+// function     calculateDoseFinance() {
+//     // 1. Ambil data dari Step 1 & 2
+//     const volTotal =
+//         parseFloat(document.querySelector("[name='vol_total']").value) || 0;
+//     const palletCount =
+//         parseInt(document.getElementById("pallet_count").value) || 0;
 
-    // 2. Ambil tarif (dengan parsing format titik)
-    const rateVol = parseCurrency(
-        document.getElementById("tariff_volume").value,
-    );
-    const ratePallet = parseCurrency(
-        document.getElementById("tariff_pallet").value,
-    );
-    const isTaxed = document.getElementById("tax_toggle")?.checked;
+//     // 2. Ambil tarif (dengan parsing format titik)
+//     const rateVol = parseCurrency(
+//         document.getElementById("tariff_volume").value,
+//     );
+//     const ratePallet = parseCurrency(
+//         document.getElementById("tariff_pallet").value,
+//     );
+//     const isTaxed = document.getElementById("tax_toggle")?.checked;
 
-    // 3. Kalkulasi
-    const irradTotal = volTotal * rateVol;
-    const handlingTotal = palletCount * ratePallet;
-    const subtotal = irradTotal + handlingTotal;
-    const tax = isTaxed ? subtotal * 0.11 : 0;
-    const grandTotal = Math.round(subtotal + tax);
+//     // 3. Kalkulasi
+//     const irradTotal = volTotal * rateVol;
+//     const handlingTotal = palletCount * ratePallet;
+//     const subtotal = irradTotal + handlingTotal;
+//     const tax = isTaxed ? subtotal * 0.11 : 0;
+//     const grandTotal = Math.round(subtotal + tax);
 
-    // 4. Update UI
-    const formatter = new Intl.NumberFormat("id-ID");
+//     // 4. Update UI
+//     const formatter = new Intl.NumberFormat("id-ID");
 
-    // Update labels rincian
-    if (document.getElementById("sub_irrad"))
-        document.getElementById("sub_irrad").innerText =
-            "Rp " + formatter.format(irradTotal);
-    if (document.getElementById("sub_handling"))
-        document.getElementById("sub_handling").innerText =
-            "Rp " + formatter.format(handlingTotal);
-    if (document.getElementById("tax_amount"))
-        document.getElementById("tax_amount").innerText =
-            "Rp " + formatter.format(tax);
+//     // Update labels rincian
+//     if (document.getElementById("sub_irrad"))
+//         document.getElementById("sub_irrad").innerText =
+//             "Rp " + formatter.format(irradTotal);
+//     if (document.getElementById("sub_handling"))
+//         document.getElementById("sub_handling").innerText =
+//             "Rp " + formatter.format(handlingTotal);
+//     if (document.getElementById("tax_amount"))
+//         document.getElementById("tax_amount").innerText =
+//             "Rp " + formatter.format(tax);
 
-    // Update info teks (Volume / Pallet)
-    if (document.getElementById("fin_vol_disp"))
-        document.getElementById("fin_vol_disp").innerText = volTotal.toFixed(3);
-    if (document.getElementById("fin_pal_disp"))
-        document.getElementById("fin_pal_disp").innerText = palletCount;
+//     // Update info teks (Volume / Pallet)
+//     if (document.getElementById("fin_vol_disp"))
+//         document.getElementById("fin_vol_disp").innerText = volTotal.toFixed(3);
+//     if (document.getElementById("fin_pal_disp"))
+//         document.getElementById("fin_pal_disp").innerText = palletCount;
 
-    // Update Grand Total
-    const displayTotal = document.getElementById("finance_total_display");
-    const hiddenTotal = document.getElementById("finance_total_hidden");
+//     // Update Grand Total
+//     const displayTotal = document.getElementById("finance_total_display");
+//     const hiddenTotal = document.getElementById("finance_total_hidden");
 
-    if (displayTotal) displayTotal.value = formatter.format(grandTotal);
-    if (hiddenTotal) hiddenTotal.value = grandTotal;
-}
+//     if (displayTotal) displayTotal.value = formatter.format(grandTotal);
+//     if (hiddenTotal) hiddenTotal.value = grandTotal;
+// }
+
+// document.addEventListener("DOMContentLoaded", function () {
+//     // Listeners untuk semua input finansial di Step 4
+//     const financeIds = [
+//         "tariff_volume",
+//         "tariff_pallet",
+//         "tariff_storage",
+//         "min_charge_val",
+//     ];
+//     financeIds.forEach((id) => {
+//         document
+//             .getElementById(id)
+//             ?.addEventListener("input", calculateDoseFinance);
+//     });
+
+//     // Listener PPN Toggle
+//     document
+//         .getElementById("tax_toggle")
+//         ?.addEventListener("change", calculateDoseFinance);
+
+//     // Listeners untuk sinkronisasi Volume & Berat (Step 1)
+//     ["vol_per_pcs", "net_weight_pcs", "gross_weight_pcs"].forEach((name) => {
+//         document
+//             .querySelector(`[name='${name}']`)
+//             ?.addEventListener("input", calculateTotals);
+//     });
+
+//     // Re-calculate Finance otomatis saat berpindah step atau mengubah pallet
+//     ["per_pallet", "pallet_count"].forEach((id) => {
+//         document.getElementById(id)?.addEventListener("input", function () {
+//             // Beri jeda 50ms agar perhitungan pallet selesai dulu
+//             setTimeout(calculateDoseFinance, 50);
+//         });
+//     });
+// });
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Listeners untuk semua input finansial di Step 4
+    // Listener finance
     const financeIds = [
         "tariff_volume",
         "tariff_pallet",
@@ -147,26 +282,23 @@ document.addEventListener("DOMContentLoaded", function () {
     financeIds.forEach((id) => {
         document
             .getElementById(id)
-            ?.addEventListener("input", calculateIndustrialFinance);
+            ?.addEventListener("input", calculateDoseFinance);
     });
 
-    // Listener PPN Toggle
+    // ✅ TAMBAHKAN DI SINI
+    document
+        .querySelector('[name="net_weight_pcs"]')
+        ?.addEventListener("input", calculateDoseFinance);
+
+    // Listener PPN
     document
         .getElementById("tax_toggle")
-        ?.addEventListener("change", calculateIndustrialFinance);
+        ?.addEventListener("change", calculateDoseFinance);
 
-    // Listeners untuk sinkronisasi Volume & Berat (Step 1)
-    ["vol_per_pcs", "net_weight_pcs", "gross_weight_pcs"].forEach((name) => {
-        document
-            .querySelector(`[name='${name}']`)
-            ?.addEventListener("input", calculateTotals);
-    });
-
-    // Re-calculate Finance otomatis saat berpindah step atau mengubah pallet
+    // Listener pallet
     ["per_pallet", "pallet_count"].forEach((id) => {
         document.getElementById(id)?.addEventListener("input", function () {
-            // Beri jeda 50ms agar perhitungan pallet selesai dulu
-            setTimeout(calculateIndustrialFinance, 50);
+            setTimeout(calculateDoseFinance, 50);
         });
     });
 });
@@ -377,7 +509,10 @@ function changeStep(n) {
     if (currentStep === 4) {
         // Trigger kalkulasi saat masuk ke halaman payment
         // calculateFinance();
-        calculateIndustrialFinance();
+        //     calculateDoseFinance();
+        setTimeout(() => {
+            calculateDoseFinance();
+        }, 100);
     }
 }
 
