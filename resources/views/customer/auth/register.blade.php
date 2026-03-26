@@ -39,7 +39,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">
                         Full Name
                     </label>
-                    <input type="text" name="name" value="{{ old('name') }}" required
+                    <input type="text" name="username" value="{{ old('username') }}" required
                         class="w-full px-4 py-3 transition border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
                         placeholder="Enter your full name">
                 </div>

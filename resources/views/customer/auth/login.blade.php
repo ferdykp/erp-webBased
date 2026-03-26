@@ -27,13 +27,33 @@
                                 class="font-bold text-blue-600 hover:underline">Register</a></p>
                     </div>
 
+                    {{-- PESAN ERROR UMUM --}}
+                    @if ($errors->any())
+                        <div class="p-4 mb-6 text-sm text-red-700 bg-red-100 border border-red-200 rounded-2xl">
+                            <div class="flex items-center">
+                                <i class="mr-2 fa-solid fa-circle-exclamation"></i>
+                                <span class="font-bold">Login Gagal!</span>
+                            </div>
+                            <ul class="mt-1 ml-6 list-disc">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('customer.login') }}" method="POST" class="space-y-5">
                         @csrf
                         <div>
                             <label class="ml-1 text-xs font-bold tracking-widest text-gray-400 uppercase">Email
                                 Address</label>
-                            <input type="email" name="email" required placeholder="name@example.com"
-                                class="w-full px-5 py-4 mt-1 transition-all border border-gray-200 outline-none bg-gray-50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
+                            <input type="email" name="email" value="{{ old('email') }}" required
+                                placeholder="name@example.com"
+                                class="w-full px-5 py-4 mt-1 transition-all border @error('email') border-red-500 @else border-gray-200 @enderror outline-none bg-gray-50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
+                            {{-- Error per field --}}
+                            @error('email')
+                                <span class="mt-1 ml-1 text-xs font-semibold text-red-500">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div>
@@ -42,12 +62,15 @@
                             </div>
                             <div class="relative mt-1">
                                 <input type="password" name="password" id="password" required placeholder="••••••••"
-                                    class="w-full px-5 py-4 transition-all border border-gray-200 outline-none bg-gray-50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
+                                    class="w-full px-5 py-4 transition-all border @error('password') border-red-500 @else border-gray-200 @enderror outline-none bg-gray-50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-600">
                                 <button type="button" onclick="togglePassword('password', 'eyeIcon')"
                                     class="absolute text-gray-400 -translate-y-1/2 right-4 top-1/2">
                                     <i id="eyeIcon" class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
+                            @error('password')
+                                <span class="mt-1 ml-1 text-xs font-semibold text-red-500">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <button type="submit"

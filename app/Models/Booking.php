@@ -11,6 +11,8 @@ class Booking extends Model
     protected $fillable = [
         'booking_code',
         'customer_id',
+        'user_id',
+
         'arrival_time',
         'pic_warehouse',
         'status',
@@ -20,6 +22,10 @@ class Booking extends Model
     protected $casts = [
         'arrival_time' => 'datetime',
     ];
+    // public function bookings()
+    // {
+    //     return $this->hasMany(Booking::class);
+    // }
 
     public function customer(): BelongsTo
     {
@@ -50,6 +56,11 @@ class Booking extends Model
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
     // public function porter(): BelongsTo
     // {

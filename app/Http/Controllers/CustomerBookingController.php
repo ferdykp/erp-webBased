@@ -9,6 +9,8 @@ use App\Models\BookingSlot;
 use App\Models\BookingProduct;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class CustomerBookingController extends Controller
@@ -32,6 +34,7 @@ class CustomerBookingController extends Controller
 
     public function store(Request $request)
     {
+        // dd(auth('customer')->user(), auth('customer')->user()->customer);
         $request->validate([
             'product_name' => 'required|string',
             'product_type' => 'required|string',
@@ -56,7 +59,9 @@ class CustomerBookingController extends Controller
             $booking = Booking::create([
                 'booking_code' => 'EB-' . strtoupper(\Str::random(6)),
                 // 'ticket_code' => 'TCK-' . strtoupper(\Str::random(8)),
-                'customer_id' => auth('customer')->id(),
+                // 'customer_id' => auth('customer')->id(),
+                'customer_id' => auth('customer')->user()->customer->id,
+                'user_id' => Auth::guard('customer')->id(),
                 'status' => 'pending',
                 'qr_token' => \Str::uuid(),
             ]);

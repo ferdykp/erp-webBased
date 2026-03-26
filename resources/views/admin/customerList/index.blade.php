@@ -226,120 +226,214 @@
 
 
         {{-- MODAL CREATE CUSTOMER --}}
-        <div x-show="openCreate"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md" x-cloak>
+        <div x-show="openCreate" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-data="{
+                step: 1,
+                totalSteps: 2,
+                // Fungsi untuk validasi sebelum lanjut
+                validateAndNext() {
+                    const inputs = document.querySelectorAll('#step-1-content [required]');
+                    let isValid = true;
+            
+                    inputs.forEach(input => {
+                        if (!input.checkValidity()) {
+                            input.reportValidity(); // Tampilkan pesan error bawaan browser
+                            isValid = false;
+                        }
+                    });
+            
+                    if (isValid) this.step++;
+                },
+                prevStep() { if (this.step > 1) this.step-- }
+            }"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
 
-            <div @click.away="openCreate = false" class="bg-white w-full max-w-2xl rounded-[2rem] shadow-xl">
+            <div @click.away="openCreate = false; step = 1" x-show="openCreate"
+                x-transition:enter="transition ease-out duration-300 delay-100"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl shadow-slate-900/20 overflow-hidden border border-white">
 
-                <div class="flex items-center justify-between p-6 border-b">
+                {{-- MODAL HEADER & STEP TRACKER --}}
+                <div class="px-10 pt-12 pb-8 bg-gradient-to-b from-slate-50 to-white">
+                    <div class="relative flex items-center justify-between">
 
-                    <h3 class="text-lg font-bold text-slate-800">
-                        Create Customer
-                    </h3>
+                        {{-- Background Line --}}
+                        <div class="absolute top-5 left-0 w-full h-[2px] bg-slate-100 -z-0">
+                            <div class="h-full transition-all duration-700 bg-blue-500"
+                                :style="`width: ${step === 1 ? '0%' : '100%'}`"></div>
+                        </div>
 
-                    <button @click="openCreate = false" class="text-slate-400 hover:text-red-500">
-                        <i class="text-lg fa-solid fa-xmark"></i>
-                    </button>
+                        {{-- Step 1 --}}
+                        <div class="relative z-10 flex flex-col items-start pr-4 bg-white">
+                            <div :class="step >= 1 ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200' :
+                                'bg-white border-slate-200 text-slate-400'"
+                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 border-2 shadow-lg rounded-2xl group">
+                                <template x-if="step > 1">
+                                    <i class="text-xs fa-solid fa-check"></i>
+                                </template>
+                                <template x-if="step === 1">
+                                    <span class="text-xs font-black">01</span>
+                                </template>
+                            </div>
+                            <div class="mt-3">
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em]"
+                                    :class="step >= 1 ? 'text-blue-600' : 'text-slate-400'">Company</p>
+                                <p class="text-sm font-bold text-slate-800">General Info</p>
+                            </div>
+                        </div>
 
+                        {{-- Step 2 --}}
+                        <div class="relative z-10 flex flex-col items-end pl-4 text-right bg-white">
+                            <div :class="step >= 2 ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200' :
+                                'bg-white border-slate-200 text-slate-400'"
+                                class="flex items-center justify-center w-10 h-10 ml-auto transition-all duration-500 border-2 shadow-lg rounded-2xl">
+                                <span class="text-xs font-black">02</span>
+                            </div>
+                            <div class="mt-3">
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em]"
+                                    :class="step >= 2 ? 'text-blue-600' : 'text-slate-400'">Contact</p>
+                                <p class="text-sm font-bold text-slate-800">Person in Charge</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-
-                <form action="{{ route('admin.customerList.store') }}" method="POST" class="p-6 space-y-5">
-
+                <form action="{{ route('admin.customerList.store') }}" method="POST">
                     @csrf
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="px-10 pb-10">
+                        {{-- STEP 1: COMPANY & ADDRESS --}}
+                        <div x-show="step === 1" x-transition:enter="transition ease-out duration-500"
+                            x-transition:enter-start="opacity-0 translate-x-8"
+                            x-transition:enter-end="opacity-100 translate-x-0" class="space-y-6">
 
-                        <div>
-                            <label class="text-xs font-bold uppercase text-slate-400">
-                                Customer Name
-                            </label>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="col-span-2">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Company
+                                        Name</label>
+                                    <input type="text" name="company_name" required
+                                        placeholder="Enter legal company name"
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white focus:shadow-inner outline-none text-slate-700">
+                                </div>
 
-                            <input type="text" name="name" required
-                                class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200">
+                                <div class="col-span-1">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Industry
+                                        Sector</label>
+                                    <input type="text" name="industry" placeholder="e.g. Technology"
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                </div>
+
+                                <div class="col-span-1">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Tax
+                                        ID (NPWP)</label>
+                                    <input type="text" name="npwp" placeholder="00.000.000.0-000.000"
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                </div>
+
+                                <div class="col-span-2 pt-4">
+                                    <div class="flex items-center gap-4 mb-6">
+                                        <span
+                                            class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Office
+                                            Address</span>
+                                        <div class="flex-1 h-px bg-slate-100"></div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <textarea name="address_line" rows="2" placeholder="Full street address..."
+                                            class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700"></textarea>
+
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <input type="text" name="city" placeholder="City"
+                                                class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                            <input type="text" name="postal_code" placeholder="Zip Code"
+                                                class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        {{-- STEP 2: CONTACT PERSON --}}
+                        <div x-show="step === 2" x-transition:enter="transition ease-out duration-500"
+                            x-transition:enter-start="opacity-0 translate-x-8"
+                            x-transition:enter-end="opacity-100 translate-x-0" class="space-y-6">
 
-                        <div>
-                            <label class="text-xs font-bold uppercase text-slate-400">
-                                Email
-                            </label>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="col-span-2">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Full
+                                        Name (PIC)</label>
+                                    <input type="text" name="contact_name" required placeholder="Legal full name"
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                </div>
 
-                            <input type="email" name="email" required
-                                class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200">
+                                <div class="col-span-1">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Position</label>
+                                    <input type="text" name="contact_position" placeholder="e.g. Procurement"
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                </div>
+
+                                <div class="col-span-1">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Phone
+                                        Number</label>
+                                    <input type="text" name="contact_phone" required placeholder="+62..."
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                </div>
+
+                                <div class="col-span-2">
+                                    <label
+                                        class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Professional
+                                        Email</label>
+                                    <input type="email" name="email" required placeholder="pic@company.com"
+                                        class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none text-slate-700">
+                                </div>
+                            </div>
+
+                            <div class="p-4 border rounded-2xl bg-blue-50/50 border-blue-100/50">
+                                <p class="text-xs italic font-medium leading-relaxed text-blue-600/80">
+                                    * This person will be the primary contact for all operational and billing
+                                    communications.
+                                </p>
+                            </div>
                         </div>
 
+                        {{-- MODAL FOOTER --}}
+                        <div class="flex items-center justify-between mt-12">
+                            <button type="button" x-show="step > 1" @click="prevStep()"
+                                class="flex items-center gap-2 px-6 py-3 text-sm font-bold transition-all text-slate-400 hover:text-slate-800 group">
+                                <i
+                                    class="fa-solid fa-chevron-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                                Back
+                            </button>
+                            <div x-show="step === 1"></div>
 
-                        <div>
-                            <label class="text-xs font-bold uppercase text-slate-400">
-                                Company Name
-                            </label>
+                            <div class="flex items-center gap-4">
+                                <button type="button" @click="openCreate = false; step = 1"
+                                    class="px-6 py-3 text-sm font-bold transition-colors text-slate-400 hover:text-red-500">
+                                    Cancel
+                                </button>
 
-                            <input type="text" name="company_name" required
-                                class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200">
+                                <button type="button" x-show="step < totalSteps" @click="nextStep()"
+                                    class="px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all shadow-xl bg-slate-900 rounded-2xl shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-200 active:scale-95">
+                                    Continue
+                                </button>
+
+                                <button type="submit" x-show="step === totalSteps"
+                                    class="px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-xl rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">
+                                    Complete Setup
+                                </button>
+                            </div>
                         </div>
-
-
-                        <div>
-                            <label class="text-xs font-bold uppercase text-slate-400">
-                                PIC Name
-                            </label>
-
-                            <input type="text" name="pic_name" required
-                                class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200">
-                        </div>
-
-
-                        <div>
-                            <label class="text-xs font-bold uppercase text-slate-400">
-                                Phone
-                            </label>
-
-                            <input type="text" name="phone"
-                                class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200">
-                        </div>
-
-
-                        <div>
-                            <label class="text-xs font-bold uppercase text-slate-400">
-                                Password
-                            </label>
-
-                            <input type="password" name="password"
-                                class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200">
-                        </div>
-
                     </div>
-
-
-                    <div>
-
-                        <label class="text-xs font-bold uppercase text-slate-400">
-                            Address
-                        </label>
-
-                        <textarea name="address" rows="3" class="w-full px-3 py-2 mt-1 text-sm border rounded-xl border-slate-200"></textarea>
-
-                    </div>
-
-
-                    <div class="flex justify-end gap-3 pt-4">
-
-                        <button type="button" @click="openCreate=false"
-                            class="px-4 py-2 text-sm font-bold border rounded-xl">
-                            Cancel
-                        </button>
-
-                        <button type="submit" class="px-6 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl">
-                            Save Customer
-                        </button>
-
-                    </div>
-
                 </form>
-
             </div>
-
         </div>
 
     </div>

@@ -113,9 +113,9 @@
                                         </div>
                                         <p class="text-xs font-bold tracking-widest text-gray-400 uppercase">Belum ada
                                             riwayat booking</p>
-                                        <a href="{{ route('customer.booking.date') }}"
+                                        {{-- <a href="{{ route('customer.booking.date') }}"
                                             class="mt-4 text-sm font-black text-blue-600 hover:underline">Mulai Booking
-                                            Sekarang &rarr;</a>
+                                            Sekarang &rarr;</a> --}}
                                     </div>
                                 </td>
                             </tr>

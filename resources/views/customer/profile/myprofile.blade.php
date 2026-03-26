@@ -11,7 +11,7 @@
                         <div class="w-32 h-32 bg-white p-2 rounded-[2rem] shadow-xl">
                             <div
                                 class="w-full h-full bg-blue-100 rounded-[1.5rem] flex items-center justify-center text-4xl font-black text-blue-600">
-                                {{ substr(auth('customer')->user()->name, 0, 1) }}
+                                {{ substr(auth('customer')->user()->username, 0, 1) }}
                             </div>
                         </div>
                         <div class="absolute w-6 h-6 bg-green-500 border-4 border-white rounded-full bottom-2 right-2"></div>

@@ -101,7 +101,7 @@
                         <div class="flex flex-col items-center">
                             <i class="mb-4 text-5xl text-gray-100 fa-solid fa-inbox"></i>
                             <p class="font-bold text-gray-400">No bookings found</p>
-                            <a href="{{ route('customer.create') }}"
+                            <a href="{{ route('customer.booking.create') }}"
                                 class="mt-2 text-sm font-bold text-blue-600 hover:underline">Start your first booking
                                 &rarr;</a>
                         </div>

@@ -95,51 +95,59 @@ Route::prefix('customer')->middleware('nocache')->group(function () {
 Route::prefix('customer')
     ->middleware(['auth:customer', 'nocache'])
     ->group(function () {
+
+        // Dashboard
         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
             ->name('customer.dashboard');
-        Route::get('/create', [CustomerBookingController::class, 'create'])
-            ->name('customer.create');
+
+        // --- PROFILE COMPLETION (Lengkapi Profil) ---
+        // Diubah agar name-nya konsisten dengan redirect di Controller
         Route::get('/profile/complete', [CustomerProfileController::class, 'showCompleteProfile'])
-            ->name('customer.complete.profile');
+            ->name('customer.profile.complete'); // Disederhanakan
+
         Route::post('/profile/complete', [CustomerProfileController::class, 'completeProfile'])
             ->name('customer.profile.complete.store');
 
-
-        // STEP 1 - pilih tanggal
-        // Route::get('/booking/date', [CustomerBookingController::class, 'selectDate'])
-        //     ->name('customer.booking.date');
-
-        // STEP 2 - pilih sesi
-        // Route::get('/booking/session/{date}', [CustomerBookingController::class, 'selectSession'])
-        //     ->name('customer.booking.session');
-
-        // STEP 3 - input product
-        Route::get('/booking/create/', [CustomerBookingController::class, 'create'])
+        // --- BOOKING SYSTEM ---
+        Route::get('/booking/create', [CustomerBookingController::class, 'create'])
             ->name('customer.booking.create');
 
-        // STORE BOOKING
         Route::post('/booking/store', [CustomerBookingController::class, 'store'])
             ->name('customer.booking.store');
 
-        // DETAIL
         Route::get('/booking/{id}', [CustomerBookingController::class, 'show'])
             ->name('customer.booking.show');
 
-        // PRINT
         Route::get('/booking/{id}/print', [CustomerBookingController::class, 'print'])
             ->name('customer.booking.print');
 
-        // Route Profile
-        // Di dalam web.php, ubah menjadi seperti ini:
-        Route::get('/profile', [UserCustomController::class, 'index'])->name('customer.profile');
-        Route::get('/profile/edit', [UserCustomController::class, 'edit'])->name('customer.profile.edit');
-        Route::put('/profile/update', [UserCustomController::class, 'update'])->name('customer.profile.update');
-        Route::put('/profile/password', [UserCustomController::class, 'updatePassword'])->name('customer.profile.password');
-        Route::get('/history', [UserCustomController::class, 'history'])->name('customer.history');
+        // --- GENERAL PROFILE & SETTINGS ---
+        Route::get('/profile', [UserCustomController::class, 'index'])
+            ->name('customer.profile');
+
+        Route::get('/profile/edit', [CustomerProfileController::class, 'edit'])
+            ->name('customer.profile.edit');
+
+        Route::put('/profile/update', [CustomerProfileController::class, 'update'])
+            ->name('customer.profile.update');
+
+        Route::put('/profile/password', [CustomerProfileController::class, 'updatePassword'])
+            ->name('customer.profile.password');
+
+        Route::get('/history', [UserCustomController::class, 'history'])
+            ->name('customer.history');
+
+        // Pastikan route ini ada di dalam group customer Anda
+        // Route::put('/profile/update', [UserCustomController::class, 'update'])
+        //     ->name('customer.profile.update');
+
+        Route::put('/profile/password', [UserCustomController::class, 'updatePassword'])
+            ->name('customer.profile.password');
     });
 
 
 
+// --- ADMIN AUTH ---
 Route::prefix('admin')->middleware('nocache')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
     Route::post('/login', [AdminAuthController::class, 'login']);

@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
-use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Log;
+// use App\Models\CustomerAddress; // Pastikan Model ini ada
+// use App\Models\CustomerContact; // Pastikan Model ini ada
+// use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class CustomerProfileController extends Controller
 {
@@ -26,53 +29,212 @@ class CustomerProfileController extends Controller
         return view('customer.profile.complete');
     }
 
+
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers,email',
-            'password' => 'nullable|min:6',
             'company_name' => 'required|string|max:255',
-            'pic_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string',
+            'email'        => 'required|email|unique:customers,email',
+            'address_line' => 'required|string',
+            'name'         => 'required|string|max:255', // Pastikan input form admin bernama 'name'
         ]);
 
-        Customer::create([
-            'name'              => $request->name,
-            'email'             => $request->email,
-            'password'          => Hash::make($request->password ?? 'password123'),
-            'company_name'      => $request->company_name,
-            'pic_name'          => $request->pic_name,
-            'phone'             => $request->phone,
-            'address'           => $request->address,
-            'profile_completed' => false,
-            'status'            => 'active'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.customerList')
-            ->with('success', 'Customer berhasil dibuat');
+            $customer = Customer::create([
+                'company_name'      => $request->company_name,
+                'industry'          => $request->industry,
+                'email'             => $request->email,
+                'npwp'              => $request->npwp,
+                'status'            => 'active',
+                'profile_completed' => true
+            ]);
+
+            $customer->addresses()->create([
+                'type'         => 'office',
+                'address_line' => $request->address_line,
+                'city'         => $request->city,
+                'country'      => 'Indonesia',
+            ]);
+
+            $customer->contacts()->create([
+                'name'       => $request->name, // Mengambil field 'name'
+                'position'   => $request->position,
+                'phone'      => $request->phone,
+                'email'      => $request->email,
+                'is_primary' => true
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin.customerList.index')->with('success', 'Customer berhasil dibuat');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Gagal: ' . $e->getMessage()])->withInput();
+        }
     }
 
+    /**
+     * Fungsi untuk Customer melengkapi profile sendiri
+     */
     public function completeProfile(Request $request)
     {
         $request->validate([
-            'company_name' => 'required|string',
-            'pic_name' => 'required|string',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string'
+            'company_name'  => 'required|string|max:255',
+            'industry'      => 'required|string',
+            'email'         => 'required|email', // Email Company
+            'address_line'  => 'required|string',
+            'city'          => 'required|string',
+            'pic_name'      => 'required|string|max:255',
+            'pic_email'     => 'required|email',
+            'phone'         => 'required|string',
         ]);
 
-        $customer = Auth::guard('customer')->user();
+        try {
+            DB::beginTransaction();
 
-        $customer->update([
-            'company_name' => $request->company_name,
-            'pic_name' => $request->pic_name,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'profile_completed' => true
+            $user = Auth::user();
+
+            // 1. Simpan ke customers (tambahkan kolom email perusahaan)
+            $customer = Customer::create([
+                'user_id'           => $user->id,
+                'company_name'      => $request->company_name,
+                'email'             => $request->email,
+                'industry'          => $request->industry, // Pastikan ini ada
+                'npwp'              => $request->npwp,     // Pastikan ini ada
+                'phone'             => $request->phone,    // Jika ingin simpan di sini
+                'profile_completed' => true,
+                'status'            => 'active'
+            ]);
+
+            // 2. Simpan Alamat (dengan kota dan pos)
+            $customer->addresses()->create([
+                'type'         => 'office',
+                'address_line' => $request->address_line,
+                'city'         => $request->city,
+                'postal_code'  => $request->postal_code,
+            ]);
+
+            // 3. Simpan Contact PIC (dengan email spesifik PIC)
+            $customer->contacts()->create([
+                'name'       => $request->pic_name,
+                'email'      => $request->pic_email,
+                'phone'      => $request->phone,
+                'position'   => $request->position,
+                'is_primary' => true
+            ]);
+
+            $user->update(['profile_completed' => true]);
+
+            DB::commit();
+            return redirect()->route('customer.dashboard')->with('success', 'Profil Berhasil Dibuat!');
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+
+            // Ambil kode error SQL
+            $errorCode = $e->errorInfo[1];
+
+            // Mapping error spesifik
+            $errorMessage = match ($errorCode) {
+                1062 => "Data gagal disimpan: Email Company '{$request->email}' sudah terdaftar di sistem kami.",
+                1452 => "Data gagal disimpan: Relasi user tidak ditemukan. Silakan login ulang.",
+                1364 => "Data gagal disimpan: Ada kolom wajib di database yang belum terisi.",
+                default => "Terjadi kesalahan database: " . $e->getMessage() // Untuk debugging dev
+            };
+
+            return back()->withErrors(['error' => $errorMessage])->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => "Terjadi kesalahan sistem: " . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
+     * Menampilkan form edit profil
+     */
+
+    public function edit()
+    {
+        $user = Auth::user();
+        $user->load(['customer.addresses', 'customer.contacts']);
+
+        return view('customer.profile.profile_edit', compact('user'));
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+        $customer = $user->customer;
+
+        if (!$customer) {
+            return back()->withErrors(['error' => 'Profil customer tidak ditemukan']);
+        }
+
+        // ✅ VALIDASI (SUDAH FIX)
+        $request->validate([
+            'username'         => 'required|string|max:255',
+            'email'            => 'required|email|unique:users,email,' . $user->id,
+            'company_name'     => 'required|string|max:255',
+            'address_line'     => 'required|string',
+            'contact_name'     => 'required|string|max:255', // ✅ ini penting
+            'contact_phone'    => 'required|string|max:20',
+            'contact_position' => 'nullable|string|max:255',
+            'contact_whatsapp' => 'nullable|string|max:20',
+            'industry'         => 'nullable|string',
+            'city'             => 'nullable|string',
+            'npwp'             => 'nullable|string',
         ]);
 
-        return redirect()->route('customer.dashboard');
+        try {
+            DB::beginTransaction();
+
+            // ✅ 1. UPDATE USER
+            $user->update([
+                'username' => $request->username,
+                'email'    => $request->email,
+            ]);
+
+            // ✅ 2. UPDATE CUSTOMER
+            $customer->update([
+                'company_name' => $request->company_name,
+                'industry'     => $request->industry,
+                'npwp'         => $request->npwp,
+            ]);
+
+            // ✅ 3. UPDATE ADDRESS
+            $customer->addresses()->updateOrCreate(
+                ['type' => 'office'],
+                [
+                    'address_line' => $request->address_line,
+                    'city'         => $request->city,
+                    'country'      => 'Indonesia',
+                ]
+            );
+
+            // ✅ 4. UPDATE CONTACT (INI YANG PALING PENTING)
+            $customer->contacts()->updateOrCreate(
+                ['is_primary' => true],
+                [
+                    'name'     => $request->contact_name, // ✅ mapping benar
+                    'position' => $request->contact_position,
+                    'phone'    => $request->contact_phone,
+                    'whatsapp' => $request->contact_whatsapp,
+                    'email'    => $request->email,
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()->route('customer.profile')
+                ->with('success', 'Profil berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('Update Profile Error: ' . $e->getMessage());
+
+            return back()->withErrors([
+                'error' => 'Gagal menyimpan: ' . $e->getMessage()
+            ])->withInput();
+        }
     }
 }

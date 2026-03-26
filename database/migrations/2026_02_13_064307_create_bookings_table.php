@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('qr_token')->unique()->nullable();
             $table->string('booking_code')->unique();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->string('status')->default('pending');
             $table->timestamp('arrival_time')->nullable();

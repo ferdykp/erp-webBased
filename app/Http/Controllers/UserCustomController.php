@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+// use App\Model\User;
 
 class UserCustomController extends Controller
 {
@@ -19,6 +20,22 @@ class UserCustomController extends Controller
 
         return view('customer.profile.myprofile', compact('user'));
     }
+
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'username' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:customers,email',
+    //         'password' => 'nullable|min:6',
+
+    //     ]);
+
+    //     User::create([
+    //         'username' => $request->username,
+    //         'email' => $request->email,
+    //         'password'          => Hash::make($request->password ?? 'password123'),
+    //     ]);
+    // }
 
     /**
      * Update data profil (Nama, Email, Telepon).
@@ -70,12 +87,16 @@ class UserCustomController extends Controller
 
     public function history()
     {
-        // Mengambil riwayat booking milik customer yang sedang login
-        // Sertakan 'slot' dan 'products' agar tidak terjadi N+1 query (Eager Loading)
-        $history = \App\Models\Booking::where('customer_id', auth('customer')->id())
-            ->with(['products']) // Sesuaikan nama relasi di model Booking Anda
+        // Ambil user yang sedang login
+        $user = Auth::guard('customer')->user();
+
+        // Coba cari berdasarkan user_id ATAU customer_id 
+        // (Sesuaikan dengan kolom mana yang biasanya terisi di tabel bookings)
+        $history = \App\Models\Booking::where('customer_id', $user->id)
+            ->orWhere('user_id', $user->id)
+            ->with(['products'])
             ->latest()
-            ->paginate(10); // Menggunakan pagination agar rapi
+            ->paginate(10);
 
         return view('customer.booking.history', compact('history'));
     }

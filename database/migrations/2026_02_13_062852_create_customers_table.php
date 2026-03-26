@@ -13,14 +13,19 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('customer_code')->unique()->nullable();
             $table->string('company_name')->nullable();
-            $table->string('pic_name')->nullable();
+
+            $table->string('industry')->nullable();
+            $table->string('npwp')->nullable();
+
             $table->string('phone')->nullable();
-            $table->string('address')->nullable();
+            $table->string('email')->unique();
+            $table->string('website')->nullable();
+
+            $table->text('notes')->nullable();
+
 
             $table->boolean('profile_completed')->default(false);
             $table->string('status')->default('active');
