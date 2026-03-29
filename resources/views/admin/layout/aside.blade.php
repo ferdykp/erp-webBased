@@ -32,7 +32,7 @@
         <a href="{{ route('admin.customerList.index') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.pallets.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
             <i class="w-5 text-center fas fa-boxes-stacked"></i>
-            <span class="font-medium">Add Company</span>
+            <span class="font-medium">Add Customer</span>
         </a>
 
         {{-- NEW: BUSINESS MONITORING MENU --}}
@@ -133,11 +133,11 @@
 
     </nav>
 
-    <div class="absolute w-full px-8 text-center bottom-6">
+    {{-- <div class="absolute w-full px-8 text-center bottom-6">
         <div class="p-4 border rounded-2xl bg-gray-800/40 border-gray-700/50">
             <p class="text-xs text-gray-400">Logged in as:</p>
             <p class="text-sm font-semibold text-white truncate">{{ auth('admin')->user()->name }}</p>
         </div>
-    </div>
+    </div> --}}
 
 </aside>

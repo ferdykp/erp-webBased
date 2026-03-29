@@ -10,19 +10,37 @@ use Illuminate\Support\Facades\Log;
 // use App\Models\CustomerContact; // Pastikan Model ini ada
 // use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerProfileController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     $search = $request->search;
+
+    //     $customers = Customer::when($search, function ($query) use ($search) {
+    //         $query->where('company_name', 'like', "%{$search}%")
+    //             ->orWhere('pic_name', 'like', "%{$search}%");
+    //     })->orderBy('created_at', 'desc')->paginate(10);
+
+    //     return view('admin.customerList.index', compact('customers', 'search'));
+    // }
     public function index(Request $request)
     {
-        $search = $request->search;
+        $customers = Customer::with(['contacts'])->latest()->paginate(10);
+        $query = Customer::with(['contacts', 'addresses']); // Load relasi contacts
 
-        $customers = Customer::when($search, function ($query) use ($search) {
+        if ($request->has('search')) {
+            $search = $request->search;
             $query->where('company_name', 'like', "%{$search}%")
-                ->orWhere('pic_name', 'like', "%{$search}%");
-        })->orderBy('created_at', 'desc')->paginate(10);
+                ->orWhereHas('contacts', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+        }
 
-        return view('admin.customerList.index', compact('customers', 'search'));
+        $customers = $query->latest()->paginate(10);
+        return view('admin.customerList.index', compact('customers'));
     }
     public function showCompleteProfile()
     {
@@ -34,42 +52,56 @@ class CustomerProfileController extends Controller
     {
         $request->validate([
             'company_name' => 'required|string|max:255',
-            'email'        => 'required|email|unique:customers,email',
+            'email'        => 'required|email|unique:users,email',
+            'name'         => 'required|string|max:255',
             'address_line' => 'required|string',
-            'name'         => 'required|string|max:255', // Pastikan input form admin bernama 'name'
+            'contact_phone' => 'nullable|string', // Pastikan divalidasi juga
         ]);
 
         try {
             DB::beginTransaction();
 
+            // 1. Buat User
+            $user = User::create([
+                'username' => strtolower(str_replace(' ', '', $request->name)) . rand(10, 99),
+                'email'    => $request->email,
+                'password' => Hash::make('12345678'),
+                'role'     => 'customer',
+            ]);
+
+            // 2. Buat Customer (Pastikan user_id dan name sudah fillable di Model)
             $customer = Customer::create([
+                'user_id'           => $user->id,
+                'name'              => $request->name,
                 'company_name'      => $request->company_name,
-                'industry'          => $request->industry,
+                'industry'          => $request->industry ?? '-',
                 'email'             => $request->email,
-                'npwp'              => $request->npwp,
                 'status'            => 'active',
                 'profile_completed' => true
             ]);
 
+            // 3. Simpan Alamat
             $customer->addresses()->create([
                 'type'         => 'office',
                 'address_line' => $request->address_line,
-                'city'         => $request->city,
+                'city'         => $request->city ?? '-',
                 'country'      => 'Indonesia',
             ]);
 
+            // 4. Simpan Contact
             $customer->contacts()->create([
-                'name'       => $request->name, // Mengambil field 'name'
-                'position'   => $request->position,
-                'phone'      => $request->phone,
+                'name'       => $request->name,
+                'phone'      => $request->contact_phone ?? '-',
                 'email'      => $request->email,
                 'is_primary' => true
             ]);
 
             DB::commit();
-            return redirect()->route('admin.customerList.index')->with('success', 'Customer berhasil dibuat');
+            return redirect()->route('admin.customerList.index')->with('success', 'Customer & Akun berhasil dibuat');
         } catch (\Exception $e) {
             DB::rollBack();
+            // Gunakan \Log untuk melihat detail error di storage/logs/laravel.log jika masih gagal
+            \Log::error($e->getMessage());
             return back()->withErrors(['error' => 'Gagal: ' . $e->getMessage()])->withInput();
         }
     }

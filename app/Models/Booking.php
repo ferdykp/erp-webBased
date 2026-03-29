@@ -16,7 +16,9 @@ class Booking extends Model
         'arrival_time',
         'pic_warehouse',
         'status',
-        'qr_token'
+        'qr_token',
+        'payment_status',
+        'total_price'
     ];
 
     protected $casts = [

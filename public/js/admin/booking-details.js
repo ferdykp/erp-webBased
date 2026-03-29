@@ -24,8 +24,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // --- A. Informasi Dasar ---
         document.getElementById("detail_booking_code").innerText =
             booking.booking_code || `#BOK-${booking.id}`;
+        // Mengambil properti 'name' dari elemen pertama di dalam array contacts
         document.getElementById("detail_customer_name").innerText =
-            booking.customer?.name || "Guest";
+            booking.customer?.contacts && booking.customer.contacts.length > 0
+                ? booking.customer.contacts[0].name
+                : "Guest";
         document.getElementById("detail_customer_email").innerText =
             booking.customer?.email || "-";
         document.getElementById("detail_pic_warehouse").innerText =

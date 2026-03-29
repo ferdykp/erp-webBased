@@ -10,16 +10,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Customer extends Authenticatable
 
 {
+    // app/Models/Customer.php
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'user_id',           // Pastikan ini ada
         'company_name',
-        'pic_name',
+        'industry',
+        'email',
+        'npwp',              // Tambahkan sesuai migrasi
         'phone',
-        'address',
+        'website',
+        'notes',
+        'status',
         'profile_completed',
-        'status'
     ];
 
     protected $hidden = [
@@ -29,5 +31,15 @@ class Customer extends Authenticatable
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+    // Di dalam class Customer (App\Models\Customer)
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(CustomerAddress::class);
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(CustomerContact::class);
     }
 }

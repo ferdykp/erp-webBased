@@ -247,54 +247,6 @@
 </div>
 
 <script>
-    // function calculatePrice() {
-    //     // 1. Ambil data input
-    //     const qty = parseFloat(document.getElementById('final_qty').value) || 0;
-    //     const nett = parseFloat(document.getElementById('mod_net_pcs').value) || 0;
-    //     const dmin = parseFloat(document.getElementById('final_dmin').value) || 0;
-    //     const pricePerDose = 500;
-
-    //     // 2. Hitung Harga Dasar (Subtotal)
-    //     const subtotal = pricePerDose * qty * nett * dmin;
-
-    //     // 3. Hitung Pajak
-    //     const ppnRate = parseFloat(document.querySelector('input[name="use_ppn"]:checked').value);
-    //     const taxAmount = subtotal * ppnRate;
-    //     const grandTotal = subtotal + taxAmount;
-
-    //     // 4. Formatter Rupiah
-    //     const formatter = new Intl.NumberFormat('id-ID', {
-    //         style: 'currency',
-    //         currency: 'IDR',
-    //         maximumFractionDigits: 0
-    //     });
-
-    //     document.getElementById('finalForm').addEventListener('submit', function(e) {
-    //         calculatePrice(); // pastikan hidden input terisi
-    //     });
-
-    //     // 5. Update UI Breakdown
-    //     document.getElementById('display_subtotal').innerText = formatter.format(subtotal);
-    //     document.getElementById('display_tax').innerText = formatter.format(taxAmount);
-    //     document.getElementById('display_total_price').innerText = formatter.format(grandTotal);
-
-    //     // 6. Update Detail Rumus (Kecil)
-    //     document.getElementById('calc_qty').innerText = qty.toLocaleString('id-ID');
-    //     document.getElementById('calc_nett').innerText = nett.toLocaleString('id-ID');
-    //     document.getElementById('calc_dmin').innerText = dmin.toLocaleString('id-ID');
-
-    //     // 7. Simpan ke hidden input untuk backend
-    //     document.getElementById('final_total_price').value = grandTotal;
-    //     // Ambil value dari modal input step1
-    //     document.getElementById('final_gross_pcs').value = document.getElementById('mod_gross_pcs').value;
-    //     document.getElementById('final_gross_total').value = document.getElementById('mod_gross_total').value;
-    //     // Tambahkan ini di bagian update hidden input
-    //     document.getElementById('final_vol_per_pcs').value = document.getElementById('mod_vol_pcs').value;
-    //     document.getElementById('final_vol_total').value = document.getElementById('mod_vol_total').value;
-    //     document.getElementById('final_net_weight_pcs').value = document.getElementById('mod_net_pcs').value;
-    //     document.getElementById('final_total_net_weight').value = document.getElementById('mod_net_total').value;
-    // }
-
     function calculatePrice() {
         // 1. Ambil data input
         const qty = parseFloat(document.getElementById('final_qty').value) || 0;

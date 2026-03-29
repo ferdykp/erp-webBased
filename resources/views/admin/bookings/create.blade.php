@@ -23,7 +23,9 @@
                             class="w-full px-4 py-3.5 bg-white border border-blue-100 rounded-2xl font-bold text-gray-700">
                             <option value="" disabled selected>Pilih Customer...</option>
                             @foreach ($customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->name }} ({{ $customer->email }})</option>
+                                <option value="{{ $customer->id }}">{{ $customer->contacts->first()->name }}
+                                    ({{ $customer->email }})
+                                </option>
                             @endforeach
                         </select>
                     </div>

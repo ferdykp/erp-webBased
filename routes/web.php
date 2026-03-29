@@ -183,8 +183,15 @@ Route::prefix('admin')
         Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
 
         // Invoices & Profile
-        Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
-        Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
+        // Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
+        // Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
+        // Preview (HTML)
+        Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'previewInvoice'])
+            ->name('admin.bookings.invoice');
+
+        // Export PDF
+        // Route::get('/bookings/{id}/invoice/export', [AdminBookingController::class, 'downloadInvoice'])
+        //     ->name('admin.bookings.invoice.export');
 
         // Tambahkan route ini di bawah route /bookings/checkin
         Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])

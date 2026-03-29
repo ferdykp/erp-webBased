@@ -14,7 +14,7 @@
                 <h2 class="text-3xl font-black tracking-tighter text-slate-800">Review Order #{{ $booking->booking_code }}
                 </h2>
                 <p class="text-sm text-slate-500">Submitted by <span
-                        class="font-bold text-slate-700">{{ $booking->customer->name }}</span> on
+                        class="font-bold text-slate-700">{{ $booking->customer->contacts->first()->name }}</span> on
                     {{ $booking->created_at->format('d F Y') }}</p>
             </div>
 
@@ -141,9 +141,9 @@
                     <div class="flex flex-col items-center text-center">
                         <div
                             class="flex items-center justify-center w-16 h-16 mb-4 text-xl font-black rounded-full bg-slate-100 text-slate-400">
-                            {{ substr($booking->customer->name, 0, 1) }}
+                            {{ substr($booking->customer->contacts->first()->name, 0, 1) }}
                         </div>
-                        <p class="font-black text-slate-800">{{ $booking->customer->name }}</p>
+                        <p class="font-black text-slate-800">{{ $booking->customer->contacts->first()->name }}</p>
                         <p class="text-xs font-medium text-slate-500">
                             {{ $booking->customer->company_name ?? 'Individual' }}</p>
                     </div>

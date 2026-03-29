@@ -1,73 +1,101 @@
-// function calculateFinance() {
-//     // 1. Ambil data dari input teknis (Step 1 & Step 2)
-//     const totalVolume =
-//         parseFloat(document.querySelector("[name='vol_total']")?.value) || 0;
-//     const totalPallets =
-//         parseInt(document.getElementById("pallet_count")?.value) || 0;
+function syncStep1ToStep4() {
+    const qtyEl = document.getElementById("check_qty");
+    const dminEl = document.getElementById("check_dmin");
+    const nettEl = document.querySelector('[name="net_weight_pcs"]');
 
-//     // 2. Update tampilan summary di Step 4 (Input Readonly)
-//     const financeVolField = document.querySelector("[name='finance_volume']");
-//     const financePalletField = document.querySelector(
-//         "[name='finance_pallet']",
-//     );
+    const qty = parseFloat(qtyEl?.innerText.replace(/[^0-9.]/g, "")) || 0;
+    const dmin = parseFloat(dminEl?.innerText.replace(/[^0-9.]/g, "")) || 0;
+    const nett = parseFloat(nettEl?.value) || 0;
 
-//     if (financeVolField) financeVolField.value = totalVolume.toFixed(3);
-//     if (financePalletField) financePalletField.value = totalPallets;
+    // simpan ke hidden
+    if (document.getElementById("final_qty"))
+        document.getElementById("final_qty").value = qty;
 
-//     // 3. Ambil nilai tarif dari input user
-//     const tariffVolume =
-//         parseFloat(document.querySelector("[name='tariff_volume']")?.value) ||
-//         0;
-//     const tariffPallet =
-//         parseFloat(document.querySelector("[name='tariff_pallet']")?.value) ||
-//         0;
-//     const tariffStorage =
-//         parseFloat(document.querySelector("[name='tariff_storage']")?.value) ||
-//         0;
+    if (document.getElementById("final_dmin"))
+        document.getElementById("final_dmin").value = dmin;
 
-//     // 4. Hitung Total (Volume * Tarif Vol + Pallet * Tarif Pallet)
-//     // Catatan: Tarif Storage biasanya dikali hari, di sini kita asumsikan per hari sebagai basis awal
-//     const totalCost = totalVolume * tariffVolume + totalPallets * tariffPallet;
+    // update UI
+    document.getElementById("calc_qty").innerText = qty;
+    document.getElementById("calc_dmin").innerText = dmin;
+    document.getElementById("calc_nett").innerText = nett;
 
-//     // 5. Tampilkan ke Grand Total dengan format mata uang IDR sederhana
-//     const totalField = document.querySelector("[name='finance_total']");
-//     if (totalField) {
-//         // Menggunakan format ribuan agar lebih clean: 1.000.000
-//         totalField.value = new Intl.NumberFormat("id-ID").format(totalCost);
-//     }
-// }
+    return { qty, nett, dmin };
+}
 
-// document.addEventListener("DOMContentLoaded", function () {
-//     // Listener untuk input tarif
-//     const financeInputs = ["tariff_volume", "tariff_pallet", "tariff_storage"];
-//     financeInputs.forEach((name) => {
-//         document
-//             .querySelector(`[name='${name}']`)
-//             ?.addEventListener("input", calculateFinance);
-//     });
+function calculatePrice() {
+    // 🔥 sync dulu
+    syncStep1ToStep4();
 
-//     // Re-calculate saat user mengubah pallet di Step 2
-//     const palletInputs = ["per_pallet", "pallet_count"];
-//     palletInputs.forEach((id) => {
-//         document.getElementById(id)?.addEventListener("input", function () {
-//             // Beri sedikit delay agar fungsi perhitungan pallet selesai dulu
-//             setTimeout(calculateFinance, 100);
-//         });
-//     });
-// });
-// document
-//     .querySelector("[name='tariff_volume']")
-//     ?.addEventListener("input", calculateFinance);
+    const qty = parseFloat(document.getElementById("final_qty").value) || 0;
+    const nett =
+        parseFloat(
+            document.querySelector('input[name="net_weight_pcs"]')?.value,
+        ) || 0;
+    const dmin = parseFloat(document.getElementById("final_dmin").value) || 0;
 
-// document
-//     .querySelector("[name='tariff_pallet']")
-//     ?.addEventListener("input", calculateFinance);
+    const pricePerDose = 500;
 
-// document.addEventListener("input", function (e) {
-//     if (e.target.name === "per_pallet" || e.target.name === "pallet_count") {
-//         setTimeout(calculateFinance, 200);
-//     }
-// });
+    const subtotal = pricePerDose * qty * nett * dmin;
+
+    const ppnRate =
+        parseFloat(
+            document.querySelector('input[name="use_ppn"]:checked')?.value,
+        ) || 0;
+
+    const tax = subtotal * ppnRate;
+    const total = subtotal + tax;
+
+    const formatter = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    });
+
+    // ✅ update UI
+    document.getElementById("display_subtotal").innerText =
+        formatter.format(subtotal);
+    document.getElementById("display_tax").innerText = formatter.format(tax);
+    document.getElementById("display_total_price").innerText =
+        formatter.format(total);
+
+    // ✅ backend
+    document.getElementById("final_total_price").value = total;
+    document.getElementById("finance_total_hidden").value = total;
+
+    console.log("FINAL PRICE:", { qty, nett, dmin, subtotal, tax, total });
+}
+
+function calculateDoseFinance() {
+    const { qty, nett, dmin } = syncStep1ToStep4();
+
+    const pricePerDose = 500;
+
+    const subtotal = pricePerDose * qty * nett * dmin;
+
+    const ppnRate =
+        parseFloat(
+            document.querySelector('input[name="use_ppn"]:checked')?.value,
+        ) || 0;
+
+    const tax = subtotal * ppnRate;
+    const total = subtotal + tax;
+
+    const formatter = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    });
+
+    document.getElementById("display_subtotal").innerText =
+        formatter.format(subtotal);
+    document.getElementById("display_tax").innerText = formatter.format(tax);
+    document.getElementById("display_total_price").innerText =
+        formatter.format(total);
+
+    document.getElementById("finance_total_hidden").value = total;
+
+    console.log("FIXED:", { qty, nett, dmin, subtotal, total });
+}
 
 function handleCurrencyInput(el) {
     let value = el.value.replace(/\D/g, "");
@@ -76,79 +104,17 @@ function handleCurrencyInput(el) {
     } else {
         el.value = "";
     }
-    calculateIndustrialFinance();
+    //     calculateDoseFinance();
+    calculateDoseFinance();
 }
 
 function parseCurrency(str) {
     if (!str) return 0;
-    // Mengubah format "1.500.000" kembali menjadi angka murni 1500000
     return parseFloat(str.toString().replace(/\./g, "")) || 0;
 }
 
-function calculateIndustrialFinance() {
-    // 1. Ambil data dari Step 1 & 2
-    const volTotal =
-        parseFloat(document.querySelector("[name='vol_total']").value) || 0;
-    const palletCount =
-        parseInt(document.getElementById("pallet_count").value) || 0;
-
-    // 2. Ambil tarif (dengan parsing format titik)
-    const rateVol = parseCurrency(
-        document.getElementById("tariff_volume").value,
-    );
-    const ratePallet = parseCurrency(
-        document.getElementById("tariff_pallet").value,
-    );
-    const isTaxed = document.getElementById("tax_toggle")?.checked;
-
-    // 3. Kalkulasi
-    const irradTotal = volTotal * rateVol;
-    const handlingTotal = palletCount * ratePallet;
-    const subtotal = irradTotal + handlingTotal;
-    const tax = isTaxed ? subtotal * 0.11 : 0;
-    const grandTotal = Math.round(subtotal + tax);
-
-    // 4. Update UI
-    const formatter = new Intl.NumberFormat("id-ID");
-
-    // --- BAGIAN PENYESUAIAN RINCIAN PERKALIAN ---
-    if (document.getElementById("detail_irrad")) {
-        document.getElementById("detail_irrad").innerText =
-            `${volTotal.toFixed(3)} m³ x Rp ${formatter.format(rateVol)}`;
-    }
-    if (document.getElementById("detail_handling")) {
-        document.getElementById("detail_handling").innerText =
-            `${palletCount} Pallet x Rp ${formatter.format(ratePallet)}`;
-    }
-    // --------------------------------------------
-
-    // Update labels rincian subtotal
-    if (document.getElementById("sub_irrad"))
-        document.getElementById("sub_irrad").innerText =
-            "Rp " + formatter.format(irradTotal);
-    if (document.getElementById("sub_handling"))
-        document.getElementById("sub_handling").innerText =
-            "Rp " + formatter.format(handlingTotal);
-    if (document.getElementById("tax_amount"))
-        document.getElementById("tax_amount").innerText =
-            "Rp " + formatter.format(tax);
-
-    // Update info teks (Volume / Pallet) jika ada di elemen lain
-    if (document.getElementById("fin_vol_disp"))
-        document.getElementById("fin_vol_disp").innerText = volTotal.toFixed(3);
-    if (document.getElementById("fin_pal_disp"))
-        document.getElementById("fin_pal_disp").innerText = palletCount;
-
-    // Update Grand Total
-    const displayTotal = document.getElementById("finance_total_display");
-    const hiddenTotal = document.getElementById("finance_total_hidden");
-
-    if (displayTotal) displayTotal.value = formatter.format(grandTotal);
-    if (hiddenTotal) hiddenTotal.value = grandTotal;
-}
-
 document.addEventListener("DOMContentLoaded", function () {
-    // Listeners untuk semua input finansial di Step 4
+    // Listener finance
     const financeIds = [
         "tariff_volume",
         "tariff_pallet",
@@ -158,26 +124,23 @@ document.addEventListener("DOMContentLoaded", function () {
     financeIds.forEach((id) => {
         document
             .getElementById(id)
-            ?.addEventListener("input", calculateIndustrialFinance);
+            ?.addEventListener("input", calculateDoseFinance);
     });
 
-    // Listener PPN Toggle
+    // ✅ TAMBAHKAN DI SINI
+    document
+        .querySelector('[name="net_weight_pcs"]')
+        ?.addEventListener("input", calculateDoseFinance);
+
+    // Listener PPN
     document
         .getElementById("tax_toggle")
-        ?.addEventListener("change", calculateIndustrialFinance);
+        ?.addEventListener("change", calculateDoseFinance);
 
-    // Listeners untuk sinkronisasi Volume & Berat (Step 1)
-    ["vol_per_pcs", "net_weight_pcs", "gross_weight_pcs"].forEach((name) => {
-        document
-            .querySelector(`[name='${name}']`)
-            ?.addEventListener("input", calculateTotals);
-    });
-
-    // Re-calculate Finance otomatis saat berpindah step atau mengubah pallet
+    // Listener pallet
     ["per_pallet", "pallet_count"].forEach((id) => {
         document.getElementById(id)?.addEventListener("input", function () {
-            // Beri jeda 50ms agar perhitungan pallet selesai dulu
-            setTimeout(calculateIndustrialFinance, 50);
+            setTimeout(calculateDoseFinance, 50);
         });
     });
 });
@@ -268,81 +231,27 @@ window.currentInventory = getInventoryData();
 
 // public/js/admin/checkin.js
 
-// function openWarehouseModal(code) {
-//     const dataSource = document.querySelector(
-//         `#bookingDataSource [data-code="${code}"]`,
-//     );
-//     document.getElementById("modal_booking_id").value =
-//         dataSource.getAttribute("data-id");
-//     if (!dataSource)
-//         return alert("🚨 Kode Booking tidak valid atau sudah diproses!");
-
-//     maxQty = parseFloat(dataSource.getAttribute("data-qty")) || 0;
-
-//     // 1. Populate Data Dasar
-//     document.getElementById("check_product_name").innerText =
-//         dataSource.getAttribute("data-name");
-//     document.getElementById("check_product_type").innerText =
-//         dataSource.getAttribute("data-type");
-//     document.getElementById("check_qty").innerText = maxQty;
-//     document.getElementById("check_unit").innerText =
-//         dataSource.getAttribute("data-unit");
-
-//     // 2. Populate Data Teknis Lengkap
-//     document.getElementById("check_temp").innerText =
-//         dataSource.getAttribute("data-temp");
-//     document.getElementById("check_dmin").innerText =
-//         dataSource.getAttribute("data-dmin");
-//     document.getElementById("check_dmax").innerText =
-//         dataSource.getAttribute("data-dmax");
-//     document.getElementById("check_dimension").innerText =
-//         dataSource.getAttribute("data-dimension");
-//     document.getElementById("check_weight").innerText =
-//         dataSource.getAttribute("data-weight");
-
-//     // 3. Header & Global Info
-//     // document.getElementById("total_qty_display").innerText = maxQty;
-//     document.getElementById("display_booking_code").innerText = code;
-//     document.getElementById("modal_booking_code").value = code;
-
-//     document.getElementById("porterContainer").innerHTML = `
-// <select name="porters[]"
-// class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
-// ${generatePorterOptions()}
-// </select>
-// `;
-//     // Reset Flow Modal
-//     currentStep = 1;
-//     updateStepUI();
-
-//     document
-//         .getElementById("warehouseModal")
-//         .classList.replace("hidden", "flex");
-
-//     setTimeout(() => {
-//         calculateVolumeFromDimension();
-//     }, 200);
-// }
 function openWarehouseModal(code) {
     const dataSource = document.querySelector(
         `#bookingDataSource [data-code="${code}"]`,
     );
-
-    if (!dataSource) return alert("🚨 Kode Booking tidak valid!");
-
-    // Ambil ID Booking & Qty
     document.getElementById("modal_booking_id").value =
         dataSource.getAttribute("data-id");
-    const qty = parseFloat(dataSource.getAttribute("data-qty")) || 0;
+    if (!dataSource)
+        return alert("🚨 Kode Booking tidak valid atau sudah diproses!");
 
-    // 1. Populate Data Ringkasan (Teks Visual)
+    maxQty = parseFloat(dataSource.getAttribute("data-qty")) || 0;
+
+    // 1. Populate Data Dasar
     document.getElementById("check_product_name").innerText =
         dataSource.getAttribute("data-name");
     document.getElementById("check_product_type").innerText =
         dataSource.getAttribute("data-type");
-    document.getElementById("check_qty").innerText = qty;
+    document.getElementById("check_qty").innerText = maxQty;
     document.getElementById("check_unit").innerText =
         dataSource.getAttribute("data-unit");
+
+    // 2. Populate Data Teknis Lengkap
     document.getElementById("check_temp").innerText =
         dataSource.getAttribute("data-temp");
     document.getElementById("check_dmin").innerText =
@@ -352,61 +261,49 @@ function openWarehouseModal(code) {
     document.getElementById("check_dimension").innerText =
         dataSource.getAttribute("data-dimension");
     document.getElementById("check_weight").innerText =
-        dataSource.getAttribute("data-net-pcs");
+        dataSource.getAttribute("data-weight");
 
-    // 2. Populate Input Form Aktual (Menggunakan ID ci_...)
-    // Volume
-    document.getElementById("ci_vol_per_pcs").value =
-        dataSource.getAttribute("data-vol-pcs");
-    document.getElementById("ci_vol_total").value =
-        dataSource.getAttribute("data-vol-total");
-
-    // Net Weight
-    document.getElementById("ci_net_weight_pcs").value =
-        dataSource.getAttribute("data-net-pcs");
-    document.getElementById("ci_total_net_weight").value =
-        dataSource.getAttribute("data-net-total");
-
-    // Gross Weight
-    document.getElementById("ci_gross_weight_pcs").value =
-        dataSource.getAttribute("data-gross-pcs");
-    document.getElementById("ci_total_gross_weight").value =
-        dataSource.getAttribute("data-gross-total");
-
-    // 3. UI Reset
+    // 3. Header & Global Info
+    // document.getElementById("total_qty_display").innerText = maxQty;
     document.getElementById("display_booking_code").innerText = code;
     document.getElementById("modal_booking_code").value = code;
 
     document.getElementById("porterContainer").innerHTML = `
-        <select name="porters[]" class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
-            ${generatePorterOptions()}
-        </select>
-    `;
-
+<select name="porters[]"
+class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
+${generatePorterOptions()}
+</select>
+`;
+    // Reset Flow Modal
     currentStep = 1;
     updateStepUI();
+
     document
         .getElementById("warehouseModal")
         .classList.replace("hidden", "flex");
+
+    // setTimeout(() => {
+    //     calculateVolumeFromDimension();
+    // }, 200);
+    // ✅ AUTO FILL DARI DATASET (JS BARU STYLE)
+    document.getElementById("ci_net_weight_pcs").value =
+        dataSource.dataset.netPcs || 0;
+
+    document.getElementById("ci_total_net_weight").value =
+        dataSource.dataset.netTotal || 0;
+
+    document.getElementById("ci_gross_weight_pcs").value =
+        dataSource.dataset.grossPcs || 0;
+
+    document.getElementById("ci_total_gross_weight").value =
+        dataSource.dataset.grossTotal || 0;
+
+    // tetap hitung volume dari dimensi
+    setTimeout(() => {
+        calculateVolumeFromDimension();
+        calculateTotals();
+    }, 100);
 }
-// Listener untuk kalkulasi otomatis di Warehouse Modal
-document.addEventListener("input", function (e) {
-    const qty = parseFloat(document.getElementById("check_qty").innerText) || 0;
-
-    if (e.target.id === "ci_net_weight_pcs") {
-        const val = parseFloat(e.target.value) || 0;
-        document.getElementById("ci_total_net_weight").value = (
-            val * qty
-        ).toFixed(2);
-    }
-
-    if (e.target.id === "ci_gross_weight_pcs") {
-        const val = parseFloat(e.target.value) || 0;
-        document.getElementById("ci_total_gross_weight").value = (
-            val * qty
-        ).toFixed(2);
-    }
-});
 
 function generatePorterOptions() {
     const porterData = document.querySelectorAll("#porterDataSource div");
@@ -452,35 +349,25 @@ function addPlacementRow() {
     container.appendChild(div);
 }
 
-// 2. NAVIGATION & VALIDATION
-// function changeStep(n) {
-//     if (n === 1 && !validateCurrentStep()) return;
-//     currentStep += n;
-//     updateStepUI();
-//     if (currentStep === 3) preparePlacementFields();
-// }
 function changeStep(n) {
     if (n === 1 && !validateCurrentStep()) return;
 
     currentStep += n;
     updateStepUI();
 
+    // ✅ Saat masuk step 3: generate placement fields
     if (currentStep === 3) {
         preparePlacementFields();
-    }
 
-    if (currentStep === 4) {
-        // Trigger kalkulasi saat masuk ke halaman payment
-        // calculateFinance();
-        calculateIndustrialFinance();
+        // Set form action di sini
+        const form = document.getElementById("checkInForm");
+        const bId = document.getElementById("modal_booking_id").value;
+        form.action = `/admin/bookings/${bId}/placement`;
     }
 }
 
 function validateCurrentStep() {
     if (currentStep === 1) {
-        // const pic = document
-        //     .querySelector('[name="pic_warehouse"]')
-        //     .value.trim();
         const check = document.querySelector(
             '#step1 input[type="checkbox"]',
         ).checked;
@@ -489,92 +376,46 @@ function validateCurrentStep() {
             return false;
         }
     }
+
     if (currentStep === 2) {
         const pic = document
             .querySelector('[name="pic_warehouse"]')
             .value.trim();
-
         if (!pic) {
             alert("Mohon isi nama PIC Warehouse");
             return false;
         }
 
         const porters = document.querySelectorAll('[name="porters[]"]');
-
         if (porters.length === 0) {
             alert("Tambahkan minimal 1 porter");
             return false;
         }
 
         let porterFilled = true;
-
         porters.forEach((p) => {
             if (!p.value) porterFilled = false;
         });
-
         if (!porterFilled) {
             alert("Semua porter harus dipilih!");
             return false;
         }
-    }
-    if (currentStep === 3) {
-        // const form = document.getElementById("checkInForm");
-        // const bId = document.getElementById("modal_booking_id").value; // Pastikan ID booking ada di hidden input
-        // form.action = `/admin/bookings/${bId}/placement`;
-        // const container = document.getElementById("placementContainer");
-        const container = document.getElementById("placementContainer");
-        if (container.children.length === 0) {
-            addPlacementRow();
+
+        // ✅ Validasi pallet count & per pallet sudah diisi
+        const palletCount =
+            parseInt(document.getElementById("pallet_count").value) || 0;
+        const perPallet =
+            parseInt(document.getElementById("per_pallet").value) || 0;
+        if (palletCount <= 0 || perPallet <= 0) {
+            alert("Mohon isi Jumlah Palet dan Qty per Palet!");
+            return false;
         }
-
-        if (container.children.length === 0) {
-            addPlacementRow();
-        }
-        const inputs = document.querySelectorAll('[name="pallet_qty[]"]');
-
-        let total = 0;
-
-        inputs.forEach((i) => {
-            total += parseInt(i.value) || 0;
-        });
-
-        // const palletTotal =
-        //     parseInt(document.getElementById("pallet_count").value) || 0;
-
-        // if (total !== palletTotal) {
-        //     alert(
-        //         "Jumlah pallet yang ditempatkan tidak sama dengan total pallet",
-        //     );
-
-        //     return false;
-        // }
     }
+
+    // ✅ Validasi step 3: semua line & petak harus dipilih sebelum submit
+    // (ini tidak dipanggil via changeStep, tapi bisa ditambah di finalSubmit)
+
     return true;
-}
-
-function addPorterField() {
-    const container = document.getElementById("porterContainer");
-
-    const porterData = document.querySelectorAll("#porterDataSource div");
-
-    let options = '<option value="">Pilih Porter</option>';
-
-    porterData.forEach((p) => {
-        options += `<option value="${p.dataset.name}">
-            ${p.dataset.name}
-        </option>`;
-    });
-
-    const select = document.createElement("select");
-
-    select.name = "porters[]";
-
-    select.className =
-        "w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl";
-
-    select.innerHTML = options;
-
-    container.appendChild(select);
 }
 
 function updateStepUI() {
@@ -603,19 +444,62 @@ function updateStepUI() {
     document
         .getElementById("prevBtn")
         .classList.toggle("hidden", currentStep === 1);
-    // document
-    //     .getElementById("nextBtn")
-    //     .classList.toggle("hidden", currentStep === 3);
-    // document
-    //     .getElementById("finalSubmitBtn")
-    //     .classList.toggle("hidden", currentStep !== 3);
+    // ✅ nextBtn hanya muncul di step 1 dan 2
     document
         .getElementById("nextBtn")
-        .classList.toggle("hidden", currentStep === 4);
-
+        .classList.toggle("hidden", currentStep === 3);
+    // ✅ submitBtn hanya muncul di step 3
     document
         .getElementById("finalSubmitBtn")
-        .classList.toggle("hidden", currentStep !== 4);
+        .classList.toggle("hidden", currentStep !== 3);
+}
+function submitCheckin() {
+    // Validasi semua line & petak sudah dipilih
+    const lines = document.querySelectorAll('[name="lines[]"]');
+    const petaks = document.querySelectorAll('[name="petaks[]"]');
+
+    let valid = true;
+    lines.forEach((l) => {
+        if (!l.value) valid = false;
+    });
+    petaks.forEach((p) => {
+        if (!p.value) valid = false;
+    });
+
+    if (!valid) {
+        alert("Mohon pilih Line dan Petak untuk semua palet!");
+        return;
+    }
+
+    // Sync hidden inputs sebelum submit
+    syncHiddenInputs();
+
+    document.getElementById("checkInForm").submit();
+}
+
+function addPorterField() {
+    const container = document.getElementById("porterContainer");
+
+    const porterData = document.querySelectorAll("#porterDataSource div");
+
+    let options = '<option value="">Pilih Porter</option>';
+
+    porterData.forEach((p) => {
+        options += `<option value="${p.dataset.name}">
+            ${p.dataset.name}
+        </option>`;
+    });
+
+    const select = document.createElement("select");
+
+    select.name = "porters[]";
+
+    select.className =
+        "w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl";
+
+    select.innerHTML = options;
+
+    container.appendChild(select);
 }
 
 // 3. BATCH MANAGEMENT
@@ -672,132 +556,6 @@ function updateBatchTotal() {
     if (infoPalet)
         infoPalet.innerText = `Estimasi palet dibutuhkan: ${totalPalletsNeeded}`;
 }
-
-// 4. PLACEMENT LOGIC
-// function preparePlacementFields() {
-//     const container = document.getElementById("placementContainer");
-//     container.innerHTML = "";
-//     const batchInputs = document.querySelectorAll(".batch-input");
-//     const porterInputs = document.querySelectorAll('[name="batch_porters[]"]');
-
-//     batchInputs.forEach((input, idx) => {
-//         const qty = input.value;
-//         const porter = porterInputs[idx].value || "Unknown";
-//         const div = document.createElement("div");
-//         div.className =
-//             "flex flex-col items-center gap-6 p-6 mb-4 bg-white border-2 shadow-sm border-slate-50 rounded-3xl lg:flex-row";
-
-//         div.innerHTML = `
-//                 <div class="flex-1">
-//                     <span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[8px] font-black rounded-md uppercase">Batch ${idx + 1}</span>
-//                     <h5 class="text-sm font-bold text-slate-800">${porter} (${qty} Unit)</h5>
-//                 </div>
-//                 <div class="grid grid-cols-3 gap-3 flex-[2]">
-//                     <select onchange="updatePetakOptions(${idx})" id="line_${idx}" required
-//                         class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-//                         <option value="">Line</option>
-//                     </select>
-//                     <select onchange="updatePalletOptions(${idx})" id="petak_${idx}" required
-//                         class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-//                         <option value="">Petak</option>
-//                     </select>
-//                     <select name="pallet_ids[]" id="pallet_${idx}" required
-//                         class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-//                         <option value="">Palet</option>
-//                     </select>
-//                 </div>
-//             `;
-//         container.appendChild(div);
-
-//         // Init Lines for this batch
-//         const lineSelect = document.getElementById(`line_${idx}`);
-//         const uniqueLines = [
-//             ...new Set(window.currentInventory.map((i) => i.line)),
-//         ];
-//         uniqueLines.forEach((l) => {
-//             lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
-//         });
-//     });
-// }
-
-// 4. PLACEMENT LOGIC
-// function preparePlacementFields() {
-//     const container = document.getElementById("placementContainer");
-//     container.innerHTML = "";
-
-//     // Ambil jumlah palet yang diinput user di Step 2
-//     const totalPallets =
-//         parseInt(document.getElementById("pallet_count").value) || 0;
-//     const perPallet =
-//         parseInt(document.getElementById("per_pallet").value) || 0;
-//     const porter =
-//         document.querySelector('[name="porters[]"]')?.value || "Porter";
-
-//     for (let i = 0; i < totalPallets; i++) {
-//         // Hitung jumlah box per palet (termasuk sisa box di palet terakhir)
-//         let qty = perPallet;
-//         if (
-//             i === totalPallets - 1 &&
-//             document.getElementById("pallet_remainder").value > 0
-//         ) {
-//             qty = parseInt(document.getElementById("pallet_remainder").value);
-//         }
-
-//         const div = document.createElement("div");
-//         div.className =
-//             "flex flex-col items-center gap-6 p-6 mb-4 bg-white border-2 shadow-sm border-slate-50 rounded-3xl lg:flex-row";
-
-//         div.innerHTML = `
-//             <div class="flex-1">
-//                 <span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[8px] font-black rounded-md uppercase">Pallet ${i + 1}</span>
-//                 <h5 class="text-sm font-bold text-slate-800">${porter}</h5>
-//             </div>
-//             <div class="grid grid-cols-2 gap-3 flex-[2]">
-//                 <select name="lines[]" onchange="updatePetakOptions(${i})" id="line_${i}" required
-//                     class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-//                     <option value="">Pilih Line</option>
-//                 </select>
-//                 <select name="petaks[]" id="petak_${i}" required
-//                     class="px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl">
-//                     <option value="">Pilih Petak</option>
-//                 </select>
-//                 <input type="hidden" name="pallet_qty[]" value="${qty}">
-//             </div>
-//         `;
-//         container.appendChild(div);
-
-//         // Init Lines
-//         const lineSelect = document.getElementById(`line_${i}`);
-//         const uniqueLines = [
-//             ...new Set(window.currentInventory.map((i) => i.line)),
-//         ];
-//         uniqueLines.forEach((l) => {
-//             lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
-//         });
-//     }
-// }
-
-// function updatePetakOptions(idx) {
-//     const line = document.getElementById(`line_${idx}`).value;
-//     const petakSelect = document.getElementById(`petak_${idx}`);
-
-//     petakSelect.innerHTML = '<option value="">Pilih Petak</option>';
-
-//     if (!line) return;
-
-//     // Filter petak berdasarkan line yang dipilih
-//     const filteredPetak = [
-//         ...new Set(
-//             window.currentInventory
-//                 .filter((i) => i.line == line) // Gunakan == untuk menghindari masalah tipe data string/int
-//                 .map((i) => i.petak),
-//         ),
-//     ];
-
-//     filteredPetak.forEach((p) => {
-//         petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
-//     });
-// }
 
 function syncHiddenInputs() {
     const totalQty = document.getElementById("check_qty").innerText;
@@ -963,29 +721,6 @@ function updatePalletSummary(pallet, perPallet, remainder) {
     }
 }
 
-// function updatePetakOptions(idx) {
-//     const line = document.getElementById(`line_${idx}`).value;
-//     const petakSelect = document.getElementById(`petak_${idx}`);
-//     const palletSelect = document.getElementById(`pallet_${idx}`);
-
-//     petakSelect.innerHTML = '<option value="">Petak</option>';
-//     palletSelect.innerHTML = '<option value="">Palet</option>';
-
-//     if (!line) return;
-
-//     const filteredPetak = [
-//         ...new Set(
-//             window.currentInventory
-//                 .filter((i) => i.line === line)
-//                 .map((i) => i.petak),
-//         ),
-//     ];
-
-//     filteredPetak.forEach((p) => {
-//         petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
-//     });
-// }
-
 function updatePalletOptions(idx) {
     const line = document.getElementById(`line_${idx}`).value;
     const petak = document.getElementById(`petak_${idx}`).value;
@@ -1038,24 +773,15 @@ if (typeof Html5QrcodeScanner !== "undefined") {
     html5QrcodeScanner.render(onScanSuccess);
 }
 
-// function setFormAction() {
-//     const form = document.getElementById("checkInForm");
-//     // Pastikan ID ini terisi saat modal dibuka
-//     const bookingId = document.getElementById("modal_booking_id").value;
-
-//     if (!bookingId) {
-//         alert("ID Booking tidak ditemukan!");
-//         return false;
-//     }
-
-//     form.action = `/admin/bookings/${bookingId}/placement`;
-// }
 function setFormAction() {
     const form = document.getElementById("checkInForm");
+    // Pastikan ID ini terisi saat modal dibuka
+    const bookingId = document.getElementById("modal_booking_id").value;
 
-    // Perbaikan URL: Tambahkan /bookings/ sebelum checkin
-    form.action = "/admin/bookings/checkin";
+    if (!bookingId) {
+        alert("ID Booking tidak ditemukan!");
+        return false;
+    }
 
-    // Pastikan log ini muncul di console browser (F12) untuk verifikasi
-    console.log("Form action set to: " + form.action);
+    form.action = `/admin/bookings/${bookingId}/placement`;
 }

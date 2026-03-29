@@ -135,7 +135,7 @@
                                         </span>
                                     </td>
                                     <td class="py-4 text-sm font-bold text-gray-800">
-                                        {{ $recent->customer->name ?? 'Guest' }}</td>
+                                        {{ $recent->customer->contacts->first()->name ?? 'Guest' }}</td>
                                     <td class="py-4 text-sm font-black text-right text-gray-700">
                                         {{ $recent->arrival_time->format('H:i') }}</td>
                                 </tr>

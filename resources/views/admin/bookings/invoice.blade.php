@@ -5,6 +5,18 @@
     <meta charset="utf-8">
     <title>Invoice Receipt - {{ $booking->booking_code }}</title>
     <style>
+        @media print {
+            @page {
+                margin: 0;
+                /* Menghilangkan margin default browser yang berisi header/footer */
+            }
+
+            body {
+                margin: 1.6cm;
+                /* Memberikan margin kembali ke konten agar tidak terpotong ke pinggir kertas */
+            }
+        }
+
         body {
             font-family: 'Helvetica', sans-serif;
             color: #333;
@@ -67,8 +79,20 @@
         }
     </style>
 </head>
+{{-- <div style="margin-bottom:20px; text-align:right;">
+    <button onclick="window.print()"
+        style="padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
+        🖨️ Print Invoice
+    </button>
+</div> --}}
+<script>
+    window.onload = function() {
+        window.print();
+    }
+</script>
 
 <body>
+
     <div class="header">
         <table width="100%">
             <tr>
@@ -84,7 +108,7 @@
         <tr>
             <td width="50%">
                 <strong>Customer Info:</strong><br>
-                {{ $booking->customer->name }}<br>
+                {{ $booking->customer->contacts->first()->name }}<br>
                 Booking Date: {{ $booking->created_at->format('d/m/Y') }}
             </td>
             <td width="50%" align="right">

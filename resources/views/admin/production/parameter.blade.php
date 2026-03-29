@@ -23,7 +23,7 @@
                 </p>
             </div>
             <button onclick="document.getElementById('createMachineModal').classList.replace('hidden','flex')"
-                class="flex items-center gap-2 px-6 py-3 text-sm font-black text-white bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 transition-all shadow-blue-100">
+                class="flex items-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 shadow-blue-100">
                 <i class="fa-solid fa-plus"></i>
                 Tambah Mesin Baru
             </button>
@@ -32,13 +32,13 @@
         {{-- ═══ MASTER MESIN (Production Lines) ═══ --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
             <h3 class="mb-4 text-lg font-black text-slate-700">
-                <i class="fa-solid fa-gear mr-2 text-blue-600"></i>Daftar Mesin (Production Lines)
+                <i class="mr-2 text-blue-600 fa-solid fa-gear"></i>Daftar Mesin (Production Lines)
             </h3>
             <div class="flex flex-wrap gap-3">
                 @forelse($productionLines as $line)
-                    <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl group">
+                    <div class="flex items-center gap-2 px-4 py-2 border bg-slate-50 border-slate-100 rounded-xl group">
                         <span class="text-sm font-bold text-slate-700">{{ $line->name }}</span>
-                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100">
                             <button onclick="openEditMachineModal({{ $line->id }}, '{{ addslashes($line->name) }}')"
                                 class="w-6 h-6 flex items-center justify-center text-amber-600 bg-amber-50 rounded-md hover:bg-amber-600 hover:text-white transition-all text-[10px]">
                                 <i class="fa-solid fa-pen"></i>
@@ -54,7 +54,8 @@
                         </div>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-400 italic">Belum ada mesin. Klik "Tambah Mesin Baru" untuk menambahkan.</p>
+                    <p class="text-sm italic text-slate-400">Belum ada mesin. Klik "Tambah Mesin Baru" untuk menambahkan.
+                    </p>
                 @endforelse
             </div>
         </div>
@@ -62,7 +63,7 @@
         {{-- ═══ PROCESS PARAMETER TABLE (PER BOOKING) ═══ --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
             <h3 class="mb-4 text-lg font-black text-slate-700">
-                <i class="fa-solid fa-sliders mr-2 text-blue-600"></i>Daftar Booking Untuk Process Set
+                <i class="mr-2 text-blue-600 fa-solid fa-sliders"></i>Daftar Booking Untuk Process Set
             </h3>
 
             @if ($bookings->isEmpty())
@@ -96,33 +97,40 @@
                                     $remainingToSplit = max($totalProductQty - $totalSplitQty, 0);
 
                                     // Manageable Qty: Keseluruhan qty yang siap difinalisasi parameternya (termasuk yang masih pending)
-                                    $finalizedBatchQty = $booking->batches->where('status', '!=', 'pending')->sum('quantity');
+                                    $finalizedBatchQty = $booking->batches
+                                        ->where('status', '!=', 'pending')
+                                        ->sum('quantity');
                                     $manageableQty = max($totalProductQty - $finalizedBatchQty, 0);
 
                                     $unit = $product->unit ?? '';
 
                                     // Ambil batch pending untuk pre-fill
-                                    $pendingBatches = $booking->batches->where('status', 'pending')->map(function ($b) {
-                                        return ['quantity' => $b->quantity, 'porter' => $b->porter_name];
-                                    })->values();
+                                    $pendingBatches = $booking->batches
+                                        ->where('status', 'pending')
+                                        ->map(function ($b) {
+                                            return ['quantity' => $b->quantity, 'porter' => $b->porter_name];
+                                        })
+                                        ->values();
                                 @endphp
-                                <tr class="bg-white rounded-2xl shadow-sm border border-slate-100">
+                                <tr class="bg-white border shadow-sm rounded-2xl border-slate-100">
                                     <td class="px-6 py-4 align-middle">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-black text-xs">
-                                                {{ strtoupper(substr($booking->customer->name ?? '?', 0, 1)) }}
+                                                class="flex items-center justify-center text-xs font-black text-blue-700 w-9 h-9 rounded-xl bg-blue-50">
+                                                {{ strtoupper(substr($booking->customer->contacts->first()->name ?? '?', 0, 1)) }}
                                             </div>
                                             <div>
-                                                <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}</p>
-                                                <p class="text-[11px] font-semibold text-slate-400">{{ ucfirst($booking->status) }}
+                                                <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}
+                                                </p>
+                                                <p class="text-[11px] font-semibold text-slate-400">
+                                                    {{ ucfirst($booking->status) }}
                                                 </p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 align-middle">
                                         <p class="text-sm font-bold text-slate-700">
-                                            {{ $booking->customer->name ?? 'Guest' }}
+                                            {{ $booking->customer->contacts->first()->name ?? 'Guest' }}
                                         </p>
                                     </td>
                                     <td class="px-6 py-4 align-middle">
@@ -141,13 +149,14 @@
                                         </p>
                                     </td>
                                     <td class="px-6 py-4 text-right align-middle">
-                                        <button onclick="openUpdateProcessModal(this)" data-booking-id="{{ $booking->id }}"
+                                        <button onclick="openUpdateProcessModal(this)"
+                                            data-booking-id="{{ $booking->id }}"
                                             data-booking-code="{{ $booking->booking_code }}"
-                                            data-customer-name="{{ $booking->customer->name ?? 'Guest' }}"
+                                            data-customer-name="{{ $booking->customer->contacts->first()->name ?? 'Guest' }}"
                                             data-product-name="{{ $product->product_name ?? '-' }}"
                                             data-remaining="{{ $manageableQty }}" data-unit="{{ $unit }}"
                                             data-pending-batches='@json($pendingBatches)'
-                                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white cursor-pointer transition-all active:scale-95">
+                                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-blue-600 uppercase transition-all border border-blue-600 cursor-pointer rounded-xl hover:bg-blue-600 hover:text-white active:scale-95">
                                             <i class="fa-solid fa-sliders"></i>
                                             Update Process
                                         </button>
@@ -169,18 +178,18 @@
             <form action="{{ route('admin.production-lines.store') }}" method="POST">
                 @csrf
                 <div class="mb-6">
-                    <label class="block mb-2 text-xs font-black text-slate-400 uppercase">Nama Mesin</label>
+                    <label class="block mb-2 text-xs font-black uppercase text-slate-400">Nama Mesin</label>
                     <input type="text" name="name" required placeholder='Contoh: "Mesin 1"'
                         class="w-full px-6 py-4 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex gap-3">
                     <button type="button"
                         onclick="document.getElementById('createMachineModal').classList.replace('flex','hidden')"
-                        class="flex-1 py-4 text-sm font-black bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all">
+                        class="flex-1 py-4 text-sm font-black transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
                         Batal
                     </button>
                     <button type="submit"
-                        class="flex-1 py-4 text-sm font-black text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
+                        class="flex-1 py-4 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 shadow-blue-100">
                         Simpan
                     </button>
                 </div>
@@ -196,18 +205,18 @@
             <form id="editMachineForm" method="POST">
                 @csrf @method('PUT')
                 <div class="mb-6">
-                    <label class="block mb-2 text-xs font-black text-slate-400 uppercase">Nama Mesin</label>
+                    <label class="block mb-2 text-xs font-black uppercase text-slate-400">Nama Mesin</label>
                     <input type="text" name="name" id="editMachineName" required
                         class="w-full px-6 py-4 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex gap-3">
                     <button type="button"
                         onclick="document.getElementById('editMachineModal').classList.replace('flex','hidden')"
-                        class="flex-1 py-4 text-sm font-black bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all">
+                        class="flex-1 py-4 text-sm font-black transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
                         Batal
                     </button>
                     <button type="submit"
-                        class="flex-1 py-4 text-sm font-black text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
+                        class="flex-1 py-4 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 shadow-blue-100">
                         Update
                     </button>
                 </div>
@@ -229,28 +238,28 @@
                     </p>
                 </div>
                 <button type="button" onclick="closeUpdateProcessModal()"
-                    class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition">
-                    <i class="fa-solid fa-xmark text-sm"></i>
+                    class="flex items-center justify-center transition rounded-full w-9 h-9 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700">
+                    <i class="text-sm fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             {{-- Booking Summary --}}
-            <div class="p-4 border border-slate-100 rounded-2xl bg-slate-50/60 flex flex-wrap gap-4 items-center">
+            <div class="flex flex-wrap items-center gap-4 p-4 border border-slate-100 rounded-2xl bg-slate-50/60">
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">Booking</p>
                     <p id="processBookingCode" class="text-sm font-black text-slate-800">#-</p>
                 </div>
-                <div class="h-10 w-px bg-slate-200 hidden md:block"></div>
+                <div class="hidden w-px h-10 bg-slate-200 md:block"></div>
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">Customer</p>
                     <p id="processCustomerName" class="text-sm font-bold text-slate-700">-</p>
                 </div>
-                <div class="h-10 w-px bg-slate-200 hidden md:block"></div>
+                <div class="hidden w-px h-10 bg-slate-200 md:block"></div>
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">Product</p>
                     <p id="processProductName" class="text-sm font-bold text-slate-700">-</p>
                 </div>
-                <div class="h-10 w-px bg-slate-200 hidden md:block"></div>
+                <div class="hidden w-px h-10 bg-slate-200 md:block"></div>
                 <div class="flex-1">
                     <p id="processRemainingInfo" class="text-[11px] font-semibold text-amber-600"></p>
                 </div>
@@ -288,18 +297,23 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-end">
+                <div class="grid items-end grid-cols-1 gap-4 md:grid-cols-3">
                     <div class="md:col-span-3">
                         <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Loading Mode</label>
-                        <input type="text" name="loading_mode" placeholder="Isi mode loading (misal: single-side)"
-                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                        <select name="loading_mode"
+                            class="w-full px-4 py-3 text-xs font-bold border-none appearance-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
                             required>
+                            <option value="" disabled selected>Pilih Mode Loading</option>
+                            <option value="single-side">Single Side</option>
+                            <option value="flip">Flip</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 mt-6 border-t border-slate-100 pt-6">
+                <div class="grid grid-cols-1 gap-4 pt-6 mt-6 border-t border-slate-100">
                     <div class="flex items-center justify-between mb-2">
-                        <h4 class="text-sm font-black text-slate-800">Pembagian Batch & Porter</h4>
+                        {{-- Ubah teks "Pembagian Batch & Porter" menjadi "Pembagian Batch" --}}
+                        <h4 class="text-sm font-black text-slate-800">Pembagian Batch Produksi</h4>
                         <div class="flex items-center gap-4">
                             <span id="cap_badge"
                                 class="px-3 py-1.5 text-[10px] font-black bg-slate-100 rounded-xl text-slate-600">
@@ -312,18 +326,17 @@
                         </div>
                     </div>
                     <div id="batchContainer" class="space-y-3">
-                        <!-- Batch rows will be added here -->
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-3 mt-8 md:flex-row md:justify-end">
                     <button type="button" onclick="closeUpdateProcessModal()"
-                        class="px-6 py-3 text-xs font-black uppercase rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                        class="px-6 py-3 text-xs font-black uppercase transition rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200">
                         Batal
                     </button>
                     <button type="submit" id="submitProcessBtn"
-                        class="px-6 py-3 text-xs font-black uppercase rounded-xl bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-100">
-                        <i class="fa-solid fa-play mr-2"></i>
+                        class="px-6 py-3 text-xs font-black text-white uppercase transition bg-blue-600 shadow-lg rounded-xl hover:bg-blue-700 active:scale-95 shadow-blue-100">
+                        <i class="mr-2 fa-solid fa-play"></i>
                         Process &amp; Masuk Queue Task
                     </button>
                 </div>
@@ -337,38 +350,30 @@
     <script>
         let maxQty = 0;
 
-        function addBatchField(qty = '', porter = '') {
+        function addBatchField(qty = '') { // Hapus parameter porter
             const container = document.getElementById('batchContainer');
-            const porterData = document.querySelectorAll('#porterDataSource div');
-
-            let porterOptions = '<option value="">Pilih Porter</option>';
-            porterData.forEach(p => {
-                const isSelected = p.dataset.name === porter ? 'selected' : '';
-                porterOptions += `<option value="${p.dataset.name}" ${isSelected}>${p.dataset.name}</option>`;
-            });
 
             const div = document.createElement('div');
+            // Ubah grid-cols-3 menjadi grid-cols-2 agar tampilan pas
             div.className =
-                "batch-row p-4 bg-slate-50/50 border border-slate-100 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-3 items-end mb-2";
+                "batch-row p-4 bg-slate-50/50 border border-slate-100 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-3 items-end mb-2";
             div.innerHTML = `
-                        <div>
-                            <label class="text-[9px] font-black text-slate-400 uppercase mb-1.5 block">Qty Batch</label>
-                            <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required 
-                                value="${qty}"
-                                class="w-full px-4 py-2.5 text-xs font-bold bg-white border border-slate-200 batch-input rounded-xl focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-black text-slate-400 uppercase mb-1.5 block">Porter Penanggung Jawab</label>
-                            <select name="batch_porters[]" required 
-                                class="w-full px-4 py-2.5 text-xs font-bold bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500">
-                                ${porterOptions}
-                            </select>
-                        </div>
-                        <button type="button" onclick="this.parentElement.remove(); updateBatchTotal();" 
-                            class="pb-2.5 text-xs font-bold text-red-500 hover:text-red-700 md:text-left text-center">
-                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                        </button>
-                    `;
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1.5 block">Qty Batch</label>
+            <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required 
+                value="${qty}"
+                class="w-full px-4 py-2.5 text-xs font-bold bg-white border border-slate-200 batch-input rounded-xl focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="this.closest('.batch-row').remove(); updateBatchTotal();" 
+                class="pb-2.5 text-xs font-bold text-red-500 hover:text-red-700">
+                <i class="mr-1 fa-solid fa-trash-can"></i> Hapus Batch
+            </button>
+        </div>
+
+        <input type="hidden" name="batch_porters[]" value="-">
+    `;
             container.appendChild(div);
             updateBatchTotal();
         }
@@ -397,7 +402,7 @@
         }
 
         // Form validation on submit
-        document.getElementById('processForm').addEventListener('submit', function (e) {
+        document.getElementById('processForm').addEventListener('submit', function(e) {
             const inputs = document.querySelectorAll('#updateProcessModal .batch-input');
             let total = 0;
             let allFilled = true;
@@ -429,6 +434,7 @@
                 return;
             }
         });
+
         function openEditMachineModal(id, name) {
             document.getElementById('editMachineName').value = name;
             document.getElementById('editMachineForm').action = `/admin/production-lines/${id}`;

@@ -57,11 +57,11 @@
                                     <div class="flex items-center gap-4">
                                         <div
                                             class="flex items-center justify-center w-12 h-12 font-black text-blue-700 transition-all duration-300 bg-blue-50 rounded-2xl group-hover:bg-blue-600 group-hover:text-white">
-                                            {{ strtoupper(substr($booking->customer->name ?? '?', 0, 1)) }}
+                                            {{ strtoupper(substr($booking->customer->contacts->first()->name ?? '?', 0, 1)) }}
                                         </div>
                                         <div>
                                             <p class="font-black tracking-tight text-slate-800">
-                                                {{ $booking->customer->name ?? 'Guest' }}</p>
+                                                {{ $booking->customer->contacts->first()->name ?? 'Guest' }}</p>
                                             <p
                                                 class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-0.5">
                                                 #BOK-{{ $booking->id }}</p>

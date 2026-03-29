@@ -17,7 +17,7 @@ class AdminBookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::with(['customer', 'products', 'batches'])
+        $bookings = Booking::with(['customer.contacts', 'products', 'batches'])
             ->where('status', 'pending')
             ->latest()
             ->get();
@@ -49,31 +49,6 @@ class AdminBookingController extends Controller
         return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters', 'pallets'));
     }
 
-    // public function updateStatus(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'status' => 'required|string'
-    //     ]);
-
-    //     $booking = Booking::findOrFail($id);
-
-    //     // Simpan perubahan status booking
-    //     $booking->update([
-    //         'status' => $request->status
-    //     ]);
-
-    //     // LOGIKA PENGOSONGAN PALET
-    //     // Jika status diubah menjadi 'completed', cari palet yang terkait dan kosongkan
-    //     if ($request->status === 'completed') {
-    //         \App\Models\Pallet::where('current_booking_id', $booking->id)->update([
-    //             'status' => 'empty',
-    //             'current_booking_id' => null,
-    //             'filled_boxes' => 0 // WAJIB DI-RESET KE 0
-    //         ]);
-    //     }
-
-    //     return back()->with('success', 'Status updated' . ($request->status === 'completed' ? ' and pallet released' : ''));
-    // }
     public function updateStatus(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
@@ -96,7 +71,7 @@ class AdminBookingController extends Controller
     {
         $search = $request->query('search');
 
-        $customers = Customer::with(['bookings.products', 'bookings.batches'])
+        $customers = Customer::with(['contacts', 'bookings.products', 'bookings.batches'])
             ->when($search, function ($query) use ($search) {
                 $query->where('company_name', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
@@ -145,103 +120,6 @@ class AdminBookingController extends Controller
     }
 
 
-    // public function checkIn(Request $request)
-    // {
-    //     $request->validate([
-    //         'booking_code' => 'required',
-    //         'pic_warehouse' => 'required|string',
-    //         'porters' => 'required|array|min:1',
-    //         'total_qty' => 'required|numeric',
-    //         'per_pallet' => 'required|numeric',
-
-    //         'vol_per_pcs' => 'nullable|numeric',
-    //         'vol_total' => 'nullable|numeric',
-    //         'net_weight_pcs' => 'nullable|numeric',
-    //         'total_net_weight' => 'nullable|numeric',
-    //         'gross_weight_pcs' => 'nullable|numeric',
-    //         'total_gross_weight' => 'nullable|numeric',
-    //     ]);
-
-    //     $booking = Booking::with(['products', 'customer'])
-    //         ->where('booking_code', $request->booking_code)
-    //         ->first();
-
-    //     if (!$booking) return back()->with('error', 'Booking tidak ditemukan');
-
-    //     // VALIDASI STATUS: Hanya status 'pending' yang boleh melakukan check-in
-    //     if ($booking->status !== 'pending') {
-    //         return back()->with('error', 'Gagal! Order ini sudah diproses.');
-    //     }
-
-    //     try {
-
-    //         DB::transaction(function () use ($booking, $request) {
-    //             // PEMBERSIHAN DATA (Mencegah Double-double)
-    //             // Jika admin mengulang proses sebelum status berubah, bersihkan data lama
-    //             $booking->batches()->delete();
-
-    //             // Reset status palet yang sebelumnya mungkin sudah terikat ke booking ini
-    //             Pallet::where('current_booking_id', $booking->id)->update([
-    //                 'status' => 'empty',
-    //                 'current_booking_id' => null,
-    //                 'filled_boxes' => 0
-    //             ]);
-
-    //             // UPDATE DATA UTAMA
-    //             $booking->update([
-    //                 'arrival_time' => now(),
-    //                 'pic_warehouse' => $request->pic_warehouse,
-    //                 'total_price' => $request->finance_total, // Simpan total biaya dari Step 4
-    //                 'status' => 'approved', // Pindah status ke Approved
-    //             ]);
-
-    //             $unit = $booking->products->first()->unit ?? 'box';
-
-    //             foreach ($request->batch_quantities as $index => $totalBatchQty) {
-    //                 // Simpan Data Batch Baru
-    //                 $booking->batches()->create([
-    //                     'batch_number' => $index + 1,
-    //                     'quantity' => $totalBatchQty,
-    //                     'unit' => $unit,
-    //                     'porter_name' => $request->batch_porters[$index],
-    //                     'status' => 'waiting'
-    //                 ]);
-
-    //                 // LOGIKA AUTO-SPLIT PALET
-    //                 $remainingInBatch = $totalBatchQty;
-    //                 $startPalletNumber = $request->pallet_ids[$index];
-
-    //                 while ($remainingInBatch > 0) {
-    //                     $pallet = Pallet::where('status', 'empty')
-    //                         ->where(function ($q) use ($startPalletNumber) {
-    //                             $q->where('pallet_number', $startPalletNumber)->orWhere('status', 'empty');
-    //                         })
-    //                         ->orderByRaw("pallet_number = '$startPalletNumber' DESC")
-    //                         ->orderBy('pallet_number', 'asc')
-    //                         ->first();
-
-    //                     if (!$pallet) throw new \Exception("Stok palet tidak mencukupi.");
-
-    //                     $capacity = 10;
-    //                     $fillAmount = ($remainingInBatch >= $capacity) ? $capacity : $remainingInBatch;
-
-    //                     $pallet->update([
-    //                         'status' => 'filled',
-    //                         'current_booking_id' => $booking->id,
-    //                         'filled_boxes' => $fillAmount
-    //                     ]);
-
-    //                     $remainingInBatch -= $fillAmount;
-    //                     $startPalletNumber = null;
-    //                 }
-    //             }
-    //         });
-
-    //         return back()->with('success', 'Penempatan produk di petak berhasil disimpan.');
-    //     } catch (\Exception $e) {
-    //         return back()->with('error', 'Gagal: ' . $e->getMessage());
-    //     }
-    // }
     public function checkIn(Request $request)
     {
         // 1. Validasi
@@ -266,7 +144,7 @@ class AdminBookingController extends Controller
                 $booking->update([
                     'arrival_time' => now(),
                     'pic_warehouse' => $request->pic_warehouse,
-                    'total_price'  => $request->finance_total, // Diambil dari hidden input finance_total_hidden
+                    // 'total_price'  => $request->finance_total, // Diambil dari hidden input finance_total_hidden
                     'status'       => 'approved',
                 ]);
 
@@ -386,40 +264,54 @@ class AdminBookingController extends Controller
         return back()->with('success', 'Pallet deleted');
     }
 
-    public function previewInvoice($id)
-    {
-        $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
+    // public function previewInvoice($id)
+    // {
+    //     $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
 
-        if (!$booking->arrival_time) {
-            return "<div class='p-8 font-bold text-center text-red-500'>Invoice belum tersedia. Barang belum check-in.</div>";
-        }
+    //     if (!$booking->arrival_time) {
+    //         return "<div class='p-8 font-bold text-center text-red-500'>Invoice belum tersedia. Barang belum check-in.</div>";
+    //     }
 
-        // Menggunakan file invoice yang sudah Anda buat
-        return view('admin.bookings.invoice', compact('booking'));
-    }
+    //     // Menggunakan file invoice yang sudah Anda buat
+    //     return view('admin.bookings.invoice', compact('booking'));
+    // }
 
 
-    public function downloadInvoice($id)
-    {
-        $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
-        if (!$booking->arrival_time) {
-            return back()->with('error', 'Invoice belum tersedia.');
-        }
-        $pdf = Pdf::loadView('admin.bookings.invoice', compact('booking'))->setPaper('a4', 'portrait');
-        return $pdf->download('Invoice-' . $booking->booking_code . '.pdf');
-    }
+    // public function downloadInvoice($id)
+    // {
+    //     $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
+    //     if (!$booking->arrival_time) {
+    //         return back()->with('error', 'Invoice belum tersedia.');
+    //     }
+    //     $pdf = Pdf::loadView('admin.bookings.invoice', compact('booking'))->setPaper('a4', 'portrait');
+    //     return $pdf->download('Invoice-' . $booking->booking_code . '.pdf');
+    // }
 
 
     public function create()
     {
         // Mengambil user dengan role customer untuk dropdown pilihan admin
         // $customers = User::where('role', 'admin')->orderBy('name', 'asc')->get();
-        $customers = Customer::orderBy('name', 'asc')->get();
+        $customers = Customer::orderBy('company_name', 'asc')->get();
         return view('admin.bookings.create', compact('customers'));
     }
 
     public function store(Request $request)
     {
+        // Generate booking code berdasarkan tanggal + urutan bulanan
+        $today = now();
+        $prefix = $today->format('ymd'); // contoh: 260328
+
+        // Hitung jumlah booking di bulan yang sama
+        $countThisMonth = Booking::whereYear('created_at', $today->year)
+            ->whereMonth('created_at', $today->month)
+            ->count();
+
+        // Urutan (001, 002, dst)
+        $sequence = str_pad($countThisMonth + 1, 3, '0', STR_PAD_LEFT);
+
+        // Final booking code
+        $bookingCode = $prefix . $sequence;
         // 1. Validasi
         $request->validate([
             'customer_id'    => 'required|exists:customers,id',
@@ -435,12 +327,15 @@ class AdminBookingController extends Controller
 
             // 2. Create Master Booking
             $booking = Booking::create([
+                'user_id'        => auth()->id(), // <--- SOLUSI UTAMA: Ambil ID admin yang login
                 'customer_id'  => $request->customer_id,
                 // 'booking_code' => 'BOK-' . strtoupper(Str::random(8)),
-                'booking_code' => 'EB-' . strtoupper(\Str::random(6)),
+                // 'booking_code' => 'EB-' . strtoupper(\Str::random(6)),
+                'booking_code'   => $bookingCode,
                 'status'       => 'pending',
                 'payment_status' => $request->payment_status,
                 'qr_token' => \Str::uuid(),
+                'total_price'    => $request->total_price ?? 0, // Pastikan field ini ada di tabel bookings
             ]);
 
             // 3. Create Booking Product (Data Aktual)
@@ -470,11 +365,54 @@ class AdminBookingController extends Controller
         }
     }
 
+    // public function storePlacement(Request $request, $bookingId)
+    // {
+    //     // Validasi input array dari form
+    //     $request->validate([
+    //         'product_names' => 'required|array', // Pastikan name="product_names[]" di form
+    //         'lines' => 'required|array',
+    //         'petaks' => 'required|array',
+    //         'pallet_qty' => 'required|array',
+    //     ]);
+
+    //     try {
+    //         DB::transaction(function () use ($request, $bookingId) {
+    //             // Hapus data lama milik booking ini agar tidak duplikat saat edit
+    //             \App\Models\PalletContent::where('booking_id', $bookingId)->delete();
+
+    //             foreach ($request->lines as $index => $line) {
+    //                 $petak = $request->petaks[$index];
+    //                 $qty = $request->pallet_qty[$index];
+    //                 $productName = $request->product_names[$index];
+
+    //                 // Cari master lokasi palet
+    //                 $slot = \App\Models\Pallet::where('line', (string)$line)
+    //                     ->where('slot_section', (int)$petak)
+    //                     ->first();
+
+    //                 if (!$slot) {
+    //                     throw new \Exception("Slot Line {$line} Petak {$petak} tidak terdaftar di sistem!");
+    //                 }
+
+    //                 // Simpan detail produk di lokasi tersebut
+    //                 \App\Models\PalletContent::create([
+    //                     'pallet_id'    => $slot->id,
+    //                     'booking_id'   => $bookingId,
+    //                     'product_name' => $productName,
+    //                     'quantity'     => $qty
+    //                 ]);
+    //             }
+    //         });
+
+    //         return back()->with('success', 'Penempatan produk di petak berhasil disimpan.');
+    //     } catch (\Exception $e) {
+    //         return back()->with('error', 'Gagal: ' . $e->getMessage());
+    //     }
+    // }
     public function storePlacement(Request $request, $bookingId)
     {
-        // Validasi input array dari form
         $request->validate([
-            'product_names' => 'required|array', // Pastikan name="product_names[]" di form
+            'product_names' => 'required|array',
             'lines' => 'required|array',
             'petaks' => 'required|array',
             'pallet_qty' => 'required|array',
@@ -482,7 +420,16 @@ class AdminBookingController extends Controller
 
         try {
             DB::transaction(function () use ($request, $bookingId) {
-                // Hapus data lama milik booking ini agar tidak duplikat saat edit
+
+                // ✅ TAMBAHKAN INI — update status booking
+                $booking = Booking::findOrFail($bookingId);
+                $booking->update([
+                    'status'       => 'approved', // sesuaikan dengan enum status kamu
+                    'arrival_time' => now(),
+                    'pic_warehouse' => $request->pic_warehouse ?? null,
+                ]);
+
+                // Hapus data lama
                 \App\Models\PalletContent::where('booking_id', $bookingId)->delete();
 
                 foreach ($request->lines as $index => $line) {
@@ -490,7 +437,6 @@ class AdminBookingController extends Controller
                     $qty = $request->pallet_qty[$index];
                     $productName = $request->product_names[$index];
 
-                    // Cari master lokasi palet
                     $slot = \App\Models\Pallet::where('line', (string)$line)
                         ->where('slot_section', (int)$petak)
                         ->first();
@@ -499,19 +445,59 @@ class AdminBookingController extends Controller
                         throw new \Exception("Slot Line {$line} Petak {$petak} tidak terdaftar di sistem!");
                     }
 
-                    // Simpan detail produk di lokasi tersebut
+                    // ✅ TAMBAHKAN INI — update status fisik palet
+                    $slot->update([
+                        'status'             => 'filled',
+                        'current_booking_id' => $bookingId,
+                        'filled_boxes'       => $qty,
+                    ]);
+
                     \App\Models\PalletContent::create([
                         'pallet_id'    => $slot->id,
                         'booking_id'   => $bookingId,
                         'product_name' => $productName,
-                        'quantity'     => $qty
+                        'quantity'     => $qty,
                     ]);
                 }
             });
 
-            return back()->with('success', 'Penempatan produk di petak berhasil disimpan.');
+            return back()->with('success', 'Check-in berhasil! Status booking telah diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal: ' . $e->getMessage());
         }
+    }
+    public function show($id)
+    {
+        // Load data lengkap dengan relasi
+        $booking = Booking::with(['customer.contacts', 'products', 'batches', 'pallets'])->findOrFail($id);
+
+        // Return hanya view partial-nya saja
+        return view('admin.bookings.partials.detail-content', compact('booking'));
+    }
+
+    // public function downloadInvoice($id)
+    // {
+    //     $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
+
+    //     $pdf = Pdf::loadView('admin.bookings.invoice', [
+    //         'booking' => $booking,
+    //         'pdf' => true // 🔥 kirim flag
+    //     ])->setPaper('a4', 'portrait');
+
+    //     return $pdf->stream('Invoice-' . $booking->booking_code . '.pdf');
+    // }
+
+
+    public function previewInvoice($id)
+    {
+        $booking = Booking::with(['products', 'batches', 'customer.contacts'])->findOrFail($id);
+
+        if (!$booking->arrival_time) {
+            return "<div style='padding:40px; text-align:center; font-weight:bold; color:red;'>
+                    Invoice belum tersedia. Barang belum check-in.
+                </div>";
+        }
+
+        return view('admin.bookings.invoice', compact('booking'));
     }
 }

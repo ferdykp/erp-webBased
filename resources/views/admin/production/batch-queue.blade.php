@@ -32,10 +32,11 @@
                     <div class="flex items-center gap-4">
                         <div
                             class="flex items-center justify-center w-12 h-12 font-black text-blue-700 bg-blue-50 rounded-2xl">
-                            {{ strtoupper(substr($booking->customer->name ?? '?', 0, 1)) }}
+                            {{ strtoupper(substr($booking->customer->contacts->first()->name ?? '?', 0, 1)) }}
                         </div>
                         <div>
-                            <p class="text-lg font-black text-slate-800">{{ $booking->customer->name ?? 'Guest' }}</p>
+                            <p class="text-lg font-black text-slate-800">
+                                {{ $booking->customer->contacts->first()->name ?? 'Guest' }}</p>
                             <span class="px-3 py-1 font-mono text-xs font-bold rounded-lg bg-slate-100 text-slate-600">
                                 #{{ $booking->booking_code }}
                             </span>

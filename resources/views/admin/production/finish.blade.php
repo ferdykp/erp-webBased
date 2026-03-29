@@ -33,7 +33,7 @@
 
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
             <h3 class="mb-4 text-lg font-black text-slate-700">
-                <i class="fa-solid fa-circle-check mr-2 text-emerald-600"></i>Daftar Batch Finish
+                <i class="mr-2 fa-solid fa-circle-check text-emerald-600"></i>Daftar Batch Finish
             </h3>
 
             @if (empty($doneRows))
@@ -72,15 +72,16 @@
                                     $product = $row['product'];
                                     $batch = $row['batch'];
                                 @endphp
-                                <tr class="bg-white rounded-2xl shadow-sm border border-slate-100">
+                                <tr class="bg-white border shadow-sm rounded-2xl border-slate-100">
                                     <td class="px-6 py-4 align-middle">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 font-black text-xs">
-                                                {{ strtoupper(substr($booking->customer->name ?? '?', 0, 1)) }}
+                                                class="flex items-center justify-center text-xs font-black w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700">
+                                                {{ strtoupper(substr($booking->customer->contacts->first()->name ?? '?', 0, 1)) }}
                                             </div>
                                             <div>
-                                                <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}</p>
+                                                <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}
+                                                </p>
                                                 <p class="text-[11px] font-semibold text-slate-400">
                                                     {{ ucfirst($booking->status) }}
                                                 </p>
@@ -89,7 +90,7 @@
                                     </td>
                                     <td class="px-6 py-4 align-middle">
                                         <p class="text-sm font-bold text-slate-700">
-                                            {{ $booking->customer->name ?? 'Guest' }}
+                                            {{ $booking->customer->contacts->first()->name ?? 'Guest' }}
                                         </p>
                                     </td>
                                     <td class="px-6 py-4 align-middle">
@@ -99,7 +100,7 @@
                                     </td>
                                     <td class="px-6 py-4 text-center align-middle">
                                         <span
-                                            class="inline-flex items-center px-3 py-1 text-xs font-black text-emerald-700 uppercase bg-emerald-50 rounded-lg">
+                                            class="inline-flex items-center px-3 py-1 text-xs font-black uppercase rounded-lg text-emerald-700 bg-emerald-50">
                                             Batch #{{ $batch->batch_number }}
                                         </span>
                                     </td>
@@ -121,22 +122,20 @@
                                     <td class="px-6 py-4 text-center align-middle">
                                         <span
                                             class="inline-flex items-center px-3 py-1.5 text-[10px] font-black text-emerald-700 uppercase bg-emerald-50 rounded-lg">
-                                            <i class="fa-solid fa-check mr-1"></i> Finished
+                                            <i class="mr-1 fa-solid fa-check"></i> Finished
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right align-middle">
-                                        <button
-                                            onclick="openFinishDetailModal(this)"
+                                        <button onclick="openFinishDetailModal(this)"
                                             data-booking-code="{{ $booking->booking_code }}"
-                                            data-customer-name="{{ $booking->customer->name ?? 'Guest' }}"
+                                            data-customer-name="{{ $booking->customer->contacts->first()->name ?? 'Guest' }}"
                                             data-product-name="{{ $product->product_name ?? '-' }}"
-                                            data-quantity="{{ $batch->quantity }}"
-                                            data-unit="{{ $batch->unit }}"
+                                            data-quantity="{{ $batch->quantity }}" data-unit="{{ $batch->unit }}"
                                             data-line="{{ $batch->productionLine->name ?? '-' }}"
                                             data-target-dose="{{ $batch->target_dose ?? '' }}"
                                             data-beam-speed="{{ $batch->beam_speed ?? '' }}"
                                             data-loading-mode="{{ $batch->loading_mode ?? '' }}"
-                                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white transition-all active:scale-95">
+                                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase transition-all border rounded-xl border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white active:scale-95">
                                             <i class="fa-solid fa-eye"></i>
                                             Detail
                                         </button>
@@ -163,8 +162,8 @@
                     </p>
                 </div>
                 <button type="button" onclick="closeFinishDetailModal()"
-                    class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition">
-                    <i class="fa-solid fa-xmark text-sm"></i>
+                    class="flex items-center justify-center transition rounded-full w-9 h-9 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700">
+                    <i class="text-sm fa-solid fa-xmark"></i>
                 </button>
             </div>
 
@@ -177,7 +176,7 @@
                     <p class="mt-2 text-[10px] font-black text-slate-400 uppercase mb-1">Product</p>
                     <p id="finishProductName" class="text-sm font-bold text-slate-700">-</p>
                 </div>
-                <div class="p-4 border border-slate-100 rounded-2xl bg-slate-50/70 space-y-1">
+                <div class="p-4 space-y-1 border border-slate-100 rounded-2xl bg-slate-50/70">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Batch</p>
                     <p id="finishBatchInfo" class="text-sm font-black text-slate-800">-</p>
                     <p class="text-[10px] font-black text-slate-400 uppercase mt-3 mb-1">Production Line</p>
@@ -193,7 +192,7 @@
 
             <div class="flex justify-end mt-4">
                 <button type="button" onclick="closeFinishDetailModal()"
-                    class="px-6 py-3 text-xs font-black uppercase rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                    class="px-6 py-3 text-xs font-black uppercase transition rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200">
                     Tutup
                 </button>
             </div>
@@ -234,4 +233,3 @@
         }
     </script>
 @endpush
-

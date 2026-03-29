@@ -40,7 +40,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-6">
-                                <div class="text-sm font-medium text-slate-600">{{ $customer->pic_name ?? $customer->name }}
+                                <div class="text-sm font-medium text-slate-600">{{ $customer->contacts->first()->name }}
                                 </div>
                                 <div class="text-[11px] text-slate-400">{{ $customer->phone }}</div>
                             </td>
@@ -101,7 +101,7 @@
                                     <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">PIC
                                         Name</label>
                                     <p class="text-sm font-bold text-slate-700"
-                                        x-text="selectedCustomer.pic_name || selectedCustomer.name"></p>
+                                        x-text="selectedCustomer.contacts?.[0]?.name"></p>
                                 </div>
                                 <div>
                                     <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Email</label>
@@ -170,7 +170,7 @@
                                                                 :class="product.dmin > 50 ? 'bg-rose-50 text-rose-600' :
                                                                     'bg-slate-50 text-slate-600'"
                                                                 class="px-3 py-1.5 rounded-xl text-[10px] font-black min-w-[60px] text-center"
-                                                                x-text="product.dmin + ' kGy'">
+                                                                x-text="Number(product.dmin).toFixed(0) + ' kGy'">
                                                             </span>
                                                         </div>
 
@@ -181,7 +181,7 @@
                                                                 :class="product.dmax > 50 ? 'bg-rose-50 text-rose-600' :
                                                                     'bg-slate-50 text-slate-600'"
                                                                 class="px-3 py-1.5 rounded-xl text-[10px] font-black min-w-[60px] text-center"
-                                                                x-text="product.dmax + ' kGy'">
+                                                                x-text="Number(product.dmax).toFixed(0) + ' kGy'">
                                                             </span>
                                                         </div>
                                                     </div>
