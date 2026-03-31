@@ -58,7 +58,7 @@
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Dose Range</p>
                     <p class="font-bold text-slate-800">
-                        {{ number_format($product->dmin ?? 0, 2) }} - {{ number_format($product->dmax ?? 0, 2) }} kGy
+                        {{ number_format($product->dmin ?? 0, 0) }} - {{ number_format($product->dmax ?? 0, 0) }} kGy
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">

@@ -264,60 +264,30 @@ class AdminBookingController extends Controller
         return back()->with('success', 'Pallet deleted');
     }
 
-    // public function previewInvoice($id)
-    // {
-    //     $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
-
-    //     if (!$booking->arrival_time) {
-    //         return "<div class='p-8 font-bold text-center text-red-500'>Invoice belum tersedia. Barang belum check-in.</div>";
-    //     }
-
-    //     // Menggunakan file invoice yang sudah Anda buat
-    //     return view('admin.bookings.invoice', compact('booking'));
-    // }
-
-
-    // public function downloadInvoice($id)
-    // {
-    //     $booking = Booking::with(['products', 'batches', 'customer'])->findOrFail($id);
-    //     if (!$booking->arrival_time) {
-    //         return back()->with('error', 'Invoice belum tersedia.');
-    //     }
-    //     $pdf = Pdf::loadView('admin.bookings.invoice', compact('booking'))->setPaper('a4', 'portrait');
-    //     return $pdf->download('Invoice-' . $booking->booking_code . '.pdf');
-    // }
-
 
     public function create()
     {
-        // Mengambil user dengan role customer untuk dropdown pilihan admin
-        // $customers = User::where('role', 'admin')->orderBy('name', 'asc')->get();
         $customers = Customer::orderBy('company_name', 'asc')->get();
         return view('admin.bookings.create', compact('customers'));
     }
 
     public function store(Request $request)
     {
-        // Generate booking code berdasarkan tanggal + urutan bulanan
         $today = now();
-        $prefix = $today->format('ymd'); // contoh: 260328
+        $prefix = $today->format('ymd');
 
-        // Hitung jumlah booking di bulan yang sama
         $countThisMonth = Booking::whereYear('created_at', $today->year)
             ->whereMonth('created_at', $today->month)
             ->count();
 
-        // Urutan (001, 002, dst)
         $sequence = str_pad($countThisMonth + 1, 3, '0', STR_PAD_LEFT);
 
-        // Final booking code
         $bookingCode = $prefix . $sequence;
-        // 1. Validasi
         $request->validate([
             'customer_id'    => 'required|exists:customers,id',
             'product_name'   => 'required|string',
             'quantity'       => 'required|numeric',
-            'dimension_pack' => 'required|string', // Format: 20x20x20
+            'dimension_pack' => 'required|string',
             'vol_total'      => 'required|numeric',
             'payment_status' => 'required|in:paid,unpaid',
         ]);
@@ -325,7 +295,6 @@ class AdminBookingController extends Controller
         try {
             DB::beginTransaction();
 
-            // 2. Create Master Booking
             $booking = Booking::create([
                 'user_id'        => auth()->id(), // <--- SOLUSI UTAMA: Ambil ID admin yang login
                 'customer_id'  => $request->customer_id,

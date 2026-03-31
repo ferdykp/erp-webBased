@@ -66,6 +66,7 @@
                         <tr class="text-[10px] font-black tracking-[0.2em] text-slate-600 uppercase">
                             <th class="px-8 py-4">Customer Details</th>
                             <th class="px-6 py-4 text-center">Create Booking</th>
+                            <th class="px-6 py-4 text-center">Product</th>
                             <th class="px-6 py-4 text-center">Status</th>
                             <th class="px-8 py-4 text-right">Actions</th>
                         </tr>
@@ -92,6 +93,10 @@
                                 <td class="px-6 py-6 text-center border-transparent border-y group-hover:border-slate-100">
                                     <p class="text-sm font-black text-slate-700">
                                         {{ $booking->created_at->format('d M Y') }}</p>
+                                </td>
+                                <td class="px-6 py-6 text-center border-transparent border-y group-hover:border-slate-100">
+                                    <p class="text-sm font-black text-slate-700">
+                                        {{ $booking->products->first()->product_name }}</p>
                                 </td>
                                 <td class="px-6 py-6 text-center border-transparent border-y group-hover:border-slate-100">
                                     <x-status-badge :status="$booking->status" />
