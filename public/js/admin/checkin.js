@@ -16,137 +16,27 @@ function syncStep1ToStep4() {
 
     // update UI
     document.getElementById("calc_qty").innerText = qty;
-    document.getElementById("calc_dmin").innerText = dmin;
+    document.getElementById("calc_dmin").innerText = formatInteger(dmin);
+    document.getElementById("calc_dmax").innerText = formatInteger(dmax);
     document.getElementById("calc_nett").innerText = nett;
 
     return { qty, nett, dmin };
 }
 
-function calculatePrice() {
-    // 🔥 sync dulu
-    syncStep1ToStep4();
-
-    const qty = parseFloat(document.getElementById("final_qty").value) || 0;
-    const nett =
-        parseFloat(
-            document.querySelector('input[name="net_weight_pcs"]')?.value,
-        ) || 0;
-    const dmin = parseFloat(document.getElementById("final_dmin").value) || 0;
-
-    const pricePerDose = 500;
-
-    const subtotal = pricePerDose * qty * nett * dmin;
-
-    const ppnRate =
-        parseFloat(
-            document.querySelector('input[name="use_ppn"]:checked')?.value,
-        ) || 0;
-
-    const tax = subtotal * ppnRate;
-    const total = subtotal + tax;
-
-    const formatter = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0,
-    });
-
-    // ✅ update UI
-    document.getElementById("display_subtotal").innerText =
-        formatter.format(subtotal);
-    document.getElementById("display_tax").innerText = formatter.format(tax);
-    document.getElementById("display_total_price").innerText =
-        formatter.format(total);
-
-    // ✅ backend
-    document.getElementById("final_total_price").value = total;
-    document.getElementById("finance_total_hidden").value = total;
-
-    console.log("FINAL PRICE:", { qty, nett, dmin, subtotal, tax, total });
-}
-
-function calculateDoseFinance() {
-    const { qty, nett, dmin } = syncStep1ToStep4();
-
-    const pricePerDose = 500;
-
-    const subtotal = pricePerDose * qty * nett * dmin;
-
-    const ppnRate =
-        parseFloat(
-            document.querySelector('input[name="use_ppn"]:checked')?.value,
-        ) || 0;
-
-    const tax = subtotal * ppnRate;
-    const total = subtotal + tax;
-
-    const formatter = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0,
-    });
-
-    document.getElementById("display_subtotal").innerText =
-        formatter.format(subtotal);
-    document.getElementById("display_tax").innerText = formatter.format(tax);
-    document.getElementById("display_total_price").innerText =
-        formatter.format(total);
-
-    document.getElementById("finance_total_hidden").value = total;
-
-    console.log("FIXED:", { qty, nett, dmin, subtotal, total });
-}
-
-function handleCurrencyInput(el) {
-    let value = el.value.replace(/\D/g, "");
-    if (value !== "") {
-        el.value = new Intl.NumberFormat("id-ID").format(value);
-    } else {
-        el.value = "";
-    }
-    //     calculateDoseFinance();
-    calculateDoseFinance();
-}
-
-function parseCurrency(str) {
-    if (!str) return 0;
-    return parseFloat(str.toString().replace(/\./g, "")) || 0;
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    // Listener finance
-    const financeIds = [
-        "tariff_volume",
-        "tariff_pallet",
-        "tariff_storage",
-        "min_charge_val",
-    ];
-    financeIds.forEach((id) => {
-        document
-            .getElementById(id)
-            ?.addEventListener("input", calculateDoseFinance);
-    });
-
-    // ✅ TAMBAHKAN DI SINI
-    document
-        .querySelector('[name="net_weight_pcs"]')
-        ?.addEventListener("input", calculateDoseFinance);
-
-    // Listener PPN
-    document
-        .getElementById("tax_toggle")
-        ?.addEventListener("change", calculateDoseFinance);
-
-    // Listener pallet
-    ["per_pallet", "pallet_count"].forEach((id) => {
-        document.getElementById(id)?.addEventListener("input", function () {
-            setTimeout(calculateDoseFinance, 50);
-        });
-    });
-});
 function formatNumber(num, maxDecimal = 3) {
-    return parseFloat(num.toFixed(maxDecimal));
+    if (isNaN(num) || num === null) return "0";
+
+    return Number(num).toLocaleString("id-ID", {
+        minimumFractionDigits: 0, // tidak paksa ada .000
+        maximumFractionDigits: maxDecimal, // tapi batasi max desimal
+    });
 }
+
+function formatInteger(num) {
+    if (isNaN(num) || num === null) return "0";
+    return Math.round(num).toLocaleString("id-ID");
+}
+
 function calculateVolumeFromDimension() {
     const dimension = document.getElementById("check_dimension").innerText;
 
@@ -163,10 +53,10 @@ function calculateVolumeFromDimension() {
     const height = parseFloat(parts[2]) || 0;
 
     const volumeCm = length * width * height;
-    const volumeM = volumeCm / 1000000;
+    // const volumeM = volumeCm / 1;
 
     document.querySelector("[name='vol_per_pcs']").value = formatNumber(
-        volumeM,
+        volumeCm,
         6,
     );
 
@@ -229,8 +119,6 @@ function getInventoryData() {
 }
 window.currentInventory = getInventoryData();
 
-// public/js/admin/checkin.js
-
 function openWarehouseModal(code) {
     const dataSource = document.querySelector(
         `#bookingDataSource [data-code="${code}"]`,
@@ -254,14 +142,17 @@ function openWarehouseModal(code) {
     // 2. Populate Data Teknis Lengkap
     document.getElementById("check_temp").innerText =
         dataSource.getAttribute("data-temp");
-    document.getElementById("check_dmin").innerText =
-        dataSource.getAttribute("data-dmin");
-    document.getElementById("check_dmax").innerText =
-        dataSource.getAttribute("data-dmax");
+    document.getElementById("check_dmin").innerText = formatInteger(
+        dataSource.getAttribute("data-dmin"),
+    );
+
+    document.getElementById("check_dmax").innerText = formatInteger(
+        dataSource.getAttribute("data-dmax"),
+    );
     document.getElementById("check_dimension").innerText =
         dataSource.getAttribute("data-dimension");
-    document.getElementById("check_weight").innerText =
-        dataSource.getAttribute("data-weight");
+    // document.getElementById("check_weight").innerText =
+    //     dataSource.getAttribute("data-weight");
 
     // 3. Header & Global Info
     // document.getElementById("total_qty_display").innerText = maxQty;
@@ -286,14 +177,16 @@ ${generatePorterOptions()}
     //     calculateVolumeFromDimension();
     // }, 200);
     // ✅ AUTO FILL DARI DATASET (JS BARU STYLE)
-    document.getElementById("ci_net_weight_pcs").value =
-        dataSource.dataset.netPcs || 0;
+    document.getElementById("ci_net_weight_pcs").value = formatInteger(
+        dataSource.dataset.netPcs,
+    );
 
     document.getElementById("ci_total_net_weight").value =
         dataSource.dataset.netTotal || 0;
 
-    document.getElementById("ci_gross_weight_pcs").value =
-        dataSource.dataset.grossPcs || 0;
+    document.getElementById("ci_gross_weight_pcs").value = formatInteger(
+        dataSource.dataset.grossPcs,
+    );
 
     document.getElementById("ci_total_gross_weight").value =
         dataSource.dataset.grossTotal || 0;
@@ -633,15 +526,29 @@ function updatePetakOptions(idx) {
     if (!line) return;
 
     // Ambil SEMUA petak yang ada di line tersebut, TANPA filter status
+    // const availablePetaks = window.currentInventory.filter(
+    //     (i) => i.line == line,
+    // );
     const availablePetaks = window.currentInventory.filter(
         (i) => i.line == line,
     );
 
     // Gunakan Set untuk menghindari duplikat jika ada data ganda di DOM
+    // const uniquePetaks = [...new Set(availablePetaks.map((i) => i.petak))];
+
+    // uniquePetaks.forEach((p) => {
+    //     petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
+    // });
     const uniquePetaks = [...new Set(availablePetaks.map((i) => i.petak))];
 
     uniquePetaks.forEach((p) => {
-        petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
+        const pallet = availablePetaks.find((i) => i.petak == p);
+        const isFilled = pallet?.status === "filled";
+
+        petakSelect.innerHTML += `
+        <option value="${p}">
+            Petak ${p} ${isFilled ? "(Terisi)" : ""}
+        </option>`;
     });
 }
 
@@ -688,6 +595,7 @@ const palletCountInput = document.getElementById("pallet_count");
 if (palletCountInput) {
     palletCountInput.addEventListener("input", calculatePalletFromCount);
 }
+
 function updatePalletSummary(pallet, perPallet, remainder) {
     const summary = document.getElementById("pallet_summary");
 

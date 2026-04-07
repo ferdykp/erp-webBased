@@ -48,19 +48,19 @@
             <input type="hidden" name="total_price" id="final_total_price">
             <input type="hidden" name="gross_weight_per_pcs" id="final_gross_pcs">
             <input type="hidden" name="total_gross_weight" id="final_gross_total">
-
             <input type="hidden" name="vol_per_pcs" id="final_vol_per_pcs">
             <input type="hidden" name="vol_total" id="final_vol_total">
             <input type="hidden" name="net_weight_pcs" id="final_net_weight_pcs">
             <input type="hidden" name="total_net_weight" id="final_total_net_weight">
+            <input type="hidden" name="density_gross" id="final_density_gross">
+            <input type="hidden" name="density_nett" id="final_density_nett">
 
             <div id="modalScrollArea"
                 class="flex-1 px-6 md:px-12 py-8 overflow-y-auto 
                 [&::-webkit-scrollbar]:w-2 
                 [&::-webkit-scrollbar-track]:bg-transparent 
                 [&::-webkit-scrollbar-thumb]:bg-slate-200 
-                [&::-webkit-scrollbar-thumb]:rounded-full
-                hover:[&::-webkit-scrollbar-thumb]:bg-slate-300">
+                [&::-webkit-scrollbar-thumb]:rounded-full">
 
                 <div id="content_step1" class="space-y-8">
                     <div class="p-6 md:p-8 bg-blue-50/40 border border-blue-100 rounded-[2.5rem]">
@@ -89,39 +89,37 @@
 
                     <div class="grid grid-cols-2 gap-6">
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Volume/Pcs (m³)</label>
-                            <input type="number" step="0.000001" name="vol_per_pcs" id="mod_vol_pcs" readonly
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Volume/Pcs
+                                (cm³)</label>
+                            <input type="text" id="mod_vol_pcs" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Total Volume
-                                (m³)</label>
-                            <input type="number" step="0.000001" name="vol_total" id="mod_vol_total" readonly
+                                (cm³)</label>
+                            <input type="text" id="mod_vol_total" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Net Weight/Pcs
                                 (kg)</label>
-                            <input type="number" step="0.01" name="net_weight_pcs" id="mod_net_pcs" readonly
+                            <input type="text" id="mod_net_pcs" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Total Net Weight
                                 (kg)</label>
-                            <input type="number" step="0.01" name="total_net_weight" id="mod_net_total" readonly
+                            <input type="text" id="mod_net_total" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Gross Weight/Pcs
-                                (kg)</label>
-                            <input type="number" step="0.01" name="gross_weight_pcs" id="mod_gross_pcs" readonly
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Density Gross</label>
+                            <input type="text" id="mod_density_gross" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Total Gross Weight
-                                (kg)</label>
-                            <input type="number" step="0.01" name="total_gross_weight" id="mod_gross_total"
-                                readonly
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Density Nett</label>
+                            <input type="text" id="mod_density_nett" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                     </div>
@@ -146,7 +144,7 @@
                             <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Rincian
                                 Biaya</span>
                             <span class="text-[10px] font-bold py-1 px-3 bg-blue-100 text-blue-700 rounded-full">Rp 500
-                                / dose</span>
+                                / dose*kg</span>
                         </div>
 
                         <div class="p-8 space-y-4">
@@ -182,15 +180,13 @@
                                 class="flex-1 relative flex items-center justify-center p-3 border-2 bg-white rounded-2xl cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition-all shadow-sm">
                                 <input type="radio" name="use_ppn" value="0" checked
                                     onchange="calculatePrice()" class="absolute opacity-0">
-                                <span class="text-sm font-black text-slate-500 group-checked:text-blue-600">TANPA
-                                    PPN</span>
+                                <span class="text-sm font-black text-slate-500">TANPA PPN</span>
                             </label>
                             <label
                                 class="flex-1 relative flex items-center justify-center p-3 border-2 bg-white rounded-2xl cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition-all shadow-sm">
                                 <input type="radio" name="use_ppn" value="0.11" onchange="calculatePrice()"
                                     class="absolute opacity-0">
-                                <span class="text-sm font-black text-slate-500 group-checked:text-blue-600">PPN
-                                    11%</span>
+                                <span class="text-sm font-black text-slate-500">PPN 11%</span>
                             </label>
                         </div>
                     </div>
@@ -247,93 +243,163 @@
 </div>
 
 <script>
+    /**
+     * Helper: Menghapus nol berlebih di belakang koma agar tampilan rapi
+     */
+    function formatNum(num, decimals = 4) {
+        if (!num) return "0";
+        return parseFloat(parseFloat(num).toFixed(decimals)).toString();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        generateBookingCode();
+    });
+
+    function generateBookingCode() {
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2);
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const randomSeq = Math.floor(Math.random() * 900 + 100);
+        const code = `${year}${month}${day}${randomSeq}`;
+
+        if (document.getElementById('display_booking_code_input')) {
+            document.getElementById('display_booking_code_input').value = code;
+        }
+        document.getElementById('display_booking_code').innerText = code;
+    }
+
+    function openVerifyModal() {
+        // Ambil Input Utama
+        const customer = document.getElementById('in_customer_id');
+        const prodName = document.getElementById('in_product_name');
+        const qtyInput = document.getElementById('in_qty');
+
+        if (!customer.value || !prodName.value || !qtyInput.value) {
+            alert("Harap isi Nama Customer, Nama Produk, dan Quantity.");
+            return;
+        }
+
+        const val = {
+            customer_id: customer.value,
+            product: prodName.value,
+            type: document.getElementById('in_product_type').value || '-',
+            qty: parseFloat(qtyInput.value) || 0,
+            unit: document.getElementById('in_unit').value,
+            dmin: parseFloat(document.getElementById('in_dmin').value) || 0,
+            dmax: parseFloat(document.getElementById('in_dmax').value) || 0,
+            net_pcs: parseFloat(document.getElementById('in_net_pcs').value) || 0,
+            gross_pcs: parseFloat(document.getElementById('in_gross_pcs').value) || 0,
+            l: parseFloat(document.getElementById('in_length').value) || 0,
+            w: parseFloat(document.getElementById('in_width').value) || 0,
+            h: parseFloat(document.getElementById('in_height').value) || 0,
+            temp: document.getElementById('in_temp').value || '-'
+        };
+
+        // Kalkulasi Fisik (DALAM CM)
+        const vol_pcs = val.l * val.w * val.h;
+        const vol_total = vol_pcs * val.qty;
+        const net_total = val.net_pcs * val.qty;
+        const gross_total = val.gross_pcs * val.qty;
+
+        // Tampilkan Ringkasan
+        document.getElementById('check_product_name').innerText = val.product;
+        document.getElementById('check_qty').innerText = formatNum(val.qty, 0);
+        document.getElementById('check_unit').innerText = val.unit;
+        document.getElementById('check_dmin').innerText = formatNum(val.dmin, 2);
+        document.getElementById('check_dmax').innerText = formatNum(val.dmax, 2);
+        document.getElementById('check_dimension').innerText = `${val.l}x${val.w}x${val.h} cm`;
+
+        // Isi Input Review (Readonly)
+        document.getElementById('mod_vol_pcs').value = formatNum(vol_pcs, 2);
+        document.getElementById('mod_vol_total').value = formatNum(vol_total, 2);
+        document.getElementById('mod_net_pcs').value = formatNum(val.net_pcs, 2);
+        document.getElementById('mod_net_total').value = formatNum(net_total, 2);
+
+        const dNett = vol_total > 0 ? (net_total / vol_total) : 0;
+        const dGross = vol_total > 0 ? (gross_total / vol_total) : 0;
+        document.getElementById('mod_density_nett').value = formatNum(dNett, 6);
+        document.getElementById('mod_density_gross').value = formatNum(dGross, 6);
+
+        // Sync ke Hidden Inputs (Data Database)
+        document.getElementById('final_customer_id').value = val.customer_id;
+        document.getElementById('final_product_name').value = val.product;
+        document.getElementById('final_product_type').value = val.type;
+        document.getElementById('final_qty').value = val.qty;
+        document.getElementById('final_unit').value = val.unit;
+        document.getElementById('final_dmin').value = val.dmin;
+        document.getElementById('final_dmax').value = val.dmax;
+        document.getElementById('final_dim_pack').value = `${val.l}x${val.w}x${val.h}`;
+        document.getElementById('final_temp').value = val.temp;
+        document.getElementById('final_vol_per_pcs').value = vol_pcs;
+        document.getElementById('final_vol_total').value = vol_total;
+        document.getElementById('final_net_weight_pcs').value = val.net_pcs;
+        document.getElementById('final_total_net_weight').value = net_total;
+        document.getElementById('final_gross_pcs').value = val.gross_pcs;
+        document.getElementById('final_gross_total').value = gross_total;
+        document.getElementById('final_density_gross').value = dGross;
+        document.getElementById('final_density_nett').value = dNett;
+
+        calculatePrice();
+
+        const modal = document.getElementById('orderDetailModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
     function calculatePrice() {
-        // 1. Ambil data input
         const qty = parseFloat(document.getElementById('final_qty').value) || 0;
-        const nett = parseFloat(document.getElementById('mod_net_pcs').value) || 0;
+        const nettPcs = parseFloat(document.getElementById('final_net_weight_pcs').value) || 0;
         const dmin = parseFloat(document.getElementById('final_dmin').value) || 0;
-        const pricePerDose = 500;
 
-        // 2. Hitung Harga Dasar (Subtotal)
-        const subtotal = pricePerDose * qty * nett * dmin;
+        const subtotal = 500 * qty * nettPcs * dmin;
+        const ppnRate = parseFloat(document.querySelector('input[name="use_ppn"]:checked').value);
+        const tax = subtotal * ppnRate;
+        const total = subtotal + tax;
 
-        // 3. Hitung Pajak
-        const ppnInput = document.querySelector('input[name="use_ppn"]:checked');
-        const ppnRate = ppnInput ? parseFloat(ppnInput.value) : 0;
-        const taxAmount = subtotal * ppnRate;
-        const grandTotal = subtotal + taxAmount;
-
-        // 4. Formatter Rupiah
-        const formatter = new Intl.NumberFormat('id-ID', {
+        // UI Display
+        const idr = new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
             maximumFractionDigits: 0
         });
+        document.getElementById('display_subtotal').innerText = idr.format(subtotal);
+        document.getElementById('display_tax').innerText = idr.format(tax);
+        document.getElementById('display_total_price').innerText = idr.format(total);
 
-        // 5. Update UI Breakdown
-        document.getElementById('display_subtotal').innerText = formatter.format(subtotal);
-        document.getElementById('display_tax').innerText = formatter.format(taxAmount);
-        document.getElementById('display_total_price').innerText = formatter.format(grandTotal);
+        // Update Rumus
+        document.getElementById('calc_qty').innerText = formatNum(qty, 0);
+        document.getElementById('calc_nett').innerText = formatNum(nettPcs, 2);
+        document.getElementById('calc_dmin').innerText = formatNum(dmin, 2);
 
-        // 6. Update Detail Rumus (Kecil)
-        document.getElementById('calc_qty').innerText = qty.toLocaleString('id-ID');
-        document.getElementById('calc_nett').innerText = nett.toLocaleString('id-ID');
-        document.getElementById('calc_dmin').innerText = dmin.toLocaleString('id-ID');
-
-        // 7. SYNC DATA KE HIDDEN INPUT (PENTING!)
-        // Pastikan ID ini ada di input hidden Anda
-        document.getElementById('final_total_price').value = grandTotal;
-
-        // Sinkronisasi Gross Weight (Penyebab Error 1364)
-        const modGrossPcs = document.getElementById('mod_gross_pcs').value;
-        document.getElementById('final_gross_pcs').value = modGrossPcs;
-
-        const modGrossTotal = document.getElementById('mod_gross_total').value;
-        document.getElementById('final_gross_total').value = modGrossTotal;
-
-        // Sinkronisasi Volume & Net
-        document.getElementById('final_vol_per_pcs').value = document.getElementById('mod_vol_pcs').value;
-        document.getElementById('final_vol_total').value = document.getElementById('mod_vol_total').value;
-        document.getElementById('final_net_weight_pcs').value = document.getElementById('mod_net_pcs').value;
-        document.getElementById('final_total_net_weight').value = document.getElementById('mod_net_total').value;
+        document.getElementById('final_total_price').value = total.toFixed(2);
     }
-
-    // Tambahkan Event Listener Submit agar kalkulasi ulang tepat sebelum data terkirim
-    document.getElementById('finalForm').addEventListener('submit', function(e) {
-        calculatePrice();
-    });
 
     function toStep2() {
         if (!document.getElementById('confirm_verify').checked) {
-            alert("Harap konfirmasi kesesuaian data fisik!");
+            alert("Harap centang konfirmasi data!");
             return;
         }
-
-        // Jalankan Kalkulasi Harga sebelum pindah
         calculatePrice();
-
         document.getElementById('content_step1').classList.add('hidden');
         document.getElementById('content_step2').classList.remove('hidden');
 
-        document.getElementById('modalScrollArea').scrollTop = 0;
-
-        const circle = document.getElementById('step2_circle');
-        const text = document.getElementById('step2_text');
-        circle.classList.replace('bg-slate-100', 'bg-blue-600');
-        circle.classList.replace('text-slate-400', 'text-white');
-        text.classList.replace('text-slate-400', 'text-blue-600');
+        document.getElementById('step2_circle').classList.replace('bg-slate-100', 'bg-blue-600');
+        document.getElementById('step2_circle').classList.replace('text-slate-400', 'text-white');
+        document.getElementById('step2_text').classList.replace('text-slate-400', 'text-blue-600');
     }
 
     function toStep1() {
         document.getElementById('content_step2').classList.add('hidden');
         document.getElementById('content_step1').classList.remove('hidden');
 
-        document.getElementById('modalScrollArea').scrollTop = 0;
+        document.getElementById('step2_circle').classList.replace('bg-blue-600', 'bg-slate-100');
+        document.getElementById('step2_circle').classList.replace('text-white', 'text-slate-400');
+        document.getElementById('step2_text').classList.replace('text-blue-600', 'text-slate-400');
+    }
 
-        const circle = document.getElementById('step2_circle');
-        const text = document.getElementById('step2_text');
-        circle.classList.replace('bg-blue-600', 'bg-slate-100');
-        circle.classList.replace('text-white', 'text-slate-400');
-        text.classList.replace('text-blue-600', 'text-slate-400');
+    function closeOrderDetailModal() {
+        document.getElementById('orderDetailModal').classList.add('hidden');
+        document.getElementById('orderDetailModal').classList.remove('flex');
     }
 </script>

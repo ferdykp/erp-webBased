@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
-use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\Log;
 // use App\Models\CustomerAddress; // Pastikan Model ini ada
 // use App\Models\CustomerContact; // Pastikan Model ini ada
 // use Illuminate\Support\Facades\Hash;
@@ -15,17 +15,6 @@ use Illuminate\Support\Facades\Hash;
 
 class CustomerProfileController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $search = $request->search;
-
-    //     $customers = Customer::when($search, function ($query) use ($search) {
-    //         $query->where('company_name', 'like', "%{$search}%")
-    //             ->orWhere('pic_name', 'like', "%{$search}%");
-    //     })->orderBy('created_at', 'desc')->paginate(10);
-
-    //     return view('admin.customerList.index', compact('customers', 'search'));
-    // }
     public function index(Request $request)
     {
         $customers = Customer::with(['contacts'])->latest()->paginate(10);
@@ -267,6 +256,61 @@ class CustomerProfileController extends Controller
             return back()->withErrors([
                 'error' => 'Gagal menyimpan: ' . $e->getMessage()
             ])->withInput();
+        }
+    }
+
+    public function updateAdmin(Request $request, $id)
+    {
+        $customer = Customer::with(['contacts', 'addresses', 'user'])->findOrFail($id);
+
+        $request->validate([
+            'company_name' => 'required',
+            'email'        => 'required|email',
+            'contact_name' => 'required',
+            'contact_phone' => 'required',
+            'address_line' => 'required',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Update user
+            $customer->user->update([
+                'email' => $request->email
+            ]);
+
+            // Update customer
+            $customer->update([
+                'company_name' => $request->company_name,
+                'industry'     => $request->industry,
+                'email'        => $request->email,
+            ]);
+
+            // Update address
+            $customer->addresses()->updateOrCreate(
+                ['type' => 'office'],
+                [
+                    'address_line' => $request->address_line,
+                    'country' => 'Indonesia'
+                ]
+            );
+
+            // Update contact
+            $customer->contacts()->updateOrCreate(
+                ['is_primary' => true],
+                [
+                    'name'  => $request->contact_name,
+                    'phone' => $request->contact_phone,
+                    'email' => $request->email
+                ]
+            );
+
+            DB::commit();
+
+            return back()->with('success', 'Customer updated!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors($e->getMessage());
         }
     }
 }

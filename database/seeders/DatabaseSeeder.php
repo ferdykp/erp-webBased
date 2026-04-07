@@ -23,9 +23,10 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call([
             AdminSeeder::class,
-            CustomSeeder::class,
+            // CustomSeeder::class,
             // PalletSeeder::class,
-            PorterSeeder::class
+            PorterSeeder::class,
+            // CustomListSeeder::class,
         ]);
     }
 }

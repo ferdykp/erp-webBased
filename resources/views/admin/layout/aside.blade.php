@@ -30,7 +30,7 @@
             <span class="font-medium">Dashboard</span>
         </a>
         <a href="{{ route('admin.customerList.index') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.pallets.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
+            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.customerList.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
             <i class="w-5 text-center fas fa-boxes-stacked"></i>
             <span class="font-medium">Add Customer</span>
         </a>

@@ -25,7 +25,10 @@ class BookingProduct extends Model
         'net_weight_pcs',
         'total_net_weight',
         // 'gross_weight_pcs',
-        'total_gross_weight'
+        'total_gross_weight',
+        'density_gross',
+        'density_nett'
+
     ];
 
     public function booking(): BelongsTo

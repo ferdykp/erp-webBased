@@ -6,39 +6,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class CustomerAuthController extends Controller
 {
-    public function showRegister()
-    {
-        if (Auth::guard('customer')->check()) {
-            return redirect()->route('customer.dashboard');
-        }
-        return view('customer.auth.register');
-    }
-
-    public function register(Request $request)
-    {
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers,email',
-            'password' => 'required|min:8|confirmed'
-        ]);
-
-        Customer::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'profile_completed' => false,
-            'status' => 'active'
-        ]);
-
-        return redirect()->route('customer.login')->with('success', 'Regis Success');
-    }
     public function showLogin()
     {
-        if (Auth::guard('customer')->check()) {
+        if (Auth::check()) {
             return redirect()->route('customer.dashboard');
         }
         return view('customer.auth.login');
@@ -51,27 +26,65 @@ class CustomerAuthController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::guard('customer')->attempt($credentials)) {
-            $customer = Auth::guard('customer')->user();
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            $user = Auth::user();
 
-            if (!$customer->profile_completed) {
-                return redirect()->route('customer.complete.profile');
+            // Validasi Role
+            if ($user->role !== 'customer') {
+                Auth::logout();
+                return back()->withErrors(['email' => 'Ini bukan akun Customer.']);
             }
 
-            return redirect()->route('customer.dashboard');
+            // Cek Profil
+            if (!$user->customer || !$user->customer->profile_completed) {
+                return redirect()->route('customer.profile.complete');
+            }
+
+            return redirect()->intended('customer/dashboard');
         }
 
-        return back()->withErrors([
-            'email' => 'Invalid credentials'
+        return back()->withErrors(['email' => 'Email atau Password salah.'])->withInput();
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed'
         ]);
+
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'username' => strtolower(str_replace(' ', '', $request->name)) . rand(10, 99),
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'customer',
+            ]);
+
+            Customer::create([
+                'user_id' => $user->id,
+                'company_name' => $request->name,
+                'email' => $request->email,
+                'profile_completed' => false,
+                'status' => 'active'
+            ]);
+
+            DB::commit();
+            return redirect()->route('customer.login')->with('success', 'Registrasi Berhasil!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Gagal: ' . $e->getMessage()]);
+        }
     }
 
     public function logout()
     {
-        Auth::guard('customer')->logout();
+        Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
-
         return redirect()->route('customer.login');
     }
 }

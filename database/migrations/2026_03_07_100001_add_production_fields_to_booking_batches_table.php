@@ -21,6 +21,8 @@ return new class extends Migration {
             $table->decimal('target_dose', 10, 4)->nullable()->after('production_line_id');
             $table->decimal('beam_speed', 10, 4)->nullable()->after('target_dose');
             $table->string('loading_mode')->nullable()->after('beam_speed');
+            $table->decimal('freq', 10, 4)->nullable();
+            $table->decimal('scan_gear', 10, 4)->nullable();
         });
     }
 

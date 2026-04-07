@@ -25,14 +25,14 @@
             <button onclick="document.getElementById('createMachineModal').classList.replace('hidden','flex')"
                 class="flex items-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 shadow-blue-100">
                 <i class="fa-solid fa-plus"></i>
-                Tambah Mesin Baru
+                Add New Machine
             </button>
         </div>
 
         {{-- ═══ MASTER MESIN (Production Lines) ═══ --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
             <h3 class="mb-4 text-lg font-black text-slate-700">
-                <i class="mr-2 text-blue-600 fa-solid fa-gear"></i>Daftar Mesin (Production Lines)
+                <i class="mr-2 text-blue-600 fa-solid fa-gear"></i>Machine List (Production Lines)
             </h3>
             <div class="flex flex-wrap gap-3">
                 @forelse($productionLines as $line)
@@ -63,7 +63,7 @@
         {{-- ═══ PROCESS PARAMETER TABLE (PER BOOKING) ═══ --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
             <h3 class="mb-4 text-lg font-black text-slate-700">
-                <i class="mr-2 text-blue-600 fa-solid fa-sliders"></i>Daftar Booking Untuk Process Set
+                <i class="mr-2 text-blue-600 fa-solid fa-sliders"></i>Irradiation List For Process Set
             </h3>
 
             @if ($bookings->isEmpty())
@@ -80,7 +80,7 @@
                                 <th class="px-6 py-3">Customer</th>
                                 <th class="px-6 py-3">Product</th>
                                 <th class="px-6 py-3 text-center">Total Qty</th>
-                                <th class="px-6 py-3 text-center">Sudah Dibatch</th>
+                                <th class="px-6 py-3 text-center">Finished Dibatch</th>
                                 <th class="px-6 py-3 text-right">Action</th>
                             </tr>
                         </thead>
@@ -174,7 +174,7 @@
     <div id="createMachineModal"
         class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
         <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10">
-            <h3 class="mb-6 text-2xl font-black text-slate-800">Tambah Mesin Baru</h3>
+            <h3 class="mb-6 text-2xl font-black text-slate-800">Add New Machine</h3>
             <form action="{{ route('admin.production-lines.store') }}" method="POST">
                 @csrf
                 <div class="mb-6">
@@ -232,8 +232,8 @@
                 <div>
                     <h3 class="text-2xl font-black text-slate-800">Update Process</h3>
                     <p class="mt-1 text-sm text-slate-500">
-                        Step 1: isi parameter produksi, lalu split quantity ke batch baru.
-                        Setelah submit, batch akan masuk status <span class="font-semibold text-blue-600">In
+                        Step 1: Fill in the production parameters, then split the quantity into a new batch.
+                        After submission, the batch will enter the status <span class="font-semibold text-blue-600">In
                             Irradiation</span>.
                     </p>
                 </div>
@@ -297,7 +297,34 @@
                     </div>
                 </div>
 
-                <div class="grid items-end grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    <div class="md:col-span-2">
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Loading Mode</label>
+                        <select name="loading_mode"
+                            class="w-full px-4 py-3 text-xs font-bold border-none appearance-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                            <option value="" disabled selected>Pilih Mode Loading</option>
+                            <option value="single-side">Single Side</option>
+                            <option value="double-side">Double Side</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Frequency</label>
+                        <input type="number" step="0.0001" name="freq" placeholder="20"
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Scan Gear</label>
+                        <input type="number" step="1" name="scan_gear" placeholder="1"
+                            class="w-full px-4 py-3 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+                </div>
+
+                {{-- <div class="grid items-end grid-cols-1 gap-4 md:grid-cols-3">
                     <div class="md:col-span-3">
                         <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Loading Mode</label>
                         <select name="loading_mode"
@@ -305,10 +332,10 @@
                             required>
                             <option value="" disabled selected>Pilih Mode Loading</option>
                             <option value="single-side">Single Side</option>
-                            <option value="flip">Flip</option>
+                            <option value="double-side">Double Side</option>
                         </select>
                     </div>
-                </div>
+                </div> --}}
 
                 <div class="grid grid-cols-1 gap-4 pt-6 mt-6 border-t border-slate-100">
                     <div class="flex items-center justify-between mb-2">

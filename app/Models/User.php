@@ -16,6 +16,8 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'role',              // Tambahkan ini
+        // 'profile_completed', // Tambahkan ini agar bisa dicek saat login
     ];
 
     protected $hidden = [

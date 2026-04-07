@@ -24,9 +24,9 @@ class Customer extends Authenticatable
         'profile_completed',
     ];
 
-    protected $hidden = [
-        'password'
-    ];
+    // protected $hidden = [
+    //     'password'
+    // ];
 
     public function bookings(): HasMany
     {

@@ -133,11 +133,11 @@
         <tbody>
             @foreach ($booking->products as $product)
                 <tr>
-                    <td>{{ $product->product_name }}</td>
+                    <td align="center">{{ $product->product_name }}</td>
                     <td align="center">{{ $product->product_type }}</td>
                     <td align="center">{{ $product->dimension_pack }}</td>
                     <td align="center">{{ $product->quantity }} {{ $product->unit }}</td>
-                    <td align="center">{{ $product->dmin }} - {{ $product->dmax }} kGy</td>
+                    <td align="center">{{ (int) $product->dmin }} - {{ (int) $product->dmax }} kGy</td>
                 </tr>
             @endforeach
         </tbody>
@@ -158,7 +158,7 @@
                     <tr>
                         <td align="center">{{ $batch->batch_number }}</td>
                         <td>{{ $batch->porter_name }}</td>
-                        <td align="center">{{ $batch->quantity }} {{ $batch->unit }}</td>
+                        <td align="center">{{ (int) $batch->quantity }} {{ $batch->unit }}</td>
                     </tr>
                 @endforeach
             </tbody>

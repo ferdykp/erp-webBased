@@ -53,7 +53,7 @@
                             <td class="px-8 py-6 text-right">
                                 <button @click="openModal = true; selectedCustomer = {{ json_encode($customer) }}"
                                     class="px-5 py-2 text-xs font-bold transition-all bg-white border shadow-sm border-slate-200 hover:border-indigo-500 hover:text-indigo-600 rounded-xl">
-                                    View Profile
+                                    Detail Order
                                 </button>
                             </td>
                         </tr>

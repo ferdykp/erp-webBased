@@ -7,10 +7,6 @@ use App\Http\Controllers\AdminProductionLineController;
 use App\Http\Controllers\AdminSlotController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-
-// use Illuminate\Support\Facades\Auth;
-
-
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerBookingController;
 use App\Http\Controllers\CustomerDashboardController;
@@ -19,21 +15,37 @@ use App\Http\Controllers\UserAdminController;
 use App\Http\Controllers\UserCustomController;
 
 // Route::get('/', function () {
-//     return view('welcome');
+//     return view('admin.login');
 // });
+// Route::get('/', function () {
+
+//     if (Auth::guard('customer')->check()) {
+//         return redirect()->route('customer.dashboard');
+//     }
+
+//     if (Auth::guard('admin')->check()) {
+//         return redirect()->route('admin.dashboard');
+//     }
+
+//     return view('landing');
+// })->name('landing');
 Route::get('/', function () {
-
-    if (Auth::guard('customer')->check()) {
+    // Cek apakah ada yang login di guard default
+    if (Auth::check()) {
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
         return redirect()->route('customer.dashboard');
-    }
-
-    if (Auth::guard('admin')->check()) {
-        return redirect()->route('admin.dashboard');
     }
 
     return view('landing');
 })->name('landing');
-
+// Route::get('/', function () {
+//     if (Auth::guard('admin')->check()) {
+//         return redirect()->route('admin.dashboard');
+//     }
+//     return redirect()->route('admin.login');
+// });
 
 Route::prefix('customer')->middleware('nocache')->group(function () {
     Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
@@ -49,51 +61,8 @@ Route::prefix('customer')->middleware('nocache')->group(function () {
     // })->name('customer.logout');
 });
 
-// Route::prefix('customer')
-//     ->middleware(['auth:customer', 'nocache'])
-//     ->group(function () {
-//         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
-//             ->name('customer.dashboard');
-
-//         Route::get('/profile/complete', [CustomerProfileController::class, 'showCompleteProfile'])
-//             ->name('customer.complete.profile');
-
-//         Route::post('/profile/complete', [CustomerProfileController::class, 'completeProfile'])
-//             ->name('customer.profile.complete.store');
-//         // Route::get('/booking/create', [CustomerBookingController::class, 'create'])
-//         //     ->name('customer.booking.create');
-
-//         Route::resource('bookings', CustomerBookingController::class);
-//         Route::get('/create', [CustomerBookingController::class, 'create'])
-//             ->name('customer.create');
-
-
-//         Route::post('/booking/store', [CustomerBookingController::class, 'store'])
-//             ->name('customer.booking.store');
-//         Route::post('/store', [CustomerBookingController::class, 'store'])
-//             ->name('customer.store');
-
-//         Route::get('/customer/booking/{id}', [CustomerBookingController::class, 'show'])
-//             ->name('customer.booking.show');
-
-//         Route::get('/customer/booking/{id}/print', [CustomerBookingController::class, 'print'])
-//             ->name('customer.booking.print');
-
-//                     // STEP 1 - pilih tanggal
-//         Route::get('/booking/date', [CustomerBookingController::class, 'selectDate'])
-//             ->name('booking.date');
-
-//         // STEP 2 - pilih sesi
-//         Route::get('/booking/session/{date}', [CustomerBookingController::class, 'selectSession'])
-//             ->name('booking.session');
-
-//         // STEP 3 - input product
-//         Route::get('/booking/create/{slot}', [CustomerBookingController::class, 'create'])
-//             ->name('booking.create');
-//     });
-
 Route::prefix('customer')
-    ->middleware(['auth:customer', 'nocache'])
+    ->middleware(['auth', 'nocache']) // Pakai auth standar (guard web)
     ->group(function () {
 
         // Dashboard
@@ -169,6 +138,8 @@ Route::prefix('admin')
         Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update');
         Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
 
+        Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
+
         // Slot Management
         Route::get('/slots', [AdminSlotController::class, 'index'])->name('admin.slots.index');
         Route::post('/slots', [AdminSlotController::class, 'store'])->name('admin.slots.store');
@@ -203,6 +174,8 @@ Route::prefix('admin')
             '/customerList/store',
             [CustomerProfileController::class, 'store']
         )->name('admin.customerList.store');
+        Route::put('/customerList/{id}', [CustomerProfileController::class, 'updateAdmin'])
+            ->name('admin.customerList.update');
 
 
         Route::get('/profile', [UserAdminController::class, 'index'])->name('admin.profile');
@@ -252,6 +225,12 @@ Route::prefix('admin')
                 ->name('admin.production.finish');
             Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])
                 ->name('admin.production.batches.finish');
+            Route::get('/production/batches/{id}/certificate', [AdminProductionController::class, 'printCertificate'])
+                ->name('admin.production.certificate');
+
+            // Cari baris ini di bagian bawah routes/web.php
+            Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus']) // Ganti ke AdminProductionController
+                ->name('admin.bookings.paymentStatus');
         });
     });
 

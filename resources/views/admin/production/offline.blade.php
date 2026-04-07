@@ -11,8 +11,8 @@
             <div>
                 <h2 class="text-4xl font-black tracking-tighter text-slate-800">Process Product Irradiation</h2>
                 <p class="mt-1 text-sm font-medium text-slate-500">
-                    Step 2: monitor batch dengan status <span class="font-semibold text-blue-600">In Irradiation</span> dan
-                    selesaikan ke tahap <span class="font-semibold text-emerald-600">Finish</span>.
+                    Step 2: monitor batch with status <span class="font-semibold text-blue-600">In Irradiation</span> and
+                    direct to step <span class="font-semibold text-emerald-600">Finish</span>.
                 </p>
             </div>
         </div>
@@ -34,7 +34,7 @@
 
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
             <h3 class="mb-4 text-lg font-black text-slate-700">
-                <i class="mr-2 text-blue-600 fa-solid fa-radiation"></i>Daftar Batch In Irradiation
+                <i class="mr-2 text-blue-600 fa-solid fa-radiation"></i>List Batch In Irradiation
             </h3>
 
             @if (empty($processingRows))
@@ -43,7 +43,7 @@
                         <div class="flex items-center justify-center w-20 h-20 rounded-full bg-slate-100">
                             <i class="text-3xl fa-solid fa-flag-checkered text-slate-300"></i>
                         </div>
-                        <h3 class="text-xl font-black text-slate-600">Tidak Ada Batch In Irradiation</h3>
+                        <h3 class="text-xl font-black text-slate-600">No Batch In Irradiation</h3>
                         <p class="text-sm text-slate-400">
                             Mulai proses dari menu <strong>Process Parameter</strong> untuk membuat batch baru.
                         </p>
@@ -59,7 +59,7 @@
                                 <th class="px-6 py-3">Product</th>
                                 <th class="px-6 py-3 text-center">Batch</th>
                                 <th class="px-6 py-3 text-center">Qty</th>
-                                <th class="px-6 py-3 text-center">Line</th>
+                                {{-- <th class="px-6 py-3 text-center">Line</th> --}}
                                 <th class="px-6 py-3 text-center">Target Dose</th>
                                 <th class="px-6 py-3 text-center">Status</th>
                                 <th class="px-6 py-3 text-right">Action</th>
@@ -77,7 +77,7 @@
                                         <div class="flex items-center gap-3">
                                             <div
                                                 class="flex items-center justify-center text-xs font-black text-blue-700 w-9 h-9 rounded-xl bg-blue-50">
-                                                {{ strtoupper(substr($booking->customer->contacts->first()->name ?? '?', 0, 1)) }}
+                                                {{ strtoupper(substr($booking->customer->company_name ?? '?', 0, 1)) }}
                                             </div>
                                             <div>
                                                 <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}
@@ -89,13 +89,12 @@
                                     </td>
                                     <td class="px-6 py-4 align-middle">
                                         <p class="text-sm font-bold text-slate-700">
-                                            {{ $booking->customer->contacts->first()->name ?? 'Guest' }}
-                                        </p>
+                                            {{ $booking->customer->company_name ?? '-' }}</p>
+                                        <p class="text-[10px] text-slate-400 font-medium italic">
+                                            {{ $booking->customer->contacts->first()->name ?? 'Guest' }}</p>
                                     </td>
                                     <td class="px-6 py-4 align-middle">
-                                        <p class="text-sm font-bold text-slate-700">
-                                            {{ $product->product_name ?? '-' }}
-                                        </p>
+                                        <p class="text-sm font-bold text-slate-700">{{ $product->product_name ?? '-' }}</p>
                                     </td>
                                     <td class="px-6 py-4 text-center align-middle">
                                         <span
@@ -104,19 +103,15 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center align-middle">
-                                        <p class="text-sm font-bold text-slate-700">
-                                            {{ $batch->quantity }} {{ $batch->unit }}
-                                        </p>
+                                        <p class="text-sm font-bold text-slate-700">{{ number_format($batch->quantity) }}
+                                            {{ $batch->unit }}</p>
                                     </td>
-                                    <td class="px-6 py-4 text-center align-middle">
+                                    {{-- <td class="px-6 py-4 text-center align-middle">
                                         <p class="text-sm font-bold text-slate-700">
-                                            {{ $batch->productionLine->name ?? '-' }}
-                                        </p>
-                                    </td>
+                                            {{ $batch->productionLine->name ?? '-' }}</p>
+                                    </td> --}}
                                     <td class="px-6 py-4 text-center align-middle">
-                                        <p class="text-sm font-bold text-slate-700">
-                                            {{ $batch->target_dose ? $batch->target_dose . ' kGy' : '-' }}
-                                        </p>
+                                        <p class="text-sm font-bold text-slate-700">{{ (int) $batch->target_dose }} kGy</p>
                                     </td>
                                     <td class="px-6 py-4 text-center align-middle">
                                         <span
@@ -127,12 +122,15 @@
                                     <td class="px-6 py-4 text-right align-middle">
                                         <button onclick="openBatchDetailModal(this)" data-batch-id="{{ $batch->id }}"
                                             data-booking-code="{{ $booking->booking_code }}"
+                                            data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                             data-customer-name="{{ $booking->customer->contacts->first()->name ?? 'Guest' }}"
                                             data-product-name="{{ $product->product_name ?? '-' }}"
                                             data-quantity="{{ $batch->quantity }}" data-unit="{{ $batch->unit }}"
                                             data-line="{{ $batch->productionLine->name ?? '-' }}"
                                             data-target-dose="{{ $batch->target_dose ?? '' }}"
                                             data-beam-speed="{{ $batch->beam_speed ?? '' }}"
+                                            data-frequency="{{ $batch->freq ?? '' }}"
+                                            data-scangear="{{ $batch->scan_gear ?? '' }}"
                                             data-loading-mode="{{ $batch->loading_mode ?? '' }}"
                                             class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase transition-all border rounded-xl border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white active:scale-95">
                                             <i class="fa-solid fa-eye"></i>
@@ -148,59 +146,247 @@
         </div>
     </div>
 
-    {{-- DETAIL MODAL --}}
-    <div id="batchDetailModal"
-        class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
-        <div class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 space-y-6">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <h3 class="text-2xl font-black text-slate-800">Detail Batch In Irradiation</h3>
-                    <p class="mt-1 text-sm text-slate-500">
-                        Tinjau detail parameter proses sebelum menandai batch sebagai <span
-                            class="font-semibold text-emerald-600">Finish</span>.
-                    </p>
-                </div>
-                <button type="button" onclick="closeBatchDetailModal()"
-                    class="flex items-center justify-center transition rounded-full w-9 h-9 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700">
-                    <i class="text-sm fa-solid fa-xmark"></i>
-                </button>
-            </div>
+    {{-- DETAIL MULTISTEP MODAL --}}
+    <div id="batchDetailModal" x-data="{ step: 1 }"
+        class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all duration-300">
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="p-4 border border-slate-100 rounded-2xl bg-slate-50/70">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Booking</p>
-                    <p id="detailBookingCode" class="text-sm font-black text-slate-800">#-</p>
-                    <p class="mt-2 text-[10px] font-black text-slate-400 uppercase mb-1">Customer</p>
-                    <p id="detailCustomerName" class="text-sm font-bold text-slate-700">-</p>
-                    <p class="mt-2 text-[10px] font-black text-slate-400 uppercase mb-1">Product</p>
-                    <p id="detailProductName" class="text-sm font-bold text-slate-700">-</p>
+        <div id="modalContent"
+            class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300">
+
+            {{-- Modal Header --}}
+            <div class="px-10 pt-10 pb-6 bg-gradient-to-b from-slate-50 to-white">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 text-blue-600 bg-blue-100 shadow-inner rounded-2xl">
+                            <i class="text-xl fa-solid" :class="step === 1 ? 'fa-circle-info' : 'fa-clipboard-check'"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-black tracking-tight text-slate-800"
+                                x-text="step === 1 ? 'Batch Information' : 'Quality Assurance'"></h3>
+                            <p id="headerBookingCode"
+                                class="text-[10px] font-black tracking-[0.2em] text-blue-600 uppercase">Loading...</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeBatchDetailModal()"
+                        class="flex items-center justify-center w-10 h-10 transition-colors bg-white border shadow-sm rounded-xl border-slate-100 text-slate-400 hover:text-red-500">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <div class="p-4 space-y-1 border border-slate-100 rounded-2xl bg-slate-50/70">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Batch</p>
-                    <p id="detailBatchInfo" class="text-sm font-black text-slate-800">-</p>
-                    <p class="text-[10px] font-black text-slate-400 uppercase mt-3 mb-1">Production Line</p>
-                    <p id="detailLine" class="text-sm font-bold text-slate-700">-</p>
-                    <p class="text-[10px] font-black text-slate-400 uppercase mt-3 mb-1">Target Dose (kGy)</p>
-                    <p id="detailTargetDose" class="text-sm font-bold text-slate-700">-</p>
-                    <p class="text-[10px] font-black text-slate-400 uppercase mt-3 mb-1">Beam Speed (m/s)</p>
-                    <p id="detailBeamSpeed" class="text-sm font-bold text-slate-700">-</p>
-                    <p class="text-[10px] font-black text-slate-400 uppercase mt-3 mb-1">Loading Mode</p>
-                    <p id="detailLoadingMode" class="text-sm font-bold text-slate-700">-</p>
+
+                {{-- Step Tracker --}}
+                <div class="flex items-center gap-4 px-2">
+                    <div class="flex-1 h-1.5 rounded-full transition-all duration-500"
+                        :class="step >= 1 ? 'bg-blue-600' : 'bg-slate-100'"></div>
+                    <div class="flex-1 h-1.5 rounded-full transition-all duration-500"
+                        :class="step >= 2 ? 'bg-blue-600' : 'bg-slate-100'"></div>
                 </div>
             </div>
 
-            <form id="detailFinishForm" method="POST" class="flex flex-col gap-3 mt-4 md:flex-row md:justify-end">
+            <form id="detailFinishForm" method="POST" class="m-0">
                 @csrf
                 @method('PUT')
-                <button type="button" onclick="closeBatchDetailModal()"
-                    class="px-6 py-3 text-xs font-black uppercase transition rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200">
-                    Tutup
-                </button>
-                <button type="submit"
-                    class="px-6 py-3 text-xs font-black text-white uppercase transition shadow-lg rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 shadow-emerald-100">
-                    <i class="mr-2 fa-solid fa-check-double"></i>
-                    Tandai Finish
-                </button>
+
+                <div class="px-10 pb-10">
+                    {{-- STEP 1: REVIEW PARAMETER --}}
+                    <div x-show="step === 1" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-x-8">
+                        <div class="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2">
+                            {{-- Info --}}
+                            <div class="space-y-6">
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400">
+                                        <i class="fa-solid fa-building"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company
+                                        </p>
+                                        <p id="detailCompanyName" class="text-sm font-bold text-slate-700">-</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400">
+                                        <i class="fa-solid fa-user-tie"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer
+                                            PIC</p>
+                                        <p id="detailCustomerName" class="text-sm font-bold text-slate-700">-</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400">
+                                        <i class="fa-solid fa-box"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Product
+                                            Name</p>
+                                        <p id="detailProductName" class="text-sm font-bold text-slate-700">-</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400">
+                                        <i class="fa-solid fa-box"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Batch
+                                            Quantity</p>
+                                        <p id="detailBatchInfo" class="text-sm font-bold text-slate-700">-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Technical Card --}}
+                            <div class="p-6 border border-slate-100 rounded-[2rem] bg-slate-50/50 space-y-4">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">Production Line</span>
+                                    <span id="detailLine" class="text-sm font-black text-slate-800">-</span>
+                                </div>
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">Target Dose</span>
+                                    <span id="detailTargetDose" class="text-sm font-black text-slate-800">-</span>
+                                </div>
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">Beam Speed</span>
+                                    <span id="detailBeamSpeed" class="text-sm font-black text-slate-800">-</span>
+                                </div>
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">Frequency</span>
+                                    <span id="detailFrequency" class="text-sm font-black text-slate-800">-</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">Scan Gear</span>
+                                    <span id="detailScanGear" class="text-sm font-black text-slate-800">-</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">Loading Mode</span>
+                                    <span id="detailLoadingMode" class="text-sm font-black text-slate-800">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 pt-6 border-t border-slate-50">
+                            <button type="button" onclick="closeBatchDetailModal()"
+                                class="px-8 py-4 text-xs font-black uppercase transition-colors text-slate-400 hover:text-slate-600">Cancel</button>
+                            <button type="button" @click="step = 2"
+                                class="px-10 py-4 text-xs font-black text-white uppercase transition-all shadow-xl bg-slate-900 rounded-2xl hover:bg-blue-600 shadow-slate-200 active:scale-95">
+                                Next: QA Form <i class="ml-2 fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- STEP 2: QUALITY ASSURANCE FORM --}}
+                    {{-- STEP 2: QUALITY ASSURANCE FORM --}}
+                    <div x-show="step === 2" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-x-8">
+                        <div class="mb-8 space-y-6">
+                            <div class="grid grid-cols-2 gap-5">
+                                {{-- Dose Input --}}
+                                <div class="col-span-2">
+                                    <label
+                                        class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Actual
+                                        Absorbed Dose (kGy)</label>
+                                    <input type="number" step="0.1" name="actual_dose" required
+                                        placeholder="Measured dose..."
+                                        class="w-full px-6 py-4 text-sm font-bold transition-all border-2 border-transparent outline-none bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white">
+                                </div>
+
+                                {{-- Checkboxes --}}
+                                <div>
+                                    <label
+                                        class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Visual
+                                        Inspection</label>
+                                    <select name="visual_check"
+                                        class="w-full px-6 py-4 text-sm font-bold transition-all border-2 border-transparent outline-none bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white">
+                                        <option value="pass">PASS (OK)</option>
+                                        <option value="fail">FAIL (REJECT)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Color
+                                        Indicator</label>
+                                    <select name="indicator_check"
+                                        class="w-full px-6 py-4 text-sm font-bold transition-all border-2 border-transparent outline-none bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white">
+                                        <option value="changed">CHANGED (OK)</option>
+                                        <option value="no_change">NO CHANGE</option>
+                                    </select>
+                                </div>
+
+                                {{-- DAMAGE QUESTION (RADIO BUTTONS) --}}
+                                <div
+                                    class="col-span-2 p-6 border-2 border-dashed rounded-3xl border-slate-100 bg-slate-50/30">
+                                    <label
+                                        class="block mb-4 text-[10px] font-black uppercase tracking-widest text-slate-500 italic">Apakah
+                                        ada kemasan / produk yang rusak?</label>
+                                    <div class="flex gap-6">
+                                        <label class="flex items-center gap-3 cursor-pointer group">
+                                            <input type="radio" name="is_damaged" value="no" x-model="hasDamage"
+                                                class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500">
+                                            <span
+                                                class="text-sm font-bold transition-colors text-slate-600 group-hover:text-slate-900">Tidak
+                                                Ada</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 cursor-pointer group">
+                                            <input type="radio" name="is_damaged" value="yes" x-model="hasDamage"
+                                                class="w-5 h-5 text-red-600 border-slate-300 focus:ring-red-500">
+                                            <span
+                                                class="text-sm font-bold transition-colors text-slate-600 group-hover:text-red-600">Ya,
+                                                Ada Kerusakan</span>
+                                        </label>
+                                    </div>
+
+                                    {{-- CONDITIONAL DAMAGE INPUTS --}}
+                                    <div x-show="hasDamage === 'yes'" x-collapse x-cloak
+                                        class="pt-6 mt-6 space-y-4 border-t border-slate-100">
+                                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                                            <div class="md:col-span-1">
+                                                <label
+                                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-red-400">Jumlah
+                                                    Box</label>
+                                                <input type="number" name="damaged_qty"
+                                                    :required="hasDamage === 'yes'" placeholder="0"
+                                                    class="w-full px-5 py-3 text-sm font-bold border-2 outline-none border-red-50/50 bg-red-50/30 rounded-xl focus:border-red-200">
+                                            </div>
+                                            <div class="md:col-span-3">
+                                                <label
+                                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-red-400">Penjelasan
+                                                    Kerusakan</label>
+                                                <input type="text" name="damage_description"
+                                                    :required="hasDamage === 'yes'"
+                                                    placeholder="Contoh: Box penyok, segel terbuka..."
+                                                    class="w-full px-5 py-3 text-sm font-bold border-2 outline-none border-red-50/50 bg-red-50/30 rounded-xl focus:border-red-200">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-span-2">
+                                    <label
+                                        class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">QA
+                                        Notes / General Remarks</label>
+                                    <textarea name="qa_notes" rows="2" placeholder="Describe any additional issues..."
+                                        class="w-full px-6 py-4 text-sm font-bold transition-all border-2 border-transparent outline-none bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-6 border-t border-slate-50">
+                            <button type="button" @click="step = 1"
+                                class="px-6 py-4 text-xs font-black uppercase transition-colors text-slate-400 hover:text-slate-800">
+                                <i class="mr-2 fa-solid fa-chevron-left"></i> Back
+                            </button>
+                            <button type="submit"
+                                class="px-10 py-4 text-xs font-black text-white uppercase transition-all shadow-lg rounded-2xl bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 active:scale-95">
+                                <i class="mr-2 fa-solid fa-circle-check"></i> Complete Irradiation
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -211,35 +397,64 @@
     <script>
         function openBatchDetailModal(button) {
             const modal = document.getElementById('batchDetailModal');
+            const content = document.getElementById('modalContent');
+            const data = button.dataset;
 
-            const batchId = button.getAttribute('data-batch-id');
-            const bookingCode = button.getAttribute('data-booking-code');
-            const customerName = button.getAttribute('data-customer-name');
-            const productName = button.getAttribute('data-product-name');
-            const quantity = button.getAttribute('data-quantity');
-            const unit = button.getAttribute('data-unit');
-            const line = button.getAttribute('data-line');
-            const targetDose = button.getAttribute('data-target-dose');
-            const beamSpeed = button.getAttribute('data-beam-speed');
-            const loadingMode = button.getAttribute('data-loading-mode');
+            // Helper pembulatan
+            const cleanRound = (val) => (val && !isNaN(val)) ? Math.round(val) : null;
 
-            modal.querySelector('#detailBookingCode').textContent = `#${bookingCode}`;
-            modal.querySelector('#detailCustomerName').textContent = customerName;
-            modal.querySelector('#detailProductName').textContent = productName;
-            modal.querySelector('#detailBatchInfo').textContent = `${quantity} ${unit}`;
-            modal.querySelector('#detailLine').textContent = line || '-';
-            modal.querySelector('#detailTargetDose').textContent = targetDose ? `${targetDose} kGy` : '-';
-            modal.querySelector('#detailBeamSpeed').textContent = beamSpeed || '-';
-            modal.querySelector('#detailLoadingMode').textContent = loadingMode || '-';
+            // Fill Header & Content
+            modal.querySelector('#headerBookingCode').textContent = `ORDER #${data.bookingCode}`;
+            modal.querySelector('#detailCompanyName').textContent = data.companyName;
+            modal.querySelector('#detailCustomerName').textContent = data.customerName;
+            modal.querySelector('#detailProductName').textContent = data.productName;
+            // Cara yang benar menggunakan template literals
+            modal.querySelector('#detailBatchInfo').textContent = `${cleanRound(data.quantity)} ${data.unit}`;
 
+            // Technical
+            modal.querySelector('#detailLine').textContent = data.line || '-';
+            modal.querySelector('#detailTargetDose').textContent = cleanRound(data.targetDose) ?
+                `${cleanRound(data.targetDose)} kGy` : '-';
+            modal.querySelector('#detailBeamSpeed').textContent = cleanRound(data.beamSpeed) ?
+                `${cleanRound(data.beamSpeed)} m/s` : '-';
+            modal.querySelector('#detailFrequency').textContent = cleanRound(data.frequency) ?
+                `${cleanRound(data.frequency)} Hz` : '-';
+            modal.querySelector('#detailScanGear').textContent = data.scangear || '-';
+            modal.querySelector('#detailLoadingMode').textContent = data.loadingMode || '-';
+
+
+            // Form Action
             const form = modal.querySelector('#detailFinishForm');
-            form.action = `/admin/production/batches/${batchId}/finish`;
+            form.action = `/admin/production/batches/${data.batchId}/finish`;
 
-            modal.classList.replace('hidden', 'flex');
+            // Reset step Alpine ke 1 setiap kali modal dibuka
+            // Kita gunakan __x.$data jika menggunakan Alpine.js manual
+            // Tapi cara paling aman adalah memicu event atau membiarkan x-data init ulang.
+            // Di sini kita gunakan selector Alpine:
+            try {
+                Alpine.$data(modal).step = 1;
+                Alpine.$data(modal).hasDamage = 'no'; // Tambahkan ini
+            } catch (e) {}
+
+            // Show Animation
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
         function closeBatchDetailModal() {
-            document.getElementById('batchDetailModal').classList.replace('flex', 'hidden');
+            const modal = document.getElementById('batchDetailModal');
+            const content = document.getElementById('modalContent');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.replace('flex', 'hidden');
+            }, 300);
         }
     </script>
 @endpush

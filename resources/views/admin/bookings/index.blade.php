@@ -48,7 +48,7 @@
         {{-- TABLE --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[3rem] overflow-hidden">
             <div class="flex items-center justify-between p-6">
-                <h3 class="text-lg font-semibold text-slate-800">Daftar Order</h3>
+                <h3 class="text-lg font-semibold text-slate-800">Order List</h3>
 
                 <a href="{{ route('admin.bookings.create') }}"
                     class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold transition-all rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-200">
@@ -82,7 +82,7 @@
                                             {{ strtoupper(substr($booking->customer->contacts->first()->name ?? '?', 0, 1)) }}
                                         </div>
                                         <div>
-                                            <p class="font-black text-slate-800">
+                                            <p class="font-black text-slate-800 text-[14px]">
                                                 {{ $booking->customer->contacts->first()->name ?? 'Guest' }}
                                             </p>
                                             <p class="text-[10px] font-bold text-slate-400 uppercase">
@@ -113,13 +113,13 @@
 
                                         @if ($booking->arrival_time)
                                             <a href="{{ route('admin.bookings.invoice', $booking->id) }}" target="_blank"
-                                                class="flex items-center gap-2 px-5 py-2.5 text-[11px] font-black text-white bg-emerald-500 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100">
+                                                class="flex items-center gap-2 px-4 text-center py-2 text-[10px] font-black text-white bg-emerald-500 rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100">
                                                 <i class="fa-solid fa-file-invoice"></i>
                                                 DOWNLOAD INVOICE
                                             </a>
                                         @else
                                             <span class="text-[10px] font-bold text-gray-400 italic">
-                                                <i class="mr-1 fa-solid fa-clock"></i> Waiting for Check-in
+                                                <i class="mr-1 fa-solid fa-clock"></i> Check-in First
                                             </span>
                                         @endif
 
@@ -128,6 +128,11 @@
                                                 class="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 transition-all">
                                                 <i class="fa-solid fa-qrcode"></i> Check-in
                                             </button>
+                                        @elseif($booking->status == 'approved' || 'processing')
+                                            <span
+                                                class="text-[10px] font-bold bg-yellow-500 rounded-xl py-2 px-3 text-center text-black italic">
+                                                <i class="mr-1 fa-solid fa-clock"></i> On Prcess
+                                            </span>
                                             {{-- @elseif($booking->status == 'approved')
                                             <button onclick="openQCModal({{ json_encode($booking) }}, 'processing')"
                                                 class="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase bg-purple-600 text-white rounded-xl hover:bg-purple-700">
@@ -138,11 +143,12 @@
                                                 class="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">
                                                 <i class="fa-solid fa-check-double"></i> Finish
                                             </button>
+                                            --}}
                                         @else
                                             <span
                                                 class="text-[10px] font-black text-slate-400 uppercase bg-slate-100 px-3 py-2 rounded-xl">
-                                                <i class="mr-1 fa-solid fa-lock"></i> Locked
-                                            </span> --}}
+                                                <i class="mr-1 fa-solid fa-lock"></i> Finish
+                                            </span>
                                         @endif
                                     </div>
                                 </td>

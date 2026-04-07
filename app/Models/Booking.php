@@ -24,10 +24,6 @@ class Booking extends Model
     protected $casts = [
         'arrival_time' => 'datetime',
     ];
-    // public function bookings()
-    // {
-    //     return $this->hasMany(Booking::class);
-    // }
 
     public function customer(): BelongsTo
     {
@@ -64,9 +60,4 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
-    // public function porter(): BelongsTo
-    // {
-    //     // Kita hubungkan kolom porter_name di bookings ke kolom name di porters
-    //     return $this->belongsTo(Porter::class, 'porter_name', 'name');
-    // }
 }

@@ -10,7 +10,7 @@
         <div class="flex flex-col gap-6 px-2 md:flex-row md:items-center md:justify-between">
             <div>
                 <h2 class="text-4xl font-black tracking-tighter text-slate-800">Queue Task</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500">Daftar batch yang siap untuk dilakukan Start Irradiation.
+                <p class="mt-1 text-sm font-medium text-slate-500">List Batch Ready for Irradiation
                 </p>
             </div>
         </div>
@@ -160,8 +160,8 @@
                     <div class="flex items-center justify-center w-20 h-20 rounded-full bg-slate-100">
                         <i class="text-3xl fa-solid fa-layer-group text-slate-300"></i>
                     </div>
-                    <h3 class="text-xl font-black text-slate-600">Belum Ada Booking Aktif</h3>
-                    <p class="text-sm text-slate-400">Booking dengan status Approved atau Processing akan muncul di sini.
+                    <h3 class="text-xl font-black text-slate-600">No Task</h3>
+                    <p class="text-sm text-slate-400">Booking with status Approved or Processing will be showed here.
                     </p>
                 </div>
             </div>

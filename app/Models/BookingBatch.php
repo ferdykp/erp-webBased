@@ -25,6 +25,8 @@ class BookingBatch extends Model
         'target_dose',
         'beam_speed',
         'loading_mode',
+        'freq',
+        'scan_gear'
     ];
 
     /**
@@ -41,5 +43,12 @@ class BookingBatch extends Model
     public function productionLine(): BelongsTo
     {
         return $this->belongsTo(ProductionLine::class);
+    }
+
+    // app/Models/Batch.php
+
+    public function qa()
+    {
+        return $this->hasOne(BatchQa::class, 'batch_id', 'id');
     }
 }

@@ -6,6 +6,7 @@
     <div class="w-full pb-10 space-y-8" x-data="{
         openProfile: false,
         openCreate: false,
+        openEdit: false,
         selectedCustomer: {}
     }">
 
@@ -26,7 +27,7 @@
         {{-- TABLE --}}
         <div class="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm">
             <div class="flex items-center justify-between p-6">
-                <h3 class="text-lg font-semibold text-slate-800">Daftar Customer</h3>
+                <h3 class="text-lg font-semibold text-slate-800">Customer List</h3>
                 <button @click="openCreate = true"
                     class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold transition-all rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
@@ -72,6 +73,11 @@
                                 <button @click="openProfile = true; selectedCustomer = {{ json_encode($customer) }}"
                                     class="px-5 py-2 text-xs font-bold bg-white border border-slate-200 rounded-xl hover:border-indigo-500 hover:text-indigo-600">
                                     View Profile
+                                </button>
+
+                                <button @click="openEdit = true; selectedCustomer = {{ json_encode($customer) }}"
+                                    class="px-4 py-2 text-xs font-bold text-yellow-600 border border-yellow-200 bg-yellow-50 rounded-xl hover:bg-yellow-100">
+                                    Edit
                                 </button>
                             </td>
                         </tr>
@@ -329,6 +335,138 @@
                         Close Profile
                     </button>
                 </div>
+            </div>
+        </div>
+
+        {{-- MODAL EDIT CUSTOMER --}}
+        {{-- MODAL EDIT CUSTOMER --}}
+        <div x-show="openEdit" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+
+            <div @click.away="openEdit = false" x-show="openEdit"
+                x-transition:enter="transition ease-out duration-300 delay-100"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white">
+
+                {{-- MODAL HEADER --}}
+                <div class="px-10 pt-10 pb-6 bg-gradient-to-b from-slate-50 to-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-2xl text-amber-600">
+                                <i class="text-lg fa-solid fa-pen-to-square"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800">Edit Customer</h3>
+                                <p class="text-xs font-bold tracking-widest uppercase text-slate-400">Updating: <span
+                                        class="text-indigo-600" x-text="selectedCustomer.company_name"></span></p>
+                            </div>
+                        </div>
+                        <button @click="openEdit = false" class="transition-colors text-slate-400 hover:text-red-500">
+                            <i class="text-xl fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <form :action="`/admin/customerList/${selectedCustomer.id}`" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="px-10 pb-10 space-y-6">
+
+                        {{-- SECTION 1: COMPANY INFO --}}
+                        <div class="grid grid-cols-2 gap-5">
+                            <div class="col-span-2">
+                                <label
+                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Company
+                                    Name</label>
+                                <div class="relative group">
+                                    <i
+                                        class="absolute transition-colors -translate-y-1/2 left-5 top-1/2 fa-solid fa-building text-slate-300 group-focus-within:text-blue-500"></i>
+                                    <input type="text" name="company_name" x-model="selectedCustomer.company_name"
+                                        required
+                                        class="w-full pl-12 pr-5 py-3.5 text-sm font-semibold bg-slate-50 border-2 border-transparent rounded-2xl focus:border-blue-500/20 focus:bg-white focus:ring-[6px] focus:ring-blue-500/5 outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="col-span-1">
+                                <label
+                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Industry</label>
+                                <input type="text" name="industry" x-model="selectedCustomer.industry"
+                                    class="w-full px-5 py-3.5 text-sm font-semibold bg-slate-50 border-2 border-transparent rounded-2xl focus:border-blue-500/20 focus:bg-white focus:ring-[6px] focus:ring-blue-500/5 outline-none transition-all">
+                            </div>
+
+                            <div class="col-span-1">
+                                <label
+                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Company
+                                    Email</label>
+                                <input type="email" name="email" x-model="selectedCustomer.email"
+                                    class="w-full px-5 py-3.5 text-sm font-semibold bg-slate-50 border-2 border-transparent rounded-2xl focus:border-blue-500/20 focus:bg-white focus:ring-[6px] focus:ring-blue-500/5 outline-none transition-all">
+                            </div>
+
+                            <div class="col-span-2">
+                                <label
+                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Address</label>
+                                <textarea name="address_line" rows="2"
+                                    x-text="selectedCustomer.addresses && selectedCustomer.addresses.length ? selectedCustomer.addresses[0].address_line : ''"
+                                    class="w-full px-5 py-3.5 text-sm font-semibold bg-slate-50 border-2 border-transparent rounded-2xl focus:border-blue-500/20 focus:bg-white focus:ring-[6px] focus:ring-blue-500/5 outline-none transition-all"></textarea>
+                            </div>
+                        </div>
+
+                        {{-- DIVIDER --}}
+                        <div class="relative flex items-center py-2">
+                            <div class="flex-grow border-t border-slate-100"></div>
+                            <span
+                                class="flex-shrink mx-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">PIC
+                                Details</span>
+                            <div class="flex-grow border-t border-slate-100"></div>
+                        </div>
+
+                        {{-- SECTION 2: CONTACT INFO --}}
+                        <div class="grid grid-cols-2 gap-5">
+                            <div class="col-span-2">
+                                <label
+                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">PIC
+                                    Name</label>
+                                <div class="relative group">
+                                    <i
+                                        class="absolute transition-colors -translate-y-1/2 left-5 top-1/2 fa-solid fa-user-tie text-slate-300 group-focus-within:text-blue-500"></i>
+                                    <input type="text" name="contact_name" x-model="selectedCustomer.contacts[0].name"
+                                        class="w-full pl-12 pr-5 py-3.5 text-sm font-semibold bg-slate-50 border-2 border-transparent rounded-2xl focus:border-blue-500/20 focus:bg-white focus:ring-[6px] focus:ring-blue-500/5 outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label
+                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Contact
+                                    Phone</label>
+                                <div class="relative group">
+                                    <i
+                                        class="absolute transition-colors -translate-y-1/2 left-5 top-1/2 fa-solid fa-phone text-slate-300 group-focus-within:text-blue-500"></i>
+                                    <input type="text" name="contact_phone"
+                                        x-model="selectedCustomer.contacts[0].phone"
+                                        class="w-full pl-12 pr-5 py-3.5 text-sm font-semibold bg-slate-50 border-2 border-transparent rounded-2xl focus:border-blue-500/20 focus:bg-white focus:ring-[6px] focus:ring-blue-500/5 outline-none transition-all">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- FOOTER BUTTONS --}}
+                        <div class="flex items-center justify-end gap-4 pt-6 mt-6 border-t border-slate-50">
+                            <button type="button" @click="openEdit = false"
+                                class="px-8 py-4 text-xs font-black tracking-widest uppercase transition-all text-slate-400 hover:text-red-500">
+                                Discard
+                            </button>
+
+                            <button type="submit"
+                                class="px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 shadow-blue-200 active:scale-95">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

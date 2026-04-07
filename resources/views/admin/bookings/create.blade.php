@@ -23,11 +23,19 @@
                             class="w-full px-4 py-3.5 bg-white border border-blue-100 rounded-2xl font-bold text-gray-700">
                             <option value="" disabled selected>Pilih Customer...</option>
                             @foreach ($customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->contacts->first()->name }}
+                                <option value="{{ $customer->id }}">{{ $customer->contacts->first()->name ?? 'No Name' }}
                                     ({{ $customer->email }})
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Generated Booking
+                            Code</label>
+                        <input type="text" id="display_booking_code_input"
+                            class="w-full px-4 py-3.5 bg-white border border-gray-100 rounded-2xl font-black text-blue-600 tracking-widest"
+                            readonly value="Generating...">
                     </div>
 
                     <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -47,24 +55,30 @@
 
                     <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
                         <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dose Range
-                                (kGy)</label>
-                            <div class="flex gap-4">
-                                <input type="number" id="in_dmin" placeholder="Min"
-                                    class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                                <input type="number" id="in_dmax" placeholder="Max"
-                                    class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                            </div>
+                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Nett Weight /
+                                Pcs (Kg)</label>
+                            <input type="number" step="any" id="in_net_pcs"
+                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Net Weight /
-                                Pcs (kg)</label>
-                            <input type="number" step="0.01" id="in_net_pcs"
+                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Gross Weight
+                                / Pcs (Kg)</label>
+                            <input type="number" step="any" id="in_gross_pcs"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dose Range
+                                (kGy)</label>
+                            <div class="flex gap-4">
+                                <input type="number" step="any" id="in_dmin" placeholder="Min"
+                                    class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
+                                <input type="number" step="any" id="in_dmax" placeholder="Max"
+                                    class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
+                            </div>
+                        </div>
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dimension (P
                                 x L x T) cm</label>
@@ -76,12 +90,6 @@
                                 <input type="number" id="in_height" placeholder="T"
                                     class="w-1/3 px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold">
                             </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Gross Weight
-                                / Pcs (kg)</label>
-                            <input type="number" step="0.01" id="in_gross_pcs"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                     </div>
 
@@ -109,6 +117,38 @@
                         </div>
                     </div>
 
+                    {{-- LIVE CALCULATION RESULTS (6 KOLOM) --}}
+                    <div class="p-6 space-y-4 border border-gray-100 bg-gray-50 rounded-3xl">
+                        <h3 class="text-[11px] font-black text-blue-600 uppercase tracking-widest ml-1">Live Calculation
+                            Results</h3>
+                        <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Volume/Pcs (cm³)</span>
+                                <p id="res_vol_pcs" class="text-lg font-black text-gray-800">0</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Total Volume (cm³)</span>
+                                <p id="res_vol_total" class="text-lg font-black text-gray-800">0</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Nett Total (kg)</span>
+                                <p id="res_net_total" class="text-lg font-black text-gray-800">0</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Total Gross (kg)</span>
+                                <p id="res_gross_total" class="text-lg font-black text-gray-800">0</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Density (Nett)</span>
+                                <p id="res_density_nett" class="text-lg font-black text-blue-600">0</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Density (Gross)</span>
+                                <p id="res_density_gross" class="text-lg font-black text-blue-600">0</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-between pt-8 border-t">
                         <a href="{{ route('admin.bookings') }}" class="text-sm font-bold text-gray-400">Batal</a>
                         <button type="button" onclick="openVerifyModal()"
@@ -124,84 +164,149 @@
     @include('admin.bookings.partials.order-detail')
 
     <script>
+        // Fungsi pembantu agar angka rapi (menghapus 0 tidak perlu di belakang koma)
+        function formatNum(num, decimals = 2) {
+            if (num === null || num === undefined || isNaN(num)) return "0";
+
+            return new Intl.NumberFormat('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // generateBookingCode();
+            fetchBookingCode();
+
+
+            // Pasang event listener ke semua input agar kalkulasi live
+            ['in_qty', 'in_length', 'in_width', 'in_height', 'in_net_pcs', 'in_gross_pcs'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calculateSummary);
+            });
+        });
+
+        function fetchBookingCode() {
+            fetch('/admin/bookings/generate-code')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('display_booking_code_input').value = data.code;
+                })
+                .catch(err => {
+                    console.error('Failed generate code:', err);
+                    document.getElementById('display_booking_code_input').value = 'ERROR';
+                });
+        }
+
+        // function generateBookingCode() {
+        //     const now = new Date();
+        //     const year = now.getFullYear().toString().slice(-2);
+        //     const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        //     const day = now.getDate().toString().padStart(2, '0');
+        //     const randomSeq = Math.floor(Math.random() * 900 + 100);
+        //     const code = `${year}${month}${day}${randomSeq}`;
+
+        //     document.getElementById('display_booking_code_input').value = code;
+        // }
+
+        function calculateSummary() {
+            const qty = parseFloat(document.getElementById('in_qty').value) || 0;
+            const l = parseFloat(document.getElementById('in_length').value) || 0;
+            const w = parseFloat(document.getElementById('in_width').value) || 0;
+            const h = parseFloat(document.getElementById('in_height').value) || 0;
+            const net_pcs = parseFloat(document.getElementById('in_net_pcs').value) || 0;
+            const gross_pcs = parseFloat(document.getElementById('in_gross_pcs').value) || 0;
+
+            // Kalkulasi
+            const vol_pcs = l * w * h;
+            const vol_total = vol_pcs * qty;
+            const net_total = net_pcs * qty;
+            const gross_total = gross_pcs * qty;
+            const dNett = vol_total > 0 ? (net_total / vol_total) : 0;
+            const dGross = vol_total > 0 ? (gross_total / vol_total) : 0;
+
+            // Update UI Form Utama (Live Results)
+            document.getElementById('res_vol_pcs').innerText = formatNum(vol_pcs, 2);
+            document.getElementById('res_vol_total').innerText = formatNum(vol_total, 2);
+            document.getElementById('res_net_total').innerText = formatNum(net_total, 2);
+            document.getElementById('res_gross_total').innerText = formatNum(gross_total, 2);
+            document.getElementById('res_density_nett').innerText = formatNum(dNett, 6);
+            document.getElementById('res_density_gross').innerText = formatNum(dGross, 6);
+
+            return {
+                vol_pcs,
+                vol_total,
+                net_total,
+                gross_total,
+                dNett,
+                dGross
+            };
+        }
+
         function openVerifyModal() {
-            // Ambil Elemen
             const customer = document.getElementById('in_customer_id');
             const prodName = document.getElementById('in_product_name');
-            const qty = document.getElementById('in_qty');
+            const qtyVal = document.getElementById('in_qty').value;
 
-            // Validasi Dasar
-            if (!customer.value || !prodName.value || !qty.value) {
-                alert("Harap isi Nama Customer, Nama Produk, dan Quantity terlebih dahulu.");
+            if (!customer.value || !prodName.value || !qtyVal) {
+                alert("Harap isi Nama Customer, Nama Produk, dan Quantity.");
                 return;
             }
 
-            // Ambil Nilai
-            const val = {
-                customer_id: customer.value,
-                product: prodName.value,
-                type: document.getElementById('in_product_type').value || '-',
-                qty: parseFloat(qty.value) || 0,
-                unit: document.getElementById('in_unit').value,
-                dmin: document.getElementById('in_dmin').value || 0,
-                dmax: document.getElementById('in_dmax').value || 0,
-                net_pcs: parseFloat(document.getElementById('in_net_pcs').value) || 0,
-                gross_pcs: parseFloat(document.getElementById('in_gross_pcs').value) || 0,
-                l: parseFloat(document.getElementById('in_length').value) || 0,
-                w: parseFloat(document.getElementById('in_width').value) || 0,
-                h: parseFloat(document.getElementById('in_height').value) || 0,
-                temp: document.getElementById('in_temp').value || '-'
-            };
+            const calc = calculateSummary();
 
-            // Kalkulasi
-            const vol_pcs = (val.l * val.w * val.h) / 1000000;
-            const vol_total = vol_pcs * val.qty;
-            const net_total = val.net_pcs * val.qty;
-            const gross_total = val.gross_pcs * val.qty;
-
-            // Isi Data ke Modal (Gunakan try-catch untuk debugging)
             try {
-                document.getElementById('display_booking_code').innerText = 'DRAFT-' + Math.floor(Math.random() * 9000 +
-                    1000);
-                document.getElementById('check_product_name').innerText = val.product;
-                document.getElementById('check_qty').innerText = val.qty;
-                document.getElementById('check_unit').innerText = val.unit;
-                document.getElementById('check_dmin').innerText = val.dmin;
-                document.getElementById('check_dmax').innerText = val.dmax;
-                document.getElementById('check_dimension').innerText = `${val.l}x${val.w}x${val.h} cm`;
+                // Set ringkasan teks di modal
+                document.getElementById('check_product_name').innerText = prodName.value;
+                document.getElementById('check_qty').innerText = formatNum(qtyVal, 0);
+                document.getElementById('check_unit').innerText = document.getElementById('in_unit').value;
+                document.getElementById('check_dmin').innerText = formatNum(document.getElementById('in_dmin').value, 2);
+                document.getElementById('check_dmax').innerText = formatNum(document.getElementById('in_dmax').value, 2);
+                document.getElementById('check_dimension').innerText =
+                    `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value} cm`;
 
-                // Input fields di modal
-                document.getElementById('mod_vol_pcs').value = vol_pcs.toFixed(6);
-                document.getElementById('mod_vol_total').value = vol_total.toFixed(6);
-                document.getElementById('mod_net_pcs').value = val.net_pcs;
-                document.getElementById('mod_net_total').value = net_total.toFixed(2);
-                document.getElementById('mod_gross_pcs').value = val.gross_pcs;
-                document.getElementById('mod_gross_total').value = gross_total.toFixed(2);
+                // Set input readonly di modal
+                document.getElementById('mod_vol_pcs').value = formatNum(calc.vol_pcs, 2);
+                document.getElementById('mod_vol_total').value = formatNum(calc.vol_total, 2);
+                document.getElementById('mod_net_pcs').value = formatNum(document.getElementById('in_net_pcs').value, 2);
+                document.getElementById('mod_net_total').value = formatNum(calc.net_total, 2);
+                document.getElementById('mod_density_nett').value = formatNum(calc.dNett, 6);
+                document.getElementById('mod_density_gross').value = formatNum(calc.dGross, 6);
 
-                // Hidden inputs untuk submit
-                document.getElementById('final_customer_id').value = val.customer_id;
-                document.getElementById('final_product_name').value = val.product;
-                document.getElementById('final_product_type').value = val.type;
-                document.getElementById('final_qty').value = val.qty;
-                document.getElementById('final_unit').value = val.unit;
-                document.getElementById('final_dmin').value = val.dmin;
-                document.getElementById('final_dmax').value = val.dmax;
-                document.getElementById('final_dim_pack').value = `${val.l}x${val.w}x${val.h}`;
-                document.getElementById('final_temp').value = val.temp;
+                // Set hidden inputs untuk database
+                document.getElementById('final_customer_id').value = customer.value;
+                document.getElementById('final_product_name').value = prodName.value;
+                document.getElementById('final_product_type').value = document.getElementById('in_product_type').value;
+                document.getElementById('final_qty').value = qtyVal;
+                document.getElementById('final_unit').value = document.getElementById('in_unit').value;
+                document.getElementById('final_dmin').value = document.getElementById('in_dmin').value || 0;
+                document.getElementById('final_dmax').value = document.getElementById('in_dmax').value || 0;
+                document.getElementById('final_dim_pack').value =
+                    `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value}`;
+                document.getElementById('final_temp').value = document.getElementById('in_temp').value;
 
-                // Show Modal
+                document.getElementById('final_vol_per_pcs').value = calc.vol_pcs;
+                document.getElementById('final_vol_total').value = calc.vol_total;
+                document.getElementById('final_net_weight_pcs').value = document.getElementById('in_net_pcs').value;
+                document.getElementById('final_total_net_weight').value = calc.net_total;
+                document.getElementById('final_gross_pcs').value = document.getElementById('in_gross_pcs').value;
+                document.getElementById('final_gross_total').value = calc.gross_total;
+                document.getElementById('final_density_nett').value = calc.dNett;
+                document.getElementById('final_density_gross').value = calc.dGross;
+
+                // Hitung harga final di modal
+                if (typeof calculatePrice === "function") calculatePrice();
+
+                // Tampilkan modal
+                document.getElementById('display_booking_code').innerText = document.getElementById(
+                    'display_booking_code_input').value;
                 const modal = document.getElementById('orderDetailModal');
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
-            } catch (e) {
-                console.error("Kesalahan sinkronisasi ID elemen:", e);
-            }
-        }
 
-        function closeOrderDetailModal() {
-            const modal = document.getElementById('orderDetailModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            } catch (error) {
+                console.error("Error modal:", error);
+            }
         }
     </script>
 @endsection
