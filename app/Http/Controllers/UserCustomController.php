@@ -87,17 +87,20 @@ class UserCustomController extends Controller
 
     public function history()
     {
-        // Ambil user yang sedang login
-        $user = Auth::guard('customer')->user();
+        // Ambil user yang sedang login menggunakan auth standar
+        $user = auth()->user();
 
-        // Coba cari berdasarkan user_id ATAU customer_id 
-        // (Sesuaikan dengan kolom mana yang biasanya terisi di tabel bookings)
+        // Pastikan user tidak null sebelum mengambil ID
+        if (!$user) {
+            return redirect()->route('customer.login');
+        }
+
         $history = \App\Models\Booking::where('customer_id', $user->id)
             ->orWhere('user_id', $user->id)
             ->with(['products'])
             ->latest()
             ->paginate(10);
 
-        return view('customer.booking.history', compact('history'));
+        return view('customer.booking.history', compact('history', 'user'));
     }
 }

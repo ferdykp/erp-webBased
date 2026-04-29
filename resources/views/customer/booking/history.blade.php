@@ -6,8 +6,8 @@
         {{-- HEADER SECTION --}}
         <div class="flex flex-col justify-between gap-4 px-4 md:flex-row md:items-center">
             <div>
-                <h3 class="text-2xl font-black tracking-tight text-gray-900">Riwayat Booking</h3>
-                <p class="mt-1 text-sm text-gray-400">Pantau status dan detail pesanan sterilisasi Anda.</p>
+                <h3 class="text-2xl font-black tracking-tight text-gray-900">Booking History</h3>
+                <p class="mt-1 text-sm text-gray-400">Monitoring Status and Detail Progress of the Product</p>
             </div>
 
             {{-- SEARCH/FILTER (Optional) --}}
@@ -26,15 +26,19 @@
                         <tr class="bg-gray-50/50">
                             <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Info
                                 Booking</th>
-                            <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Item</th>
+                            <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]"> PIC Name
+                            </th>
                             {{-- <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Jadwal
                                 Sterilisasi</th> --}}
+                            <th
+                                class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">
+                                Item</th>
                             <th
                                 class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">
                                 Status</th>
                             <th
                                 class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">
-                                Aksi</th>
+                                Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
@@ -49,6 +53,18 @@
                                             class="text-[10px] font-bold text-gray-400 mt-1 uppercase">{{ $item->created_at->format('d M Y, H:i') }}</span>
                                     </div>
                                 </td>
+                                <td class="px-8 py-6 text-center">
+                                    <div class="flex flex-col items-center">
+                                        @if ($item->customer && $item->customer->contacts->isNotEmpty())
+                                            {{-- Mengambil nama dari kontak pertama milik customer --}}
+                                            <span class="text-sm font-bold text-gray-700">
+                                                {{ $item->customer->contacts->first()->name }}
+                                            </span>
+                                        @else
+                                            <span class="text-sm font-bold text-gray-400">No PIC Detail</span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-3">
                                         <div
@@ -56,7 +72,12 @@
                                             <i class="text-sm fa-solid fa-box-archive"></i>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-bold text-gray-700">{{ $item->products->count() }}
+                                            @foreach ($item->products as $product)
+                                                <span class="text-sm font-bold text-gray-700">
+                                                    {{ $product->product_name }}
+                                                </span>
+                                            @endforeach <span
+                                                class="text-sm font-bold text-gray-700">{{ $item->products->count() }}
                                                 Produk</span>
                                             <span
                                                 class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">E-Beam
@@ -90,11 +111,11 @@
                                 </td>
                                 <td class="px-8 py-6 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <a href="{{ route('customer.booking.show', $item->id) }}"
+                                        {{-- <a href="{{ route('customer.booking.show', $item->id) }}"
                                             class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                                             title="Detail">
                                             <i class="text-lg fa-solid fa-circle-info"></i>
-                                        </a>
+                                        </a> --}}
                                         <a href="{{ route('customer.booking.print', $item->id) }}"
                                             class="p-2.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
                                             title="Cetak Tiket">

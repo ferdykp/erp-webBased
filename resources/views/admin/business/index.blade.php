@@ -40,9 +40,11 @@
                                 </div>
                             </td>
                             <td class="px-6 py-6">
-                                <div class="text-sm font-medium text-slate-600">{{ $customer->contacts->first()->name }}
+                                <div class="text-sm font-medium text-slate-600">
+                                    {{ $customer->contacts->first()?->name ?? 'No PIC' }}
                                 </div>
-                                <div class="text-[11px] text-slate-400">{{ $customer->phone }}</div>
+                                <div class="text-[11px] text-slate-400">
+                                    {{ $customer->contacts->first()?->phone ?? 'No Phone' }}</div>
                             </td>
                             <td class="px-6 py-6 text-center">
                                 <span
@@ -144,6 +146,7 @@
                                     <tr>
                                         <th class="px-4 py-3">Product Info</th>
                                         <th class="px-4 py-3 text-center">Qty</th>
+                                        <th class="px-4 py-3 text-center">Status</th>
                                         <th class="px-4 py-3 text-right">Dosage Request</th>
                                     </tr>
                                 </thead>
@@ -160,6 +163,9 @@
                                                 <td class="px-4 py-4 font-medium text-center text-slate-600">
                                                     <span x-text="product.quantity"></span>
                                                     <span class="capitalize" x-text="product.unit"></span>
+                                                </td>
+                                                <td class="px-4 py-4 font-medium text-center text-slate-600">
+                                                    <span x-text="booking.status"></span>
                                                 </td>
                                                 <td class="px-4 py-4 text-right">
                                                     <div class="flex flex-col items-end gap-1">

@@ -73,9 +73,22 @@
                                     $product = $row['product'];
                                     $batch = $row['batch'];
                                     $qa = $row['qa'];
+
+                                    // Ambil data semua pallet terkait booking ini untuk dilempar ke Modal
+                                    $palletData = \App\Models\PalletContent::with('pallet')
+                                        ->where('booking_id', $booking->id)
+                                        ->get()
+                                        ->map(function ($item) {
+                                            return [
+                                                'id' => $item->id,
+                                                'qty' => $item->quantity,
+                                                'loc' => "Line {$item->pallet->line} - Petak {$item->pallet->slot_section}",
+                                            ];
+                                        });
                                 @endphp
                                 <tr
                                     class="transition-all bg-white border shadow-sm group rounded-2xl border-slate-100 hover:border-emerald-200">
+                                    {{-- Kolom 1: Customer --}}
                                     <td class="px-6 py-4 align-middle">
                                         <div class="flex items-center gap-4">
                                             <div
@@ -91,30 +104,38 @@
                                             </div>
                                         </div>
                                     </td>
+
+                                    {{-- Kolom 2: Product (Clean Version) --}}
                                     <td class="px-6 py-4 align-middle">
-                                        <p class="text-sm font-bold text-slate-700">{{ $product->product_name ?? '-' }}</p>
-                                        <p class="text-[10px] text-slate-400 italic">Line:
+                                        <p class="text-sm font-black text-slate-700">{{ $product->product_name ?? '-' }}</p>
+                                        <p class="text-[10px] text-slate-400 italic">Production Line:
                                             {{ $batch->productionLine->name ?? '-' }}</p>
                                     </td>
+
+                                    {{-- Kolom 3: Batch Info --}}
                                     <td class="px-6 py-4 text-center align-middle">
                                         <div class="inline-flex flex-col">
                                             <span class="text-xs font-black text-slate-700">Batch
                                                 #{{ $batch->batch_number }}</span>
-                                            <span
-                                                class="text-[10px] font-bold text-slate-400 uppercase">{{ number_format($batch->quantity) }}
-                                                {{ $batch->unit }}</span>
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase">
+                                                {{ number_format($batch->quantity) }} {{ $batch->unit }}
+                                            </span>
                                         </div>
                                     </td>
+
+                                    {{-- Kolom 4: Dose Info --}}
                                     <td class="px-6 py-4 text-center align-middle">
                                         <div class="flex flex-col items-center">
                                             <span class="text-xs font-bold text-slate-400">T:
                                                 {{ (int) $batch->target_dose }}
-                                                | <span class="text-emerald-600">A:
-                                                    {{ $qa->actual_dose ?? '-' }}</span></span>
+                                                | <span class="text-emerald-600">A: {{ $qa->actual_dose ?? '-' }}</span>
+                                            </span>
                                             <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">kGy
                                                 Unit</span>
                                         </div>
                                     </td>
+
+                                    {{-- Kolom 5: QA Status --}}
                                     <td class="px-6 py-4 text-center align-middle">
                                         @if ($qa && $qa->visual_check == 'pass')
                                             <span
@@ -128,27 +149,44 @@
                                             </span>
                                         @endif
                                     </td>
+
+                                    {{-- Kolom 6: Main Actions --}}
                                     <td class="px-6 py-4 text-right align-middle">
-                                        <button onclick="openFinishDetailModal(this)" data-batch-id="{{ $batch->id }}"
-                                            data-booking-id="{{ $booking->id }}" {{-- TAMBAHKAN INI --}}
-                                            data-payment-status="{{ $booking->payment_status }}" {{-- TAMBAHKAN INI (asumsi 'paid' atau 'unpaid') --}}
-                                            {{-- <--- BARIS INI WAJIB ADA --}} data-booking-code="{{ $booking->booking_code }}"
-                                            data-company-name="{{ $booking->customer->company_name ?? '-' }}"
-                                            data-product-name="{{ $product->product_name ?? '-' }}"
-                                            data-batch-no="{{ $batch->batch_number }}"
-                                            data-quantity="{{ number_format($batch->quantity) }}"
-                                            data-unit="{{ $batch->unit }}"
-                                            data-line="{{ $batch->productionLine->name ?? '-' }}"
-                                            data-target-dose="{{ (int) $batch->target_dose }}"
-                                            data-actual-dose="{{ $qa->actual_dose ?? '-' }}"
-                                            data-visual="{{ strtoupper($qa->visual_check ?? '-') }}"
-                                            data-indicator="{{ strtoupper($qa->indicator_check ?? '-') }}"
-                                            data-damaged="{{ $qa->is_damaged ? 'YES (' . $qa->damaged_qty . ' Box)' : 'NO' }}"
-                                            data-damage-desc="{{ $qa->damage_description ?? '-' }}"
-                                            data-qa-notes="{{ $qa->qa_notes ?? 'No additional notes' }}"
-                                            class="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90">
-                                            <i class="text-lg fa-solid fa-arrow-right-to-bracket"></i>
-                                        </button>
+                                        <div class="flex items-center justify-end gap-2">
+                                            {{-- Tombol Kelola Relokasi Pallet --}}
+                                            <button type="button"
+                                                onclick="openRelocationModal('{{ $batch->batch_number }}', {{ json_encode($palletData) }})"
+                                                class="p-2.5 text-amber-500 hover:bg-amber-50 rounded-xl transition-all active:scale-90"
+                                                title="Manage Pallets Relocation">
+                                                <i class="text-lg fa-solid fa-truck-ramp-box"></i>
+                                            </button>
+
+                                            {{-- Tombol Detail Final --}}
+                                            <button onclick="openFinishDetailModal(this)"
+                                                data-batch-id="{{ $batch->id }}" data-booking-id="{{ $booking->id }}"
+                                                data-payment-status="{{ $booking->payment_status }}"
+                                                data-booking-code="{{ $booking->booking_code }}"
+                                                data-company-name="{{ $booking->customer->company_name ?? '-' }}"
+                                                data-product-name="{{ $product->product_name ?? '-' }}"
+                                                data-batch-no="{{ $batch->batch_number }}"
+                                                data-quantity="{{ number_format($batch->quantity) }}"
+                                                data-unit="{{ $batch->unit }}"
+                                                data-line="{{ $batch->productionLine->name ?? '-' }}"
+                                                data-target-dose="{{ (int) $batch->target_dose }}"
+                                                data-freq="{{ (int) $batch->freq . ' Hz' }}"
+                                                data-beam-speed="{{ (int) $batch->beam_speed . ' m/s' }}"
+                                                data-scan-gear="{{ (int) $batch->scan_gear }}"
+                                                data-loading-mode="{{ $batch->loading_mode }}"
+                                                data-actual-dose="{{ $qa->actual_dose ?? '-' }}"
+                                                data-visual="{{ strtoupper($qa->visual_check ?? '-') }}"
+                                                data-indicator="{{ strtoupper($qa->indicator_check ?? '-') }}"
+                                                data-damaged="{{ $qa->is_damaged ? 'YES (' . $qa->damaged_qty . ' Box)' : 'NO' }}"
+                                                data-damage-desc="{{ $qa->damage_description ?? '-' }}"
+                                                data-qa-notes="{{ $qa->qa_notes ?? 'No additional notes' }}"
+                                                class="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90">
+                                                <i class="text-lg fa-solid fa-arrow-right-to-bracket"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -156,6 +194,84 @@
                     </table>
                 </div>
             @endif
+        </div>
+    </div>
+
+    {{-- ═══ MODAL RELOKASI PALLET (POST-IRRADIATION) ═══ --}}
+    <div id="relocationModal"
+        class="fixed inset-0 z-[200] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
+            <div class="flex items-center justify-between px-10 py-8 bg-white border-b border-slate-50">
+                <div>
+                    <h3 class="text-xl font-black text-slate-800">Pallet Management</h3>
+                    <p id="modal_batch_title" class="mt-1 text-xs font-bold tracking-widest uppercase text-emerald-600">
+                        BATCH #---</p>
+                </div>
+                <button onclick="closeRelocationModal()" class="transition-all text-slate-300 hover:text-red-500">
+                    <i class="text-2xl fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-1 overflow-hidden">
+                {{-- Sisi Kiri: Daftar Pallet (Scrollable) --}}
+                <div class="w-1/2 p-8 overflow-y-auto border-r border-slate-50 bg-slate-50/50">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Select Pallet to Move
+                    </h4>
+                    <div id="pallet_list_container" class="space-y-3">
+                    </div>
+                </div>
+
+                {{-- Sisi Kanan: Form Relokasi --}}
+                <div class="w-1/2 p-8 bg-white">
+                    <div id="empty_selection_state"
+                        class="flex flex-col items-center justify-center h-full space-y-4 text-center">
+                        <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 text-slate-200">
+                            <i class="text-2xl fa-solid fa-hand-pointer"></i>
+                        </div>
+                        <p class="text-xs font-bold tracking-widest uppercase text-slate-400">Select a pallet from the
+                            left<br>to start relocation</p>
+                    </div>
+
+                    <form id="relocationForm" action="{{ route('admin.production.relocate-pallet') }}" method="POST"
+                        class="hidden space-y-6">
+                        @csrf
+                        <input type="hidden" name="pallet_content_id" id="relocate_content_id">
+
+                        <div class="p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100">
+                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-2">Selected Pallet Info</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p id="selected_pallet_loc" class="text-lg font-black text-slate-800">-</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Current Location</p>
+                                </div>
+                                <div class="text-right">
+                                    <p id="selected_pallet_qty" class="text-lg font-black text-emerald-700">-</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Quantity</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">New
+                                Destination</label>
+                            <select name="new_pallet_id" required
+                                class="w-full px-6 py-4 text-sm font-bold transition-all border-none bg-slate-50 rounded-2xl focus:ring-4 focus:ring-emerald-500/10">
+                                <option value="">-- Select Target Slot --</option>
+                                @foreach ($allLocations ?? [] as $loc)
+                                    <option value="{{ $loc->id }}">Line {{ $loc->line }} | Petak
+                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} boxes in it)</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full py-5 text-xs font-black tracking-widest text-white uppercase transition-all shadow-lg bg-emerald-600 rounded-2xl shadow-emerald-200 hover:bg-emerald-700">
+                            Move Pallet Now
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -218,6 +334,27 @@
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Production
                                     Line</p>
                                 <p id="finishLine" class="text-base font-bold text-slate-700">-</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-200/60">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Frequency
+                                </p>
+                                <p id="finishFreq" class="text-base font-bold text-slate-700">-</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-200/60">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Beam Speed
+                                </p>
+                                <p id="finishSpeed" class="text-base font-bold text-slate-700">-</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-200/60">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Scan Gear
+                                </p>
+                                <p id="finishGear" class="text-base font-bold text-slate-700">-</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-200/60">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Loading
+                                    Mode
+                                </p>
+                                <p id="finishLoading" class="text-base font-bold text-slate-700">-</p>
                             </div>
                         </div>
 
@@ -383,6 +520,66 @@
 
 @push('scripts')
     <script>
+        function openRelocationModal(batchNo, pallets) {
+            document.getElementById('modal_batch_title').innerText = 'BATCH #' + batchNo;
+            const container = document.getElementById('pallet_list_container');
+            container.innerHTML = ''; // Reset list
+
+            pallets.forEach((p, index) => {
+                const item = document.createElement('div');
+                item.className =
+                    "group p-5 bg-white border border-slate-100 rounded-2xl cursor-pointer hover:border-emerald-500 transition-all shadow-sm";
+                item.onclick = () => selectPalletForMove(p.id, p.loc, p.qty);
+
+                item.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-600">
+                        P${index + 1}
+                    </div>
+                    <div>
+                        <p class="text-sm font-black text-slate-800">${p.loc}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Pre-Irradiation Slot</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-black text-emerald-600">${p.qty} Box</p>
+                </div>
+            </div>
+        `;
+                container.appendChild(item);
+            });
+
+            // Reset state kanan
+            document.getElementById('relocationForm').classList.add('hidden');
+            document.getElementById('empty_selection_state').classList.remove('hidden');
+
+            const modal = document.getElementById('relocationModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function selectPalletForMove(id, loc, qty) {
+            document.getElementById('empty_selection_state').classList.add('hidden');
+            const form = document.getElementById('relocationForm');
+            form.classList.remove('hidden');
+
+            document.getElementById('relocate_content_id').value = id;
+            document.getElementById('selected_pallet_loc').innerText = loc;
+            document.getElementById('selected_pallet_qty').innerText = qty + ' Boxes';
+        }
+
+        function closeRelocationModal() {
+            document.getElementById('relocationModal').classList.replace('flex', 'hidden');
+        }
+
+        // Tambahan: Close modal saat klik background
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('relocationModal');
+            if (e.target === modal) closeRelocationModal();
+        });
+
+
         function openFinishDetailModal(button) {
             const modal = document.getElementById('finishDetailModal');
             const content = document.getElementById('modalContent');
@@ -399,6 +596,11 @@
             document.getElementById('finishLine').textContent = d.line;
             document.getElementById('finishTargetDose').textContent = `${d.targetDose} kGy`;
             document.getElementById('finishActualDose').textContent = `${d.actualDose} kGy`;
+
+            document.getElementById('finishFreq').textContent = d.freq;
+            document.getElementById('finishSpeed').textContent = d.beamSpeed;
+            document.getElementById('finishGear').textContent = d.scanGear;
+            document.getElementById('finishLoading').textContent = d.loadingMode;
 
             document.getElementById('finishVisual').textContent = d.visual;
             document.getElementById('finishIndicator').textContent = d.indicator;

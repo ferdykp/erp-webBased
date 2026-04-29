@@ -26,7 +26,10 @@ class BookingBatch extends Model
         'beam_speed',
         'loading_mode',
         'freq',
-        'scan_gear'
+        'scan_gear',
+
+        'offline_at',  // <--- Tambahkan ini
+        'finished_at', // <--- Tambahkan ini
     ];
 
     /**

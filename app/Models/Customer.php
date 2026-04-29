@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 // use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 
 // class Customer extends Model
 class Customer extends Authenticatable
@@ -41,5 +43,9 @@ class Customer extends Authenticatable
     public function contacts(): HasMany
     {
         return $this->hasMany(CustomerContact::class);
+    }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

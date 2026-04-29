@@ -72,6 +72,7 @@
             background: #cbd5e1;
         }
     </style>
+    @stack('scripts') {{-- PASTIKAN BARIS INI ADA --}}
 </body>
 
 </html>

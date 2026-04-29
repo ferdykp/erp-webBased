@@ -29,12 +29,15 @@
             <i class="w-5 text-center fas fa-chart-pie"></i>
             <span class="font-medium">Dashboard</span>
         </a>
+        {{-- @if (auth()->user()->role == 'admin' || auth()->user()->role == 'manager') --}}
         <a href="{{ route('admin.customerList.index') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.customerList.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
             <i class="w-5 text-center fas fa-boxes-stacked"></i>
-            <span class="font-medium">Add Customer</span>
+            <span class="font-medium">Customer Management</span>
         </a>
+        {{-- @endif --}}
 
+        {{-- @if (auth()->user()->role == 'cargo_admin') --}}
         {{-- NEW: BUSINESS MONITORING MENU --}}
         <a href="{{ route('admin.business.index') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.business.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
@@ -49,6 +52,7 @@
                     class="ml-auto bg-rose-500 text-[10px] px-2 py-0.5 rounded-full text-white">{{ $pendingCount }}</span>
             @endif
         </a>
+        {{-- @endif --}}
 
         <div x-data="{ open: {{ request()->routeIs('admin.bookings*') ? 'true' : 'false' }} }">
             <button @click="open = !open"
@@ -130,7 +134,11 @@
             <i class="w-5 text-center fas fa-boxes-stacked"></i>
             <span class="font-medium">Pallet Management</span>
         </a>
-
+        <a href="{{ route('admin.report.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.report.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-gray-800 hover:text-white' }}">
+            <i class="w-5 text-center fas fa-file-lines"></i> {{-- Gunakan ikon file agar beda dengan pallet --}}
+            <span class="font-medium">Reporting</span>
+        </a>
     </nav>
 
     {{-- <div class="absolute w-full px-8 text-center bottom-6">

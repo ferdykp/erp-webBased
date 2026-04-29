@@ -191,7 +191,10 @@ class AdminProductionController extends Controller
         }
 
         DB::transaction(function () use ($batch) {
-            $batch->update(['status' => 'processing']);
+            $batch->update([
+                'status' => 'processing',
+                'offline_at' => now(), // <--- Tambahkan ini
+            ]);
 
             // Jika booking masih approved, ubah ke processing
             $booking = $batch->booking;
@@ -202,6 +205,7 @@ class AdminProductionController extends Controller
 
         return back()->with('success', "Batch #{$batch->batch_number} → In Irradiation.");
     }
+
 
 
     public function offline()
@@ -263,7 +267,11 @@ class AdminProductionController extends Controller
                 ]);
 
                 // 3. Update status batch menjadi 'done'
-                $batch->update(['status' => 'done']);
+                $batch->update([
+                    'status' => 'done',
+                    'finished_at' => now()
+                ]);
+
 
                 // 4. Cek apakah semua batch dalam booking ini sudah selesai
                 $booking = $batch->booking;

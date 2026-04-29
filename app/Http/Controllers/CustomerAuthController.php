@@ -18,6 +18,13 @@ class CustomerAuthController extends Controller
         }
         return view('customer.auth.login');
     }
+    public function showRegister()
+    {
+        if (Auth::check()) {
+            return redirect()->route('customer.dashboard');
+        }
+        return view('customer.auth.register'); // Pastikan file blade ini ada di resources/views/customer/auth/register.blade.php
+    }
 
     public function login(Request $request)
     {

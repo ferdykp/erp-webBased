@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminProductionController;
@@ -140,6 +141,9 @@ Route::prefix('admin')
 
         Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
 
+        Route::get('/admin/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
+        Route::put('/admin/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
+
         // Slot Management
         Route::get('/slots', [AdminSlotController::class, 'index'])->name('admin.slots.index');
         Route::post('/slots', [AdminSlotController::class, 'store'])->name('admin.slots.store');
@@ -152,6 +156,7 @@ Route::prefix('admin')
         Route::post('/pallets/store', [AdminBookingController::class, 'palletStore'])->name('admin.pallets.store');
         Route::post('/pallets/generate', [AdminBookingController::class, 'palletGenerate'])->name('admin.pallets.generate');
         Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
+        Route::post('/pallets/add-layout', [AdminBookingController::class, 'addLayout'])->name('admin.pallets.add-layout');
 
         // Invoices & Profile
         // Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
@@ -189,6 +194,10 @@ Route::prefix('admin')
         Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
         Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
 
+        Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
+        Route::get('/report/export/{id}', [ReportController::class, 'exportExcel'])
+            ->name('admin.report.export-excel');
+        Route::get('/report/export-pdf', [ReportController::class, 'exportPdf'])->name('admin.report.export-pdf');
         // ====================================================================
         // Layer 3 – Production Management
         // Akses dibatasi untuk role: technologist, production_engineer, admin
@@ -228,13 +237,18 @@ Route::prefix('admin')
             Route::get('/production/batches/{id}/certificate', [AdminProductionController::class, 'printCertificate'])
                 ->name('admin.production.certificate');
 
+            Route::get('/production/finish', [AdminBookingController::class, 'finishIndex'])->name('admin.production.finish');
+            Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->name('admin.production.relocate-pallet');
+
             // Cari baris ini di bagian bawah routes/web.php
             Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus']) // Ganti ke AdminProductionController
                 ->name('admin.bookings.paymentStatus');
         });
     });
 
-// Route::middleware(['role:technologist,production_engineer,admin'])->group(function () {
+
+
+    // Route::middleware(['role:technologist,production_engineer,admin'])->group(function () {
 
 //     // Master Data Mesin Penyinaran (CRUD)
 //     Route::resource('production-lines', AdminProductionLineController::class)

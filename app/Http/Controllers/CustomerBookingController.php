@@ -30,6 +30,73 @@ class CustomerBookingController extends Controller
     {
         return view('customer.booking.create');
     }
+    public function store(Request $request)
+    {
+        $today = now();
+        $prefix = $today->format('ymd');
+
+        // $countThisMonth = Booking::whereYear('created_at', $today->year)
+        //     ->whereMonth('created_at', $today->month)
+        //     ->count();
+        $countToday = Booking::whereDate('created_at', $today->toDateString())
+            ->count();
+
+        $sequence = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
+
+        $bookingCode = $prefix . $sequence;
+        $request->validate([
+            // 'customer_id'    => 'required|exists:customers,id',
+            'product_name'   => 'required|string',
+            'quantity'       => 'required|numeric',
+            'dimension_pack' => 'required|string',
+            'vol_total'      => 'required|numeric',
+            'payment_status' => 'required|in:paid,unpaid',
+            // 'total_price'    => $request->total_price ?? 0,
+            'total_price'    => 'nullable|numeric',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $booking = Booking::create([
+                'user_id'        => auth()->id(),
+                // 'customer_id'  => $request->customer_id,
+                'customer_id' => auth()->user()->customer->id,
+                'booking_code'   => $bookingCode,
+                'status'       => 'pending',
+                'payment_status' => $request->payment_status,
+                'qr_token' => \Str::uuid(),
+                'total_price'    => $request->total_price ?? 0,
+            ]);
+
+            // 3. Create Booking Product (Data Aktual)
+            BookingProduct::create([
+                'booking_id'           => $booking->id,
+                'product_name'         => $request->product_name,
+                'product_type'         => $request->product_type,
+                'quantity'             => $request->quantity,
+                'unit'                 => $request->unit,
+                'dmin'                 => $request->dmin,
+                'dmax'                 => $request->dmax,
+                'dimension_pack'       => $request->dimension_pack,
+                'vol_per_pcs'          => $request->vol_per_pcs,
+                'vol_total'            => $request->vol_total,
+                'net_weight_pcs'       => $request->net_weight_pcs,
+                'total_net_weight'     => $request->total_net_weight,
+                'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
+                'total_gross_weight'   => $request->total_gross_weight,
+                'expect_temp'          => $request->expect_temp,
+                'density_gross'        => $request->density_gross,
+                'density_nett'         => $request->density_nett,
+            ]);
+
+            DB::commit();
+            return redirect()->route('customer.dashboard')->with('success', 'Order #' . $booking->booking_code . ' berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 
 
     // public function store(Request $request)

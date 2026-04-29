@@ -8,7 +8,7 @@
         {{-- Header --}}
         <div class="flex items-start justify-between px-12 pt-12 pb-6">
             <div>
-                <h2 class="text-3xl font-black tracking-tighter text-slate-800">Reservation Details</h2>
+                <h2 class="text-3xl font-black tracking-tighter text-slate-800">Product Details</h2>
                 <div class="flex items-center gap-3 mt-2">
                     <span
                         class="px-3 py-1 text-[10px] font-black tracking-widest text-blue-600 bg-blue-50 rounded-lg uppercase">
@@ -35,12 +35,12 @@
                 </div>
 
                 <div class="p-8 bg-indigo-50 border border-indigo-100 rounded-[2.5rem]">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Scheduling</p>
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Time Input</p>
                     <div class="space-y-2">
                         <p class="flex justify-between text-xs font-bold text-slate-600">Booked:
                             <span class="text-indigo-700">{{ $booking->created_at->format('d M Y H:i') }}</span>
                         </p>
-                        <p class="flex justify-between text-xs font-bold text-slate-600">Arrived:
+                        <p class="flex justify-between text-xs font-bold text-slate-600">Checked In:
                             <span
                                 class="text-indigo-700">{{ $booking->arrival_time ? \Carbon\Carbon::parse($booking->arrival_time)->format('d M Y H:i') : 'Waiting' }}</span>
                         </p>
@@ -125,22 +125,39 @@
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 text-[9px] font-black text-slate-500 uppercase">
                             <tr>
-                                <th class="px-8 py-4">Batch ID</th>
-                                <th class="px-6 py-4">Status</th>
-                                <th class="px-8 py-4 text-right">Quantity</th>
+                                <th class="px-8 py-4 text-center">Batch ID</th>
+                                <th class="px-8 py-4 text-center">Frequency</th>
+                                <th class="px-8 py-4 text-center">Beam Speed</th>
+                                <th class="px-8 py-4 text-center">Scan Gear</th>
+                                <th class="px-8 py-4 text-center">Loading Mode</th>
+                                <th class="px-8 py-4 text-center">Status</th>
+                                <th class="px-8 py-4 text-center ">Quantity</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             @forelse ($booking->batches as $batch)
                                 <tr>
-                                    <td class="px-8 py-4 text-xs font-bold text-slate-700">#{{ $batch->id }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        #{{ $batch->id }}</td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        {{ (int) $batch->freq . ' Hz' }}
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        {{ (int) $batch->beam_speed . ' m/s' }}
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        {{ (int) $batch->scan_gear }}
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        {{ $batch->loading_mode }}
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
                                         <span
                                             class="text-[10px] font-bold px-2 py-1 rounded-lg bg-blue-50 text-blue-600 uppercase">
                                             {{ $batch->status }}
                                         </span>
                                     </td>
-                                    <td class="px-8 py-4 text-xs font-black text-right text-slate-800">
+                                    <td class="px-8 py-4 text-xs font-black text-center text-slate-800">
                                         {{ number_format($batch->quantity, 0, ',', '.') }}
                                     </td>
                                 </tr>

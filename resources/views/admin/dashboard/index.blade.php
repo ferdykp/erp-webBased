@@ -49,14 +49,14 @@
             <div
                 class="relative p-6 bg-white border border-gray-100 rounded-[2.5rem] shadow-sm overflow-hidden group hover:border-blue-200 transition-all duration-300">
                 <div
-                    class="absolute font-black transition-colors -right-2 -top-2 text-7xl text-gray-50 group-hover:text-blue-50">
+                    class="absolute font-black transition-colors -right-3 -top-2 text-7xl text-gray-50 group-hover:text-blue-50">
                     1</div>
                 <div class="relative z-10">
                     <div
                         class="flex items-center justify-center w-12 h-12 mb-5 text-blue-600 transition-all duration-300 shadow-sm bg-blue-50 rounded-2xl group-hover:bg-blue-600 group-hover:text-white">
                         <i class="text-lg fa-solid fa-building-circle-check"></i>
                     </div>
-                    <h4 class="mb-2 text-sm font-bold text-gray-800">Onboarding</h4>
+                    <h4 class="mb-2 text-sm font-bold text-gray-800">1. Onboarding</h4>
                     <p class="text-xs leading-relaxed text-gray-500">Register new clients in <b>Add Company</b>. Ensure all
                         profile forms are fully completed before proceeding.</p>
                 </div>
@@ -72,7 +72,7 @@
                         class="flex items-center justify-center w-12 h-12 mb-5 transition-all duration-300 shadow-sm bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white">
                         <i class="text-lg fa-solid fa-boxes-stacked"></i>
                     </div>
-                    <h4 class="mb-2 text-sm font-bold text-gray-800">Cargo Management</h4>
+                    <h4 class="mb-2 text-sm font-bold text-gray-800">2. Cargo Management</h4>
                     <p class="text-xs leading-relaxed text-gray-500">Go to <b>Add Order</b>, select the registered company,
                         and fill in the complete cargo specification forms.</p>
                 </div>
@@ -88,7 +88,7 @@
                         class="flex items-center justify-center w-12 h-12 mb-5 text-purple-600 transition-all duration-300 shadow-sm bg-purple-50 rounded-2xl group-hover:bg-purple-600 group-hover:text-white">
                         <i class="text-lg fa-solid fa-microscope"></i>
                     </div>
-                    <h4 class="mb-2 text-sm font-bold text-gray-800">Irradiation & QC</h4>
+                    <h4 class="mb-2 text-sm font-bold text-gray-800">3. Irradiation & QC</h4>
                     <p class="text-xs leading-relaxed text-gray-500">Set <b>Process Parameters</b>, monitor the
                         <b>Queue</b>, and perform <b>QC Details</b> once processing is complete.
                     </p>
@@ -105,7 +105,7 @@
                         class="flex items-center justify-center w-12 h-12 mb-5 transition-all duration-300 shadow-sm bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white">
                         <i class="text-lg fa-solid fa-certificate"></i>
                     </div>
-                    <h4 class="mb-2 text-sm font-bold text-gray-800">Billing & Release</h4>
+                    <h4 class="mb-2 text-sm font-bold text-gray-800">4. Billing & Release</h4>
                     <p class="text-xs leading-relaxed text-gray-500">Check the <b>Finish</b> menu. Update payment status to
                         enable the <b>Certificate Download</b> for the client.</p>
                 </div>

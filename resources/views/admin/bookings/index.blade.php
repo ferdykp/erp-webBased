@@ -104,12 +104,15 @@
                                 <td
                                     class="px-8 py-6 rounded-r-[2rem] border-y border-r border-transparent group-hover:border-slate-100">
                                     <div class="flex items-center justify-end gap-3">
-                                        {{-- Tombol Detail --}}
-                                        {{-- Tombol Detail --}}
                                         <button type="button" onclick="toggleDetailModal('{{ $booking->id }}', true)"
                                             class="flex items-center justify-center w-10 h-10 text-blue-600 transition-all bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white">
                                             <i class="text-xs fa-solid fa-eye"></i>
                                         </button>
+                                        <a href="{{ route('admin.bookings.edit', $booking->id) }}"
+                                            class="flex items-center justify-center w-10 h-10 transition-all text-amber-600 bg-amber-50 rounded-xl hover:bg-amber-500 hover:text-white"
+                                            title="Edit Booking">
+                                            <i class="text-xs fa-solid fa-pen-to-square"></i>
+                                        </a>
 
                                         @if ($booking->arrival_time)
                                             <a href="{{ route('admin.bookings.invoice', $booking->id) }}" target="_blank"

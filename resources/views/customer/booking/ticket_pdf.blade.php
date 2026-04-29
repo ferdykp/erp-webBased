@@ -162,7 +162,7 @@
                         <tr>
                             <td class="info-item">
                                 <div class="info-label">Customer Name</div>
-                                <div class="info-value">{{ auth('customer')->user()->name }}</div>
+                                <div class="info-value">{{ auth()->user()->username ?? '-' }}</div>
                             </td>
                             <td class="info-item">
                                 <div class="info-label">Status</div>

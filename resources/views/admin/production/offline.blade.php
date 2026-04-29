@@ -134,7 +134,7 @@
                                             data-loading-mode="{{ $batch->loading_mode ?? '' }}"
                                             class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase transition-all border rounded-xl border-slate-300 text-slate-700 hover:bg-slate-900 hover:text-white active:scale-95">
                                             <i class="fa-solid fa-eye"></i>
-                                            Detail
+                                            Finish
                                         </button>
                                     </td>
                                 </tr>
@@ -151,7 +151,7 @@
         class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all duration-300">
 
         <div id="modalContent"
-            class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300">
+            class="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300">
 
             {{-- Modal Header --}}
             <div class="px-10 pt-10 pb-6 bg-gradient-to-b from-slate-50 to-white">
@@ -318,25 +318,32 @@
                                 </div>
 
                                 {{-- DAMAGE QUESTION (RADIO BUTTONS) --}}
+
+                                <div class="col-span-2">
+                                    <label
+                                        class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">QA
+                                        Notes / General Remarks</label>
+                                    <textarea name="qa_notes" rows="2" placeholder="Describe any additional issues..."
+                                        class="w-full px-6 py-4 text-sm font-bold transition-all border-2 border-transparent outline-none bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white"></textarea>
+                                </div>
                                 <div
                                     class="col-span-2 p-6 border-2 border-dashed rounded-3xl border-slate-100 bg-slate-50/30">
                                     <label
-                                        class="block mb-4 text-[10px] font-black uppercase tracking-widest text-slate-500 italic">Apakah
-                                        ada kemasan / produk yang rusak?</label>
+                                        class="block mb-4 text-[10px] font-black uppercase tracking-widest text-slate-500 italic">There
+                                        is Packaging Damages ?</label>
                                     <div class="flex gap-6">
                                         <label class="flex items-center gap-3 cursor-pointer group">
                                             <input type="radio" name="is_damaged" value="no" x-model="hasDamage"
                                                 class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500">
                                             <span
-                                                class="text-sm font-bold transition-colors text-slate-600 group-hover:text-slate-900">Tidak
-                                                Ada</span>
+                                                class="text-sm font-bold transition-colors text-slate-600 group-hover:text-slate-900">No
+                                                Damage</span>
                                         </label>
                                         <label class="flex items-center gap-3 cursor-pointer group">
                                             <input type="radio" name="is_damaged" value="yes" x-model="hasDamage"
                                                 class="w-5 h-5 text-red-600 border-slate-300 focus:ring-red-500">
                                             <span
-                                                class="text-sm font-bold transition-colors text-slate-600 group-hover:text-red-600">Ya,
-                                                Ada Kerusakan</span>
+                                                class="text-sm font-bold transition-colors text-slate-600 group-hover:text-red-600">Damaged</span>
                                         </label>
                                     </div>
 
@@ -346,32 +353,24 @@
                                         <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                                             <div class="md:col-span-1">
                                                 <label
-                                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-red-400">Jumlah
-                                                    Box</label>
+                                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-red-400">Amount
+                                                </label>
                                                 <input type="number" name="damaged_qty"
                                                     :required="hasDamage === 'yes'" placeholder="0"
-                                                    class="w-full px-5 py-3 text-sm font-bold border-2 outline-none border-red-50/50 bg-red-50/30 rounded-xl focus:border-red-200">
+                                                    class="w-full p-2 text-sm font-bold border-2 outline-none border-red-50/50 bg-red-50/30 rounded-xl focus:border-red-200">
                                             </div>
                                             <div class="md:col-span-3">
                                                 <label
-                                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-red-400">Penjelasan
-                                                    Kerusakan</label>
+                                                    class="block mb-2 text-[10px] font-black uppercase tracking-widest text-red-400">Explanation</label>
                                                 <input type="text" name="damage_description"
                                                     :required="hasDamage === 'yes'"
-                                                    placeholder="Contoh: Box penyok, segel terbuka..."
+                                                    placeholder="Contoh: Box Ripped .."
                                                     class="w-full px-5 py-3 text-sm font-bold border-2 outline-none border-red-50/50 bg-red-50/30 rounded-xl focus:border-red-200">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-span-2">
-                                    <label
-                                        class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">QA
-                                        Notes / General Remarks</label>
-                                    <textarea name="qa_notes" rows="2" placeholder="Describe any additional issues..."
-                                        class="w-full px-6 py-4 text-sm font-bold transition-all border-2 border-transparent outline-none bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white"></textarea>
-                                </div>
                             </div>
                         </div>
 

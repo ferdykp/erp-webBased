@@ -58,6 +58,10 @@ class AdminBookingController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        // dd($request->all()); // Ini akan menghentikan proses dan menampilkan isi data yang dikirim
+        $request->validate([
+            'status' => 'required|string|in:pending,approved,completed,cancelled'
+        ]);
         $booking = Booking::findOrFail($id);
         $newStatus = $request->status;
 
@@ -368,6 +372,102 @@ class AdminBookingController extends Controller
         }
     }
 
+    /**
+     * Menampilkan form edit untuk booking tertentu.
+     */
+    public function edit($id)
+    {
+        // Load booking beserta relasi produknya
+        $booking = Booking::with('products')->findOrFail($id);
+
+        // Ambil data customer untuk dropdown
+        $customers = Customer::orderBy('company_name', 'asc')->get();
+
+        // Data produk diambil dari relasi (asumsi 1 booking 1 produk sesuai logic store)
+        $bookingProduct = $booking->products->first();
+
+        // Gabungkan data agar mudah diakses di view
+        // Kita timpa properti booking dengan data dari booking_products agar view tetap bersih
+        if ($bookingProduct) {
+            $booking->product_name = $bookingProduct->product_name;
+            $booking->product_type = $bookingProduct->product_type;
+            $booking->quantity = $bookingProduct->quantity;
+            $booking->unit = $bookingProduct->unit;
+            $booking->dmin = $bookingProduct->dmin;
+            $booking->dmax = $bookingProduct->dmax;
+            $booking->dimension_pack = $bookingProduct->dimension_pack;
+            $booking->vol_per_pcs = $bookingProduct->vol_per_pcs;
+            $booking->vol_total = $bookingProduct->vol_total;
+            $booking->net_weight_pcs = $bookingProduct->net_weight_pcs;
+            $booking->total_net_weight = $bookingProduct->total_net_weight;
+            $booking->gross_weight_per_pcs = $bookingProduct->gross_weight_per_pcs;
+            $booking->total_gross_weight = $bookingProduct->total_gross_weight;
+            $booking->expect_temp = $bookingProduct->expect_temp;
+            $booking->density_gross = $bookingProduct->density_gross;
+            $booking->density_nett = $bookingProduct->density_nett;
+        }
+
+        return view('admin.bookings.edit', compact('booking', 'customers'));
+    }
+
+    /**
+     * Memperbarui data booking di database.
+     */
+    public function update(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        // 1. HAPUS 'status' dari validasi karena memang tidak ada di form
+        $request->validate([
+            'customer_id'    => 'required|exists:customers,id',
+            'product_name'   => 'required|string',
+            'quantity'       => 'required|numeric',
+            'dimension_pack' => 'required|string',
+            'vol_total'      => 'required|numeric',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // 2. Update data UTAMA tanpa menyentuh status
+            // Jangan masukkan 'status' => $request->status di sini
+            $booking->update([
+                'customer_id'    => $request->customer_id,
+                'total_price'    => $request->total_price ?? $booking->total_price,
+                'payment_status' => $request->payment_status ?? $booking->payment_status,
+            ]);
+
+            // 3. Update data PRODUK
+            BookingProduct::updateOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'product_name'         => $request->product_name,
+                    'product_type'         => $request->product_type,
+                    'quantity'             => $request->quantity,
+                    'unit'                 => $request->unit,
+                    'dmin'                 => $request->dmin,
+                    'dmax'                 => $request->dmax,
+                    'dimension_pack'       => $request->dimension_pack,
+                    'vol_per_pcs'          => $request->vol_per_pcs,
+                    'vol_total'            => $request->vol_total,
+                    'net_weight_pcs'       => $request->net_weight_pcs,
+                    'total_net_weight'     => $request->total_net_weight,
+                    'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
+                    'total_gross_weight'   => $request->total_gross_weight,
+                    'expect_temp'          => $request->expect_temp,
+                    'density_gross'        => $request->density_gross,
+                    'density_nett'         => $request->density_nett,
+                ]
+            );
+
+            DB::commit();
+            return redirect()->route('admin.bookings')->with('success', 'Order #' . $booking->booking_code . ' berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memperbarui: ' . $e->getMessage());
+        }
+    }
+
     public function generateCode()
     {
         $today = now();
@@ -460,5 +560,104 @@ class AdminBookingController extends Controller
         }
 
         return view('admin.bookings.invoice', compact('booking'));
+    }
+
+    public function relocatePallet(Request $request)
+    {
+        $request->validate([
+            'pallet_content_id' => 'required|exists:pallet_contents,id',
+            'new_pallet_id'     => 'required|exists:pallets,id',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request) {
+                // 1. Ambil data isi pallet (barang) yang akan dipindah
+                $content = \App\Models\PalletContent::findOrFail($request->pallet_content_id);
+                $oldPallet = Pallet::findOrFail($content->pallet_id);
+                $newPallet = Pallet::findOrFail($request->new_pallet_id);
+
+                // 2. Kurangi 'filled_boxes' di pallet asal (Pre-Irradiation)
+                $oldPallet->decrement('filled_boxes', $content->quantity);
+
+                // Opsional: Jika pallet lama benar-benar kosong, hapus booking_id-nya
+                if ($oldPallet->filled_boxes <= 0) {
+                    $oldPallet->update(['current_booking_id' => null]);
+                }
+
+                // 3. Tambah 'filled_boxes' di pallet tujuan (Post-Irradiation)
+                $newPallet->increment('filled_boxes', $content->quantity);
+
+                // 4. Update relasi di tabel isi pallet agar menunjuk ke lokasi (pallet) baru
+                $content->update([
+                    'pallet_id' => $newPallet->id
+                ]);
+
+                // 5. Tandai pallet baru dengan booking_id tersebut
+                $newPallet->update(['current_booking_id' => $content->booking_id]);
+            });
+
+            return back()->with('success', 'Pallet berhasil dipindahkan ke area Post-Irradiation.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
+    }
+    public function finishIndex()
+    {
+        // 1. Ambil data booking yang memiliki batch berstatus 'done' (Finish)
+        // Kita load relasi 'products', 'batches.qa', 'customer', dan 'batches.productionLine'
+        $bookings = Booking::with([
+            'customer',
+            'products',
+            'batches' => function ($query) {
+                $query->where('status', 'done');
+            },
+            'batches.qa',
+            'batches.productionLine'
+        ])
+            ->whereHas('batches', function ($query) {
+                $query->where('status', 'done');
+            })
+            ->latest()
+            ->get();
+
+        // 2. Ambil semua data master lokasi pallet untuk pilihan "Post-Irradiation Area"
+        $allLocations = \App\Models\Pallet::orderBy('line')
+            ->orderBy('slot_section')
+            ->get();
+
+        // 3. Kirim ke view admin.production.finish
+        return view('admin.production.finish', compact('bookings', 'allLocations'));
+    }
+
+    // app/Http/Controllers/Admin/PalletController.php
+
+    public function addLayout(Request $request)
+    {
+        $request->validate([
+            'line_number' => 'required|integer|min:1',
+            'slot_count' => 'required|integer|min:1',
+        ]);
+
+        $line = $request->line_number;
+        $slots = $request->slot_count;
+        $addedCount = 0;
+
+        for ($i = 1; $i <= $slots; $i++) {
+            // Cek apakah line dan petak ini sudah ada
+            $exists = \App\Models\Pallet::where('line', $line)
+                ->where('slot_section', $i)
+                ->exists();
+
+            if (!$exists) {
+                \App\Models\Pallet::create([
+                    'line' => $line,
+                    'slot_section' => $i,
+                    'status' => 'empty' // sesuaikan dengan kolom di DB Anda
+                ]);
+                $addedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', "Berhasil menambahkan $addedCount petak baru pada Line $line.");
     }
 }

@@ -264,81 +264,103 @@
 
         {{-- MODAL PROFILE --}}
         <div x-show="openProfile" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md" x-cloak>
 
             <div @click.away="openProfile = false"
-                class="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white">
+                class="w-full max-w-xl overflow-hidden bg-white border shadow-2xl rounded-3xl border-slate-200/50">
 
-                <div class="flex items-center justify-between p-8 border-b border-slate-50 bg-slate-50/50">
-                    <div>
-                        <h3 class="text-xl font-black text-slate-800" x-text="selectedCustomer.company_name"></h3>
-                        <p class="mt-1 text-xs font-bold tracking-widest text-blue-600 uppercase"
-                            x-text="selectedCustomer.industry || 'General Industry'"></p>
+                <div class="relative p-8 pb-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span
+                                class="inline-block px-3 py-1 mb-3 text-[10px] font-bold tracking-wider text-blue-600 uppercase bg-blue-50 rounded-full"
+                                x-text="selectedCustomer.industry || 'General Industry'"></span>
+                            <h3 class="text-2xl font-bold text-slate-800" x-text="selectedCustomer.company_name"></h3>
+                            <div class="flex items-center mt-2 text-xs text-slate-400">
+                                <i class="mr-2 fa-regular fa-calendar-check"></i>
+                                <span>Registered on: </span>
+                                <span class="ml-1 font-medium text-slate-600"
+                                    x-text="new Date(selectedCustomer.created_at).toLocaleDateString('id-ID', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+    }) + ' • ' + new Date(selectedCustomer.created_at).toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    })">
+                                </span>
+                            </div>
+                        </div>
+                        <button @click="openProfile = false"
+                            class="p-2 transition-all rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <button @click="openProfile = false"
-                        class="flex items-center justify-center w-10 h-10 transition-colors bg-white shadow-sm rounded-xl text-slate-400 hover:text-red-500">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
                 </div>
 
-                <div class="p-8 space-y-8">
-                    <div class="grid grid-cols-2 gap-8">
-                        <div>
-                            <label class="block mb-1 text-[10px] font-black uppercase tracking-widest text-slate-400">PIC
-                                Name</label>
-                            <p class="text-sm font-bold text-slate-700"
+                <div class="px-8 pb-8">
+                    <div class="grid grid-cols-2 gap-6 py-6 border-y border-slate-100">
+                        <div class="space-y-1">
+                            <label
+                                class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center">
+                                <i class="mr-2 fa-solid fa-user-tie opacity-70"></i> PIC Name
+                            </label>
+                            <p class="text-[15px] font-semibold text-slate-700"
                                 x-text="selectedCustomer.contacts && selectedCustomer.contacts.length > 0 ? selectedCustomer.contacts[0].name : '-'">
                             </p>
                         </div>
 
-                        <div>
-                            <label class="block mb-1 text-[10px] font-black uppercase tracking-widest text-slate-400">PIC
-                                Phone</label>
-                            <p class="text-sm font-bold text-slate-700"
+                        <div class="space-y-1">
+                            <label
+                                class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center">
+                                <i class="mr-2 fa-solid fa-phone opacity-70"></i> PIC Phone
+                            </label>
+                            <p class="text-[15px] font-semibold text-slate-700"
                                 x-text="selectedCustomer.contacts && selectedCustomer.contacts.length > 0 ? selectedCustomer.contacts[0].phone : '-'">
                             </p>
                         </div>
 
-                        <div>
-                            <label class="block mb-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Email
-                                Address</label>
-                            <p class="text-sm font-bold text-slate-700" x-text="selectedCustomer.email"></p>
+                        <div class="col-span-2 space-y-1">
+                            <label
+                                class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center">
+                                <i class="mr-2 fa-solid fa-envelope opacity-70"></i> Email Address
+                            </label>
+                            <p class="text-[15px] font-semibold text-slate-700" x-text="selectedCustomer.email"></p>
                         </div>
-
-                        ...
                     </div>
 
-                    <div class="p-6 border rounded-2xl bg-slate-50 border-slate-100">
-                        <label
-                            class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Registered
-                            Address</label>
-                        <p class="text-sm font-medium leading-relaxed text-slate-600"
-                            x-text="selectedCustomer.addresses && selectedCustomer.addresses.length > 0 ? selectedCustomer.addresses[0].address_line : 'No address registered'">
-                        </p>
-                    </div>
-
-                    <div class="p-6 border rounded-2xl bg-slate-50 border-slate-100">
-                        <label
-                            class="block mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Registered
-                            Address</label>
-                        <p class="text-sm font-medium leading-relaxed text-slate-600"
-                            x-text="selectedCustomer.address || 'No address registered'"></p>
+                    <div class="p-5 mt-6 border bg-slate-50 rounded-2xl border-slate-100/80">
+                        <label class="block mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            Registered Address
+                        </label>
+                        <div class="flex gap-3">
+                            <i class="mt-1 fa-solid fa-location-dot text-slate-300"></i>
+                            <p class="text-sm font-medium leading-relaxed text-slate-600"
+                                x-text="selectedCustomer.addresses && selectedCustomer.addresses.length > 0 ? selectedCustomer.addresses[0].address_line : 'No address registered'">
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex justify-end px-8 py-6 border-t bg-slate-50/50 border-slate-50">
+                <div class="flex justify-end px-8 py-5 bg-slate-50/80">
                     <button @click="openProfile = false"
-                        class="px-8 py-3 text-xs font-black tracking-widest text-white uppercase transition-all bg-slate-900 rounded-xl hover:bg-slate-800">
+                        class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors">
+                        Dismiss
+                    </button>
+                    <button @click="openProfile = false"
+                        class="px-8 py-2.5 text-sm font-bold tracking-wide text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95">
                         Close Profile
                     </button>
                 </div>
             </div>
         </div>
 
-        {{-- MODAL EDIT CUSTOMER --}}
         {{-- MODAL EDIT CUSTOMER --}}
         <div x-show="openEdit" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"

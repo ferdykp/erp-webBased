@@ -10,6 +10,28 @@
                         class="text-blue-600">Inventory</span></h2>
                 <p class="text-sm font-medium text-gray-500">Visualisasi Tata Letak: Line & Petak Gudang</p>
             </div>
+            {{-- resources/views/admin/pallets/index.blade.php --}}
+
+            <div class="flex gap-2">
+                <form action="{{ route('admin.pallets.add-layout') }}" method="POST" class="flex items-end gap-3">
+                    @csrf
+                    <div class="flex flex-col">
+                        <label class="mb-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">Nomor Line</label>
+                        <input type="number" name="line_number" placeholder="Contoh: 3" required
+                            class="w-24 px-3 py-2 text-sm font-bold text-center bg-white border border-gray-200 shadow-sm outline-none rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="mb-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">Jml Petak</label>
+                        <input type="number" name="slot_count" placeholder="Jml" required
+                            class="w-20 px-3 py-2 text-sm font-bold text-center bg-white border border-gray-200 shadow-sm outline-none rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400">
+                    </div>
+                    <button type="submit"
+                        class="px-5 py-2 text-xs font-black text-white transition-all bg-green-600 shadow-lg rounded-xl hover:bg-green-700 shadow-green-200">
+                        + TAMBAH LINE
+                    </button>
+                </form>
+            </div>
+
             <div class="flex gap-2">
                 <form action="{{ route('admin.pallets.generate') }}" method="POST" class="flex items-end gap-3">
                     @csrf
