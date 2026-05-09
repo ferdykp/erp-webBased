@@ -4,164 +4,180 @@
 
 @section('content')
 
-    <div class="w-full pb-10 space-y-8">
+    <div class="w-full pb-12 space-y-6">
 
-        {{-- HEADER --}}
-        <div class="flex flex-col gap-6 px-2 md:flex-row md:items-center md:justify-between">
+        {{-- ═══ HEADER ═══ --}}
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Product Finish</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500">
-                    Step 3: review batch yang sudah berstatus <span class="font-semibold text-emerald-600">Finish</span> dan
-                    tersimpan di database.
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-semibold tracking-widest uppercase border rounded-full bg-emerald-50 text-emerald-600 border-emerald-100">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Step 3 of 3
+                </div>
+                <h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">Product Finish</h1>
+                <p class="mt-1 text-sm text-gray-400">
+                    Batch berstatus <span class="font-medium text-emerald-600">Finish</span> yang telah melewati Quality
+                    Control.
                 </p>
             </div>
         </div>
 
-        {{-- ═══ TABEL BATCH DONE ═══ --}}
+        {{-- ═══ TABEL ═══ --}}
         @php
             $doneRows = [];
             foreach ($bookings as $booking) {
                 $product = $booking->products->first();
-                // Mengambil batch dengan status done beserta data QA-nya
                 foreach ($booking->batches->where('status', 'done') as $batch) {
                     $doneRows[] = [
                         'booking' => $booking,
                         'product' => $product,
                         'batch' => $batch,
-                        'qa' => $batch->qa, // Pastikan relasi 'qa' sudah ada di model BookingBatch
+                        'qa' => $batch->qa,
                     ];
                 }
             }
         @endphp
 
-        <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-8">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-black text-slate-700">
-                    <i class="mr-2 fa-solid fa-circle-check text-emerald-600"></i>Daftar Batch Finish
-                </h3>
+        <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+
+            {{-- Table Header Bar --}}
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-gray-800">Daftar Batch Finish</h2>
+                        <p class="text-xs text-gray-400">{{ count($doneRows) }} batch tersedia</p>
+                    </div>
+                </div>
             </div>
 
             @if (empty($doneRows))
-                <div class="py-20 text-center">
-                    <div class="flex flex-col items-center gap-4">
-                        <div class="flex items-center justify-center w-24 h-24 rounded-full bg-slate-50">
-                            <i class="text-4xl fa-solid fa-box-archive text-slate-200"></i>
-                        </div>
-                        <h3 class="text-xl font-black text-slate-600">Belum Ada Batch Finish</h3>
-                        <p class="max-w-xs text-sm text-slate-400">
-                            Batch yang sudah melewati Quality Control akan otomatis muncul di daftar ini.
-                        </p>
+                {{-- Empty State --}}
+                <div class="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center">
+                    <div class="flex items-center justify-center w-16 h-16 border border-gray-100 rounded-2xl bg-gray-50">
+                        <svg class="text-gray-300 w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-600">Belum Ada Batch Finish</h3>
+                        <p class="max-w-xs mt-1 text-xs text-gray-400">Batch yang sudah melewati Quality Control akan
+                            otomatis muncul di sini.</p>
                     </div>
                 </div>
             @else
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-separate border-spacing-y-3">
+                {{-- Desktop Table --}}
+                <div class="hidden overflow-x-auto lg:block">
+                    <table class="w-full text-sm">
                         <thead>
-                            <tr class="text-[10px] font-black tracking-[0.18em] text-slate-500 uppercase">
-                                <th class="px-6 py-3">Booking & Customer</th>
-                                <th class="px-6 py-3">Product</th>
-                                <th class="px-6 py-3 text-center">Batch Info</th>
-                                <th class="px-6 py-3 text-center">Target vs Actual</th>
-                                <th class="px-6 py-3 text-center">QA Status</th>
-                                <th class="px-6 py-3 text-right">Action</th>
+                            <tr class="border-b border-gray-50 bg-gray-50/60">
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    Booking & Customer</th>
+                                <th
+                                    class="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    Product</th>
+                                <th
+                                    class="px-6 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    Batch</th>
+                                <th
+                                    class="px-6 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    Target / Actual</th>
+                                <th
+                                    class="px-6 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    QA</th>
+                                <th
+                                    class="px-6 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-50">
                             @foreach ($doneRows as $row)
                                 @php
                                     $booking = $row['booking'];
                                     $product = $row['product'];
                                     $batch = $row['batch'];
                                     $qa = $row['qa'];
-
-                                    // Ambil data semua pallet terkait booking ini untuk dilempar ke Modal
                                     $palletData = \App\Models\PalletContent::with('pallet')
                                         ->where('booking_id', $booking->id)
                                         ->get()
-                                        ->map(function ($item) {
-                                            return [
+                                        ->map(
+                                            fn($item) => [
                                                 'id' => $item->id,
                                                 'qty' => $item->quantity,
                                                 'loc' => "Line {$item->pallet->line} - Petak {$item->pallet->slot_section}",
-                                            ];
-                                        });
+                                            ],
+                                        );
                                 @endphp
-                                <tr
-                                    class="transition-all bg-white border shadow-sm group rounded-2xl border-slate-100 hover:border-emerald-200">
-                                    {{-- Kolom 1: Customer --}}
+                                <tr class="transition-colors hover:bg-gray-50/60 group">
                                     <td class="px-6 py-4 align-middle">
-                                        <div class="flex items-center gap-4">
+                                        <div class="flex items-center gap-3">
                                             <div
-                                                class="flex items-center justify-center text-xs font-black shadow-sm w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-700">
+                                                class="flex items-center justify-center flex-shrink-0 text-xs font-bold w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700">
                                                 {{ strtoupper(substr($booking->customer->company_name ?? '?', 0, 1)) }}
                                             </div>
                                             <div>
-                                                <p class="text-sm font-black text-slate-800">#{{ $booking->booking_code }}
+                                                <p class="text-sm font-semibold text-gray-800">#{{ $booking->booking_code }}
                                                 </p>
-                                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">
-                                                    {{ $booking->customer->company_name ?? 'Guest' }}
-                                                </p>
+                                                <p class="text-xs text-gray-400 mt-0.5">
+                                                    {{ $booking->customer->company_name ?? 'Guest' }}</p>
                                             </div>
                                         </div>
                                     </td>
-
-                                    {{-- Kolom 2: Product (Clean Version) --}}
                                     <td class="px-6 py-4 align-middle">
-                                        <p class="text-sm font-black text-slate-700">{{ $product->product_name ?? '-' }}</p>
-                                        <p class="text-[10px] text-slate-400 italic">Production Line:
-                                            {{ $batch->productionLine->name ?? '-' }}</p>
+                                        <p class="text-sm font-medium text-gray-800">{{ $product->product_name ?? '-' }}</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">{{ $batch->productionLine->name ?? '-' }}
+                                        </p>
                                     </td>
-
-                                    {{-- Kolom 3: Batch Info --}}
                                     <td class="px-6 py-4 text-center align-middle">
-                                        <div class="inline-flex flex-col">
-                                            <span class="text-xs font-black text-slate-700">Batch
-                                                #{{ $batch->batch_number }}</span>
-                                            <span class="text-[10px] font-bold text-slate-400 uppercase">
-                                                {{ number_format($batch->quantity) }} {{ $batch->unit }}
-                                            </span>
-                                        </div>
+                                        <p class="text-sm font-semibold text-gray-800">Batch #{{ $batch->batch_number }}</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">{{ number_format($batch->quantity) }}
+                                            {{ $batch->unit }}</p>
                                     </td>
-
-                                    {{-- Kolom 4: Dose Info --}}
                                     <td class="px-6 py-4 text-center align-middle">
-                                        <div class="flex flex-col items-center">
-                                            <span class="text-xs font-bold text-slate-400">T:
-                                                {{ (int) $batch->target_dose }}
-                                                | <span class="text-emerald-600">A: {{ $qa->actual_dose ?? '-' }}</span>
-                                            </span>
-                                            <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">kGy
-                                                Unit</span>
+                                        <div class="inline-flex items-center gap-1.5 text-xs">
+                                            <span class="text-gray-400">T: {{ (int) $batch->target_dose }}</span>
+                                            <span class="text-gray-200">/</span>
+                                            <span class="font-semibold text-emerald-600">A:
+                                                {{ $qa->actual_dose ?? '-' }}</span>
                                         </div>
+                                        <p class="text-[10px] text-gray-300 mt-0.5">kGy</p>
                                     </td>
-
-                                    {{-- Kolom 5: QA Status --}}
                                     <td class="px-6 py-4 text-center align-middle">
                                         @if ($qa && $qa->visual_check == 'pass')
                                             <span
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black text-emerald-700 uppercase bg-emerald-50 rounded-xl">
-                                                <i class="fa-solid fa-circle-check"></i> Passed
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                Passed
                                             </span>
                                         @else
                                             <span
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black text-red-700 uppercase bg-red-50 rounded-xl">
-                                                <i class="fa-solid fa-circle-xmark"></i> Rejected
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-100 rounded-full">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>
+                                                Rejected
                                             </span>
                                         @endif
                                     </td>
-
-                                    {{-- Kolom 6: Main Actions --}}
                                     <td class="px-6 py-4 text-right align-middle">
-                                        <div class="flex items-center justify-end gap-2">
-                                            {{-- Tombol Kelola Relokasi Pallet --}}
+                                        <div class="flex items-center justify-end gap-1.5">
                                             <button type="button"
                                                 onclick="openRelocationModal('{{ $batch->batch_number }}', {{ json_encode($palletData) }})"
-                                                class="p-2.5 text-amber-500 hover:bg-amber-50 rounded-xl transition-all active:scale-90"
-                                                title="Manage Pallets Relocation">
-                                                <i class="text-lg fa-solid fa-truck-ramp-box"></i>
+                                                class="inline-flex items-center justify-center w-8 h-8 transition-colors rounded-lg text-amber-500 hover:bg-amber-50"
+                                                title="Kelola Relokasi Pallet">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                                                </svg>
                                             </button>
-
-                                            {{-- Tombol Detail Final --}}
                                             <button onclick="openFinishDetailModal(this)"
                                                 data-batch-id="{{ $batch->id }}" data-booking-id="{{ $booking->id }}"
                                                 data-payment-status="{{ $booking->payment_status }}"
@@ -183,8 +199,15 @@
                                                 data-damaged="{{ $qa->is_damaged ? 'YES (' . $qa->damaged_qty . ' Box)' : 'NO' }}"
                                                 data-damage-desc="{{ $qa->damage_description ?? '-' }}"
                                                 data-qa-notes="{{ $qa->qa_notes ?? 'No additional notes' }}"
-                                                class="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90">
-                                                <i class="text-lg fa-solid fa-arrow-right-to-bracket"></i>
+                                                data-offline-at="{{ $batch->offline_at }}"
+                                                data-finished-at="{{ $batch->finished_at }}"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-emerald-50 hover:text-emerald-600"
+                                                title="Lihat Detail">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                                </svg>
                                             </button>
                                         </div>
                                     </td>
@@ -193,81 +216,204 @@
                         </tbody>
                     </table>
                 </div>
+
+                {{-- Mobile / Tablet Card List --}}
+                <div class="divide-y divide-gray-100 lg:hidden">
+                    @foreach ($doneRows as $row)
+                        @php
+                            $booking = $row['booking'];
+                            $product = $row['product'];
+                            $batch = $row['batch'];
+                            $qa = $row['qa'];
+                            $palletData = \App\Models\PalletContent::with('pallet')
+                                ->where('booking_id', $booking->id)
+                                ->get()
+                                ->map(
+                                    fn($item) => [
+                                        'id' => $item->id,
+                                        'qty' => $item->quantity,
+                                        'loc' => "Line {$item->pallet->line} - Petak {$item->pallet->slot_section}",
+                                    ],
+                                );
+                        @endphp
+                        <div class="p-5 space-y-4">
+                            {{-- Top Row --}}
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-bold rounded-xl bg-emerald-50 text-emerald-700">
+                                        {{ strtoupper(substr($booking->customer->company_name ?? '?', 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">#{{ $booking->booking_code }}</p>
+                                        <p class="text-xs text-gray-400">{{ $booking->customer->company_name ?? 'Guest' }}
+                                        </p>
+                                    </div>
+                                </div>
+                                @if ($qa && $qa->visual_check == 'pass')
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full flex-shrink-0">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                        Passed
+                                    </span>
+                                @else
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-100 rounded-full flex-shrink-0">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>
+                                        Rejected
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Info Grid --}}
+                            <div class="grid grid-cols-3 gap-3 p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Product</p>
+                                    <p class="text-xs font-semibold text-gray-700 mt-0.5 truncate">
+                                        {{ $product->product_name ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Batch</p>
+                                    <p class="text-xs font-semibold text-gray-700 mt-0.5">#{{ $batch->batch_number }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Dose</p>
+                                    <p class="text-xs font-semibold text-emerald-600 mt-0.5">{{ $qa->actual_dose ?? '-' }}
+                                        kGy</p>
+                                </div>
+                            </div>
+
+                            {{-- Actions --}}
+                            <div class="flex items-center gap-2">
+                                <button type="button"
+                                    onclick="openRelocationModal('{{ $batch->batch_number }}', {{ json_encode($palletData) }})"
+                                    class="flex items-center justify-center flex-1 gap-2 px-4 text-xs font-medium transition-colors border rounded-lg h-9 text-amber-600 bg-amber-50 border-amber-100 hover:bg-amber-100">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                                    </svg>
+                                    Relokasi
+                                </button>
+                                <button onclick="openFinishDetailModal(this)" data-batch-id="{{ $batch->id }}"
+                                    data-booking-id="{{ $booking->id }}"
+                                    data-payment-status="{{ $booking->payment_status }}"
+                                    data-booking-code="{{ $booking->booking_code }}"
+                                    data-company-name="{{ $booking->customer->company_name ?? '-' }}"
+                                    data-product-name="{{ $product->product_name ?? '-' }}"
+                                    data-batch-no="{{ $batch->batch_number }}"
+                                    data-quantity="{{ number_format($batch->quantity) }}"
+                                    data-unit="{{ $batch->unit }}"
+                                    data-line="{{ $batch->productionLine->name ?? '-' }}"
+                                    data-target-dose="{{ (int) $batch->target_dose }}"
+                                    data-freq="{{ (int) $batch->freq . ' Hz' }}"
+                                    data-beam-speed="{{ (int) $batch->beam_speed . ' m/s' }}"
+                                    data-scan-gear="{{ (int) $batch->scan_gear }}"
+                                    data-loading-mode="{{ $batch->loading_mode }}"
+                                    data-actual-dose="{{ $qa->actual_dose ?? '-' }}"
+                                    data-visual="{{ strtoupper($qa->visual_check ?? '-') }}"
+                                    data-indicator="{{ strtoupper($qa->indicator_check ?? '-') }}"
+                                    data-damaged="{{ $qa->is_damaged ? 'YES (' . $qa->damaged_qty . ' Box)' : 'NO' }}"
+                                    data-damage-desc="{{ $qa->damage_description ?? '-' }}"
+                                    data-qa-notes="{{ $qa->qa_notes ?? 'No additional notes' }}"
+                                    data-offline-at="{{ $batch->offline_at }}"
+                                    data-finished-at="{{ $batch->finished_at }}"
+                                    class="flex items-center justify-center flex-1 gap-2 px-4 text-xs font-medium transition-colors border rounded-lg h-9 text-emerald-700 bg-emerald-50 border-emerald-100 hover:bg-emerald-100">
+                                    Detail
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             @endif
         </div>
     </div>
 
-    {{-- ═══ MODAL RELOKASI PALLET (POST-IRRADIATION) ═══ --}}
-    <div id="relocationModal"
-        class="fixed inset-0 z-[200] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
-            <div class="flex items-center justify-between px-10 py-8 bg-white border-b border-slate-50">
+    {{-- ═══ MODAL RELOKASI PALLET ═══ --}}
+    <div id="relocationModal"
+        class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <div>
-                    <h3 class="text-xl font-black text-slate-800">Pallet Management</h3>
-                    <p id="modal_batch_title" class="mt-1 text-xs font-bold tracking-widest uppercase text-emerald-600">
-                        BATCH #---</p>
+                    <h3 class="text-sm font-semibold text-gray-800">Pallet Management</h3>
+                    <p id="modal_batch_title" class="text-xs text-emerald-600 font-medium mt-0.5">BATCH #---</p>
                 </div>
-                <button onclick="closeRelocationModal()" class="transition-all text-slate-300 hover:text-red-500">
-                    <i class="text-2xl fa-solid fa-circle-xmark"></i>
+                <button onclick="closeRelocationModal()"
+                    class="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
 
-            <div class="flex flex-1 overflow-hidden">
-                {{-- Sisi Kiri: Daftar Pallet (Scrollable) --}}
-                <div class="w-1/2 p-8 overflow-y-auto border-r border-slate-50 bg-slate-50/50">
-                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Select Pallet to Move
-                    </h4>
-                    <div id="pallet_list_container" class="space-y-3">
-                    </div>
+            {{-- Body --}}
+            <div class="flex flex-col flex-1 overflow-hidden md:flex-row">
+                {{-- Kiri: Daftar Pallet --}}
+                <div
+                    class="w-full p-5 overflow-y-auto border-b border-gray-100 md:w-1/2 md:border-b-0 md:border-r bg-gray-50/50">
+                    <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Pilih Pallet</p>
+                    <div id="pallet_list_container" class="space-y-2"></div>
                 </div>
 
-                {{-- Sisi Kanan: Form Relokasi --}}
-                <div class="w-1/2 p-8 bg-white">
+                {{-- Kanan: Form --}}
+                <div class="w-full p-5 bg-white md:w-1/2">
                     <div id="empty_selection_state"
-                        class="flex flex-col items-center justify-center h-full space-y-4 text-center">
-                        <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 text-slate-200">
-                            <i class="text-2xl fa-solid fa-hand-pointer"></i>
+                        class="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 border border-gray-100 rounded-xl bg-gray-50">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
+                            </svg>
                         </div>
-                        <p class="text-xs font-bold tracking-widest uppercase text-slate-400">Select a pallet from the
-                            left<br>to start relocation</p>
+                        <p class="text-xs text-gray-400">Pilih pallet dari kiri<br>untuk memulai relokasi</p>
                     </div>
 
                     <form id="relocationForm" action="{{ route('admin.production.relocate-pallet') }}" method="POST"
-                        class="hidden space-y-6">
+                        class="hidden space-y-5">
                         @csrf
                         <input type="hidden" name="pallet_content_id" id="relocate_content_id">
 
-                        <div class="p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100">
-                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-2">Selected Pallet Info</p>
+                        <div class="p-4 border bg-emerald-50 border-emerald-100 rounded-xl">
+                            <p class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2">Pallet
+                                Dipilih</p>
                             <div class="flex items-end justify-between">
                                 <div>
-                                    <p id="selected_pallet_loc" class="text-lg font-black text-slate-800">-</p>
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Current Location</p>
+                                    <p id="selected_pallet_loc" class="text-sm font-semibold text-gray-800">-</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">Lokasi saat ini</p>
                                 </div>
                                 <div class="text-right">
-                                    <p id="selected_pallet_qty" class="text-lg font-black text-emerald-700">-</p>
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Quantity</p>
+                                    <p id="selected_pallet_qty" class="text-sm font-semibold text-emerald-700">-</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">Jumlah</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">New
-                                Destination</label>
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tujuan
+                                Baru</label>
                             <select name="new_pallet_id" required
-                                class="w-full px-6 py-4 text-sm font-bold transition-all border-none bg-slate-50 rounded-2xl focus:ring-4 focus:ring-emerald-500/10">
-                                <option value="">-- Select Target Slot --</option>
+                                class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 outline-none transition-all">
+                                <option value="">-- Pilih Slot Target --</option>
                                 @foreach ($allLocations ?? [] as $loc)
                                     <option value="{{ $loc->id }}">Line {{ $loc->line }} | Petak
-                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} boxes in it)</option>
+                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} kotak)</option>
                                 @endforeach
                             </select>
                         </div>
 
                         <button type="submit"
-                            class="w-full py-5 text-xs font-black tracking-widest text-white uppercase transition-all shadow-lg bg-emerald-600 rounded-2xl shadow-emerald-200 hover:bg-emerald-700">
-                            Move Pallet Now
+                            class="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]">
+                            Pindahkan Pallet
                         </button>
                     </form>
                 </div>
@@ -275,282 +421,251 @@
         </div>
     </div>
 
-    {{-- DETAIL MODAL --}}
+
+    {{-- ═══ DETAIL MODAL ═══ --}}
     <div id="finishDetailModal"
-        class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/70 backdrop-blur-md p-4 transition-all duration-300">
-
+        class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
         <div id="modalContent"
-            class="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]">
+            class="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]">
 
-            {{-- Header: Elegant & Bold --}}
-            <div class="flex items-center justify-between px-10 bg-white border-b py-7 border-slate-100">
-                <div class="flex items-center gap-5">
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                <div class="flex items-center gap-4">
                     <div
-                        class="flex items-center justify-center border shadow-sm w-14 h-14 text-emerald-600 bg-emerald-50 rounded-2xl border-emerald-100">
-                        <i class="text-2xl fa-solid fa-certificate"></i>
+                        class="flex items-center justify-center w-10 h-10 border rounded-xl bg-emerald-50 border-emerald-100">
+                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                        </svg>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-black tracking-tight text-slate-800">Batch Final Review</h3>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span id="finishBookingCode"
-                                class="text-[11px] font-black tracking-widest text-emerald-600 uppercase">ORDER #---</span>
-                            <span class="text-slate-300">•</span>
-                            <span id="finishBatchNo" class="text-[11px] font-black text-slate-400 uppercase">BATCH
-                                #--</span>
+                        <h3 class="text-sm font-semibold text-gray-800">Batch Final Review</h3>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="finishBookingCode" class="text-xs font-semibold text-emerald-600">ORDER #---</span>
+                            <span class="text-gray-200">·</span>
+                            <span id="finishBatchNo" class="text-xs text-gray-400">BATCH #--</span>
                         </div>
                     </div>
                 </div>
                 <button type="button" onclick="closeFinishDetailModal()"
-                    class="flex items-center justify-center w-12 h-12 transition-all border bg-slate-50 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 active:scale-90">
-                    <i class="text-xl fa-solid fa-xmark"></i>
+                    class="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
 
-            {{-- Body: Two Column Balanced Layout --}}
-            <div class="px-10 py-8 overflow-y-auto custom-scrollbar">
-                <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            {{-- Body --}}
+            <div class="px-6 py-6 overflow-y-auto">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
 
-                    {{-- Kolom Kiri: Informasi Produk & QA (8 Kolom) --}}
-                    <div class="space-y-6 lg:col-span-8">
-
-                        {{-- Info Card --}}
-                        <div class="grid grid-cols-2 gap-6 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                    {{-- Kiri: Info & QA (8 col) --}}
+                    <div class="space-y-5 lg:col-span-8">
+                        {{-- Tambahkan Section Durasi di Sini --}}
+                        <div
+                            class="grid grid-cols-1 gap-4 p-5 border sm:grid-cols-3 bg-slate-50/50 border-slate-100 rounded-2xl">
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Customer
-                                    Entity</p>
-                                <p id="finishCustomerName" class="text-lg font-black leading-tight text-slate-800">-</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Started
+                                </p>
+                                <p id="finishOfflineAt" class="mt-1 text-sm font-semibold text-slate-700">-</p>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Product
-                                    Name</p>
-                                <p id="finishProductName" class="text-lg font-black leading-tight text-slate-800">-</p>
-                            </div>
-                            <div class="pt-4 border-t border-slate-200/60">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Total
-                                    Quantity</p>
-                                <p id="finishBatchInfo" class="text-base font-bold text-slate-700">-</p>
-                            </div>
-                            <div class="pt-4 border-t border-slate-200/60">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Production
-                                    Line</p>
-                                <p id="finishLine" class="text-base font-bold text-slate-700">-</p>
-                            </div>
-                            <div class="pt-4 border-t border-slate-200/60">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Frequency
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Finished
                                 </p>
-                                <p id="finishFreq" class="text-base font-bold text-slate-700">-</p>
+                                <p id="finishFinishedAt" class="mt-1 text-sm font-semibold text-slate-700">-</p>
                             </div>
-                            <div class="pt-4 border-t border-slate-200/60">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Beam Speed
+                            <div class="p-3 border bg-emerald-100/50 rounded-xl border-emerald-200">
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Total Duration
                                 </p>
-                                <p id="finishSpeed" class="text-base font-bold text-slate-700">-</p>
-                            </div>
-                            <div class="pt-4 border-t border-slate-200/60">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Scan Gear
+                                <p id="finishTotalDuration" class="mt-0.5 text-lg font-black text-emerald-700">00:00:00
                                 </p>
-                                <p id="finishGear" class="text-base font-bold text-slate-700">-</p>
-                            </div>
-                            <div class="pt-4 border-t border-slate-200/60">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Loading
-                                    Mode
-                                </p>
-                                <p id="finishLoading" class="text-base font-bold text-slate-700">-</p>
                             </div>
                         </div>
 
-                        {{-- QA Results Table Style --}}
-                        <div class="p-8 border-2 border-slate-100 rounded-[2.5rem]">
-                            <h4
-                                class="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-6 flex items-center">
-                                <i class="mr-3 fa-solid fa-microscope text-emerald-500"></i> Quality Control Result
-                            </h4>
-                            <div class="grid grid-cols-3 gap-8">
-                                <div class="space-y-1">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase">Visual</p>
-                                    <p id="finishVisual" class="text-sm font-black text-slate-800">-</p>
+                        {{-- Info Grid --}}
+                        <div
+                            class="grid grid-cols-2 gap-4 p-5 border border-gray-100 sm:grid-cols-4 bg-gray-50 rounded-xl">
+                            @foreach ([['Customer', 'finishCustomerName', 2], ['Product', 'finishProductName', 2], ['Quantity', 'finishBatchInfo', 1], ['Line', 'finishLine', 1], ['Frequency', 'finishFreq', 1], ['Beam Speed', 'finishSpeed', 1], ['Scan Gear', 'finishGear', 1], ['Loading Mode', 'finishLoading', 1]] as [$label, $id, $span])
+                                <div class="{{ $span === 2 ? 'col-span-2 sm:col-span-2' : 'col-span-1' }}">
+                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                        {{ $label }}</p>
+                                    <p id="{{ $id }}" class="text-sm font-semibold text-gray-800">-</p>
                                 </div>
-                                <div class="space-y-1">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase">Indicator</p>
-                                    <p id="finishIndicator" class="text-sm font-black text-slate-800">-</p>
+                            @endforeach
+                        </div>
+
+                        {{-- QA Results --}}
+                        <div class="p-5 border border-gray-100 rounded-xl">
+                            <p
+                                class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+                                </svg>
+                                Quality Control
+                            </p>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="p-3 rounded-lg bg-gray-50">
+                                    <p class="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">Visual
+                                    </p>
+                                    <p id="finishVisual" class="text-sm font-semibold text-gray-800">-</p>
                                 </div>
-                                <div class="space-y-1">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase">Damaged</p>
-                                    <p id="finishDamaged" class="text-sm font-black text-red-600">-</p>
+                                <div class="p-3 rounded-lg bg-gray-50">
+                                    <p class="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">
+                                        Indicator</p>
+                                    <p id="finishIndicator" class="text-sm font-semibold text-gray-800">-</p>
+                                </div>
+                                <div class="p-3 rounded-lg bg-gray-50">
+                                    <p class="text-[10px] text-gray-400 uppercase font-medium tracking-wider mb-1">Damaged
+                                    </p>
+                                    <p id="finishDamaged" class="text-sm font-semibold text-red-600">-</p>
                                 </div>
                             </div>
-                            {{-- Damage Desc --}}
                             <div id="damageDescWrapper"
-                                class="hidden p-5 mt-6 border bg-red-50 rounded-2xl border-red-100/50">
-                                <p class="text-[9px] font-black text-red-400 uppercase mb-1">Damage Details</p>
+                                class="hidden p-3 mt-3 border border-red-100 rounded-lg bg-red-50">
+                                <p class="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1">Detail
+                                    Kerusakan</p>
                                 <p id="finishDamageDesc" class="text-sm italic font-medium text-red-700">-</p>
                             </div>
                         </div>
 
-                        {{-- Notes --}}
-                        <div class="p-6 border bg-blue-50/40 rounded-2xl border-blue-100/50">
-                            <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">QA Special Notes
-                            </p>
-                            <p id="finishQaNotes" class="text-sm italic font-medium text-slate-600">--</p>
+                        {{-- QA Notes --}}
+                        <div class="p-4 border border-blue-100 bg-blue-50/60 rounded-xl">
+                            <p class="text-[10px] font-semibold text-blue-400 uppercase tracking-wider mb-1">QA Notes</p>
+                            <p id="finishQaNotes" class="text-sm italic text-gray-600">--</p>
                         </div>
                     </div>
 
-                    {{-- Kolom Kanan: Dose & Payment (4 Kolom) --}}
-                    <div class="space-y-6 lg:col-span-4">
+                    {{-- Kanan: Dose + Payment (4 col) --}}
+                    <div class="space-y-4 lg:col-span-4">
 
-                        {{-- Dose Highlights --}}
-                        <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl shadow-slate-200">
-                            <div class="mb-6">
-                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Target Dose
-                                </p>
-                                <p id="finishTargetDose" class="text-2xl italic font-black">-- <span
-                                        class="text-xs font-normal text-slate-500">kGy</span></p>
-                            </div>
-                            <div class="pt-6 border-t border-slate-800">
-                                <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Actual
+                        {{-- Dose Card --}}
+                        <div class="p-5 text-white bg-gray-900 rounded-xl">
+                            <div class="mb-4">
+                                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Target
                                     Dose</p>
-                                <p id="finishActualDose" class="text-4xl font-black text-emerald-400">-- <span
+                                <p id="finishTargetDose" class="text-xl font-semibold">-- <span
+                                        class="text-xs font-normal text-gray-500">kGy</span></p>
+                            </div>
+                            <div class="pt-4 border-t border-gray-800">
+                                <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mb-1">Actual
+                                    Dose</p>
+                                <p id="finishActualDose" class="text-3xl font-bold text-emerald-400">-- <span
                                         class="text-xs font-normal uppercase text-emerald-600">kGy</span></p>
                             </div>
                         </div>
 
-                        {{-- Payment Status Card --}}
+                        {{-- Payment Card --}}
                         <div id="paymentStatusContainer"
-                            class="relative p-6 border border-slate-200 rounded-[2rem] bg-white transition-all duration-500 overflow-hidden shadow-sm">
-
-                            {{-- Decorative Background (Optional for Clean Look) --}}
-                            <div class="absolute top-0 right-0 w-24 h-24 -mt-10 -mr-10 opacity-5">
-                                <i class="fa-solid fa-file-invoice-dollar text-7xl"></i>
-                            </div>
-
-                            <div class="relative flex flex-col items-center text-center">
-                                {{-- Ikon: Dikecilkan sedikit agar lebih proporsional --}}
+                            class="p-5 transition-all bg-white border border-gray-100 rounded-xl">
+                            <div class="flex flex-col items-center gap-3 text-center">
                                 <div id="paymentIcon"
-                                    class="flex items-center justify-center w-12 h-12 mb-3 border shadow-inner border-slate-100 rounded-2xl bg-slate-50">
-                                    <i class="text-xl fa-solid fa-money-bill-transfer"></i>
+                                    class="flex items-center justify-center w-10 h-10 border border-gray-100 rounded-xl bg-gray-50">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                                    </svg>
                                 </div>
-
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Billing
-                                    Status</p>
-
-                                {{-- Status Text: Bold tapi tidak terlalu lebar --}}
-                                <h4 id="paymentStatusText"
-                                    class="text-base font-black tracking-tight uppercase text-slate-800">
-                                    -
-                                </h4>
-
-                                {{-- Form Update: Dibuat lebih menyatu (Seamless) --}}
-                                <div class="w-full pt-5 mt-5 border-t border-slate-100">
+                                <div>
+                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Billing
+                                        Status</p>
+                                    <h4 id="paymentStatusText" class="text-sm font-bold text-gray-800 mt-0.5">-</h4>
+                                </div>
+                                <div class="w-full pt-3 border-t border-gray-100">
                                     <form id="updatePaymentForm" method="POST" class="space-y-2">
                                         @csrf
                                         @method('PUT')
-                                        <div class="flex flex-col gap-2">
-                                            <label
-                                                class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Update
-                                                Status</label>
-                                            <select name="payment_status" onchange="this.form.submit()"
-                                                class="w-full px-4 py-2.5 text-[10px] font-black uppercase border-slate-100 rounded-xl bg-slate-50/50 hover:bg-white hover:border-emerald-300 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none cursor-pointer">
-                                                <option value="unpaid">Set as UNPAID</option>
-                                                <option value="paid">Set as PAID</option>
-                                            </select>
-                                        </div>
+                                        <label
+                                            class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block text-left">Update
+                                            Status</label>
+                                        <select name="payment_status" onchange="this.form.submit()"
+                                            class="w-full px-3 py-2 text-xs font-medium transition-all border border-gray-200 rounded-lg outline-none cursor-pointer bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400">
+                                            <option value="unpaid">Set as UNPAID</option>
+                                            <option value="paid">Set as PAID</option>
+                                        </select>
                                     </form>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Alert Status: Dibuat lebih ringkas (Compact) --}}
+                        {{-- Unpaid Alert --}}
                         <div id="unpaidAlert"
-                            class="flex items-center hidden gap-4 p-4 mt-4 transition-all duration-300 border border-red-100 bg-red-50 rounded-2xl">
+                            class="flex items-center hidden gap-3 p-4 border border-red-100 bg-red-50 rounded-xl">
                             <div
-                                class="flex items-center justify-center flex-shrink-0 w-10 h-10 text-white bg-red-600 shadow-md rounded-xl shadow-red-200">
-                                <i class="text-sm fa-solid fa-lock"></i>
+                                class="flex items-center justify-center flex-shrink-0 w-8 h-8 text-white bg-red-500 rounded-lg">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                </svg>
                             </div>
-                            <div class="text-left">
-                                <p class="text-[10px] font-black text-red-600 uppercase tracking-tighter leading-tight">
-                                    Certificate Locked
-                                </p>
-                                <p class="text-[9px] font-medium text-red-500/80">Payment settlement required.</p>
+                            <div>
+                                <p class="text-xs font-semibold text-red-600">Certificate Locked</p>
+                                <p class="text-[11px] text-red-400">Selesaikan pembayaran terlebih dahulu.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Footer: Actions --}}
-            <div class="flex items-center justify-between px-10 py-8 border-t bg-slate-50 border-slate-100">
-                <p class="text-[10px] font-medium text-slate-400 italic">Please verify all data before issuing the
-                    certificate.</p>
-                <div class="flex items-center gap-4">
+            {{-- Footer --}}
+            <div
+                class="flex flex-col gap-3 px-6 py-5 border-t border-gray-100 sm:flex-row sm:items-center sm:justify-between bg-gray-50/60">
+                <p class="text-xs text-gray-400">Verifikasi semua data sebelum menerbitkan sertifikat.</p>
+                <div class="flex items-center gap-3">
                     <button type="button" onclick="closeFinishDetailModal()"
-                        class="px-8 py-4 text-xs font-black uppercase transition-all text-slate-500 hover:text-slate-800">
-                        Cancel
+                        class="px-5 text-xs font-medium text-gray-500 transition-colors rounded-lg h-9 hover:text-gray-800 hover:bg-gray-100">
+                        Batal
                     </button>
-
                     <a id="printCertificateBtn" href="#" target="_blank"
-                        class="flex items-center gap-3 px-10 py-4 text-xs font-black text-white uppercase transition-all shadow-xl bg-emerald-600 rounded-2xl hover:bg-emerald-700 shadow-emerald-200 active:scale-95">
-                        <i class="text-lg fa-solid fa-print"></i>
-                        Print Official Certificate
+                        class="inline-flex items-center gap-2 h-9 px-5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors active:scale-[0.98]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
+                        </svg>
+                        Cetak Sertifikat
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <style>
-        /* Styling Scrollbar Modern */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1;
-        }
-    </style>
-
 @endsection
 
 @push('scripts')
     <script>
+        // ═══ RELOCATION MODAL ═══
         function openRelocationModal(batchNo, pallets) {
             document.getElementById('modal_batch_title').innerText = 'BATCH #' + batchNo;
             const container = document.getElementById('pallet_list_container');
-            container.innerHTML = ''; // Reset list
+            container.innerHTML = '';
 
             pallets.forEach((p, index) => {
                 const item = document.createElement('div');
                 item.className =
-                    "group p-5 bg-white border border-slate-100 rounded-2xl cursor-pointer hover:border-emerald-500 transition-all shadow-sm";
+                    'group p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all';
                 item.onclick = () => selectPalletForMove(p.id, p.loc, p.qty);
-
                 item.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-600">
-                        P${index + 1}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 group-hover:bg-emerald-100 group-hover:text-emerald-600">
+                                P${index + 1}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">${p.loc}</p>
+                                <p class="text-[10px] text-gray-400">Pre-Irradiation</p>
+                            </div>
+                        </div>
+                        <p class="text-sm font-semibold text-emerald-600">${p.qty} Box</p>
                     </div>
-                    <div>
-                        <p class="text-sm font-black text-slate-800">${p.loc}</p>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Pre-Irradiation Slot</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm font-black text-emerald-600">${p.qty} Box</p>
-                </div>
-            </div>
-        `;
+                `;
                 container.appendChild(item);
             });
 
-            // Reset state kanan
             document.getElementById('relocationForm').classList.add('hidden');
             document.getElementById('empty_selection_state').classList.remove('hidden');
 
@@ -561,33 +676,30 @@
 
         function selectPalletForMove(id, loc, qty) {
             document.getElementById('empty_selection_state').classList.add('hidden');
-            const form = document.getElementById('relocationForm');
-            form.classList.remove('hidden');
-
+            document.getElementById('relocationForm').classList.remove('hidden');
             document.getElementById('relocate_content_id').value = id;
             document.getElementById('selected_pallet_loc').innerText = loc;
             document.getElementById('selected_pallet_qty').innerText = qty + ' Boxes';
         }
 
         function closeRelocationModal() {
-            document.getElementById('relocationModal').classList.replace('flex', 'hidden');
+            const modal = document.getElementById('relocationModal');
+            modal.classList.replace('flex', 'hidden');
         }
 
-        // Tambahan: Close modal saat klik background
         window.addEventListener('click', function(e) {
-            const modal = document.getElementById('relocationModal');
-            if (e.target === modal) closeRelocationModal();
+            const rm = document.getElementById('relocationModal');
+            if (e.target === rm) closeRelocationModal();
+            const dm = document.getElementById('finishDetailModal');
+            if (e.target === dm) closeFinishDetailModal();
         });
 
-
+        // ═══ DETAIL MODAL ═══
         function openFinishDetailModal(button) {
             const modal = document.getElementById('finishDetailModal');
             const content = document.getElementById('modalContent');
-
-            // Ambil data dari atribut dataset tombol
             const d = button.dataset;
 
-            // Isi Konten Modal
             document.getElementById('finishBookingCode').textContent = `ORDER #${d.bookingCode}`;
             document.getElementById('finishCustomerName').textContent = d.companyName;
             document.getElementById('finishProductName').textContent = d.productName;
@@ -596,52 +708,65 @@
             document.getElementById('finishLine').textContent = d.line;
             document.getElementById('finishTargetDose').textContent = `${d.targetDose} kGy`;
             document.getElementById('finishActualDose').textContent = `${d.actualDose} kGy`;
-
             document.getElementById('finishFreq').textContent = d.freq;
             document.getElementById('finishSpeed').textContent = d.beamSpeed;
             document.getElementById('finishGear').textContent = d.scanGear;
             document.getElementById('finishLoading').textContent = d.loadingMode;
-
             document.getElementById('finishVisual').textContent = d.visual;
             document.getElementById('finishIndicator').textContent = d.indicator;
             document.getElementById('finishDamaged').textContent = d.damaged;
             document.getElementById('finishQaNotes').textContent = d.qaNotes;
 
-            // 2. Logika Pembayaran & Tombol Print
-            const paymentStatus = d.paymentStatus; // 'paid' atau 'unpaid'
+            // Mapping Waktu
+            // Mapping Waktu
+            const offlineAt = d.offlineAt;
+            const finishedAt = d.finishedAt;
+
+            document.getElementById('finishOfflineAt').innerText = formatDateTime(offlineAt);
+            document.getElementById('finishFinishedAt').innerText = formatDateTime(finishedAt);
+            document.getElementById('finishTotalDuration').innerText = calculateDuration(offlineAt, finishedAt);
+            // Tampilkan Modal (Logika Transisi Anda)
+            // const modal = document.getElementById('finishDetailModal');
+            // const content = document.getElementById('modalContent');
+            // modal.classList.remove('hidden');
+            // modal.classList.add('flex');
+            // setTimeout(() => {
+            //     content.classList.remove('scale-95', 'opacity-0');
+            // }, 10);
+
+            // Payment
+            const isPaid = d.paymentStatus === 'paid';
             const printBtn = document.getElementById('printCertificateBtn');
             const unpaidAlert = document.getElementById('unpaidAlert');
             const paymentCont = document.getElementById('paymentStatusContainer');
             const paymentText = document.getElementById('paymentStatusText');
             const paymentIcon = document.getElementById('paymentIcon');
             const updateForm = document.getElementById('updatePaymentForm');
-            // Pastikan path URL ini sesuai dengan route yang didefinisikan
-            updateForm.action = `/admin/bookings/${d.bookingId}/payment-status`;
-            if (paymentStatus === 'paid') {
-                // UI JIKA SUDAH BAYAR
-                paymentText.textContent = "PAID & VERIFIED";
-                paymentCont.className =
-                    "p-6 border border-emerald-100 bg-emerald-50/50 rounded-[2rem] flex items-center justify-between";
-                paymentText.className = "text-sm font-black uppercase italic tracking-tighter text-emerald-600";
-                paymentIcon.className =
-                    "flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600";
 
-                printBtn.classList.remove('hidden'); // Tampilkan tombol print
+            updateForm.action = `/admin/bookings/${d.bookingId}/payment-status`;
+
+            if (isPaid) {
+                paymentText.textContent = 'PAID & VERIFIED';
+                paymentText.className = 'text-sm font-bold text-emerald-600 mt-0.5';
+                paymentCont.className = 'p-5 border border-emerald-100 rounded-xl bg-emerald-50/40 transition-all';
+                paymentIcon.className =
+                    'flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-100';
+                paymentIcon.querySelector('svg').classList.replace('text-gray-400', 'text-emerald-600');
+                printBtn.classList.remove('hidden');
                 unpaidAlert.classList.add('hidden');
                 printBtn.href = `/admin/production/batches/${d.batchId}/certificate`;
             } else {
-                // UI JIKA BELUM BAYAR
-                paymentText.textContent = "AWAITING PAYMENT";
-                paymentCont.className =
-                    "p-6 border border-red-100 bg-red-50/50 rounded-[2rem] flex items-center justify-between";
-                paymentText.className = "text-sm font-black uppercase italic tracking-tighter text-red-600";
-                paymentIcon.className = "flex items-center justify-center w-12 h-12 rounded-2xl bg-red-100 text-red-600";
-
-                printBtn.classList.add('hidden'); // Sembunyikan tombol print
+                paymentText.textContent = 'AWAITING PAYMENT';
+                paymentText.className = 'text-sm font-bold text-red-600 mt-0.5';
+                paymentCont.className = 'p-5 border border-red-100 rounded-xl bg-red-50/40 transition-all';
+                paymentIcon.className =
+                    'flex items-center justify-center w-10 h-10 rounded-xl bg-red-100 border border-red-100';
+                paymentIcon.querySelector('svg').classList.replace('text-gray-400', 'text-red-500');
+                printBtn.classList.add('hidden');
                 unpaidAlert.classList.remove('hidden');
             }
 
-            // Logika Deskripsi Kerusakan
+            // Damage desc
             const damageWrapper = document.getElementById('damageDescWrapper');
             if (d.damaged.includes('YES')) {
                 damageWrapper.classList.remove('hidden');
@@ -650,28 +775,66 @@
                 damageWrapper.classList.add('hidden');
             }
 
-            // Munculkan Modal dengan Animasi
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
             }, 10);
+        }
 
-            const batchId = button.getAttribute('data-batch-id');
-            document.getElementById('printCertificateBtn').href = `/admin/production/batches/${batchId}/certificate`;
+        function formatDateTime(dateStr) {
+            if (!dateStr || dateStr === 'null') return '-';
+
+            // Fix Safari parse
+            dateStr = dateStr.replace(' ', 'T');
+
+            const date = new Date(dateStr);
+
+            return date.toLocaleString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function calculateDuration(start, end) {
+            if (!start || !end || start === 'null' || end === 'null') {
+                return '00:00:00';
+            }
+
+            // Fix Safari parse
+            start = start.replace(' ', 'T');
+            end = end.replace(' ', 'T');
+
+            const startTime = new Date(start);
+            const endTime = new Date(end);
+
+            const diffMs = endTime - startTime;
+
+            if (isNaN(diffMs) || diffMs < 0) {
+                return '00:00:00';
+            }
+
+            const diffHrs = Math.floor(diffMs / 3600000);
+            const diffMins = Math.floor((diffMs % 3600000) / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+
+            return [
+                diffHrs.toString().padStart(2, '0'),
+                diffMins.toString().padStart(2, '0'),
+                diffSecs.toString().padStart(2, '0')
+            ].join(':');
         }
 
         function closeFinishDetailModal() {
             const modal = document.getElementById('finishDetailModal');
             const content = document.getElementById('modalContent');
-
             content.classList.remove('scale-100', 'opacity-100');
             content.classList.add('scale-95', 'opacity-0');
-
-            setTimeout(() => {
-                modal.classList.replace('flex', 'hidden');
-            }, 300);
+            setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
         }
     </script>
 @endpush

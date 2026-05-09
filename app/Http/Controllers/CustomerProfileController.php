@@ -17,19 +17,24 @@ class CustomerProfileController extends Controller
 {
     public function index(Request $request)
     {
-        $customers = Customer::with(['contacts'])->latest()->paginate(10);
-        $query = Customer::with(['contacts', 'addresses']); // Load relasi contacts
+        $search = $request->search;
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where('company_name', 'like', "%{$search}%")
-                ->orWhereHas('contacts', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
+        $customers = Customer::query()
+            // KUNCI PERBAIKAN: Tambahkan eager loading untuk relasi yang dibutuhkan modal
+            ->with(['contacts', 'addresses', 'bookings.products'])
+            ->when($search, function ($query) use ($search) {
+                $query->where('company_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+
+        // Jika ini request AJAX untuk pencarian
+        if ($request->ajax()) {
+            return view('admin.customerList.table', compact('customers'))->render();
         }
 
-        $customers = $query->latest()->paginate(10);
-        return view('admin.customerList.index', compact('customers'));
+        return view('admin.customerList.index', compact('customers', 'search'));
     }
     public function showCompleteProfile()
     {
@@ -311,6 +316,32 @@ class CustomerProfileController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors($e->getMessage());
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $customer = Customer::findOrFail($id);
+
+            // Hapus User terkait jika ada (opsional, tergantung logic Anda)
+            if ($customer->user_id) {
+                User::where('id', $customer->user_id)->delete();
+            }
+
+            // Alamat dan Contact biasanya terhapus otomatis jika menggunakan onCascadeDelete di migration
+            // Jika tidak, hapus manual:
+            $customer->addresses()->delete();
+            $customer->contacts()->delete();
+            $customer->delete();
+
+            DB::commit();
+            return back()->with('success', 'Customer deleted successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Failed to delete: ' . $e->getMessage()]);
         }
     }
 }

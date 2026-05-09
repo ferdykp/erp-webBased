@@ -15,21 +15,7 @@ use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\UserAdminController;
 use App\Http\Controllers\UserCustomController;
 
-// Route::get('/', function () {
-//     return view('admin.login');
-// });
-// Route::get('/', function () {
 
-//     if (Auth::guard('customer')->check()) {
-//         return redirect()->route('customer.dashboard');
-//     }
-
-//     if (Auth::guard('admin')->check()) {
-//         return redirect()->route('admin.dashboard');
-//     }
-
-//     return view('landing');
-// })->name('landing');
 Route::get('/', function () {
     // Cek apakah ada yang login di guard default
     if (Auth::check()) {
@@ -143,6 +129,7 @@ Route::prefix('admin')
 
         Route::get('/admin/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
         Route::put('/admin/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
+        Route::delete('/bookings/{id}', [AdminBookingController::class, 'destroy'])->name('admin.bookings.destroy');
 
         // Slot Management
         Route::get('/slots', [AdminSlotController::class, 'index'])->name('admin.slots.index');
@@ -158,16 +145,8 @@ Route::prefix('admin')
         Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
         Route::post('/pallets/add-layout', [AdminBookingController::class, 'addLayout'])->name('admin.pallets.add-layout');
 
-        // Invoices & Profile
-        // Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'downloadInvoice'])->name('admin.bookings.invoice');
-        // Route::get('/bookings/{id}/preview', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.preview');
-        // Preview (HTML)
         Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'previewInvoice'])
             ->name('admin.bookings.invoice');
-
-        // Export PDF
-        // Route::get('/bookings/{id}/invoice/export', [AdminBookingController::class, 'downloadInvoice'])
-        //     ->name('admin.bookings.invoice.export');
 
         // Tambahkan route ini di bawah route /bookings/checkin
         Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])
@@ -181,6 +160,7 @@ Route::prefix('admin')
         )->name('admin.customerList.store');
         Route::put('/customerList/{id}', [CustomerProfileController::class, 'updateAdmin'])
             ->name('admin.customerList.update');
+        Route::delete('/customerList/{id}', [CustomerProfileController::class, 'destroy'])->name('admin.customerList.destroy');
 
 
         Route::get('/profile', [UserAdminController::class, 'index'])->name('admin.profile');
@@ -194,90 +174,58 @@ Route::prefix('admin')
         Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
         Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
 
-        Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
-        Route::get('/report/export/{id}', [ReportController::class, 'exportExcel'])
-            ->name('admin.report.export-excel');
-        Route::get('/report/export-pdf', [ReportController::class, 'exportPdf'])->name('admin.report.export-pdf');
-        // ====================================================================
-        // Layer 3 – Production Management
-        // Akses dibatasi untuk role: technologist, production_engineer, admin
-        // ====================================================================
-        Route::middleware(['role:technologist,production_engineer,admin'])->group(function () {
+        Route::prefix('report')->group(function () {
+            // Halaman list utama (tabel history)
+            Route::get('/', [ReportController::class, 'index'])->name('admin.report.index');
 
-            // Master Data Mesin Penyinaran (CRUD)
-            Route::resource('production-lines', AdminProductionLineController::class)
-                ->except(['show', 'create', 'edit'])
-                ->names('admin.production-lines');
+            Route::get('/export/{id}/{type}', [ReportController::class, 'exportExcel'])
+                ->name('admin.report.export-excel');
 
-            // Step 1 – Process Parameter Setting (Process Set)
-            Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])
-                ->name('admin.production.parameter');
-            Route::put('/production/batches/{batch}/parameter', [AdminProductionController::class, 'storeParameter'])
-                ->name('admin.production.batches.parameter.update');
-            Route::post('/production/process', [AdminProductionController::class, 'processBooking'])
-                ->name('admin.production.process');
+            // Route untuk Sidebar JTS
+            Route::get('/jts/{type}', [ReportController::class, 'jtsView'])->name('admin.report.jts');
 
-            // Step 2 – Batch Queue (legacy, tidak muncul di sidebar)
-            Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])
-                ->name('admin.production.batch-queue');
-            Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])
-                ->name('admin.production.batches.store');
-            Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])
-                ->name('admin.production.batches.start');
-
-            // Step 2 – Process Product Irradiation (In Irradiation)
-            Route::get('/production/offline', [AdminProductionController::class, 'offline'])
-                ->name('admin.production.offline');
-
-            // Step 3 – Product Finish
-            Route::get('/production/finish', [AdminProductionController::class, 'finishPage'])
-                ->name('admin.production.finish');
-            Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])
-                ->name('admin.production.batches.finish');
-            Route::get('/production/batches/{id}/certificate', [AdminProductionController::class, 'printCertificate'])
-                ->name('admin.production.certificate');
-
-            Route::get('/production/finish', [AdminBookingController::class, 'finishIndex'])->name('admin.production.finish');
-            Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->name('admin.production.relocate-pallet');
-
-            // Cari baris ini di bagian bawah routes/web.php
-            Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus']) // Ganti ke AdminProductionController
-                ->name('admin.bookings.paymentStatus');
+            // Route untuk Sidebar Nuctech
+            Route::get('/nuctech/{type}', [ReportController::class, 'nuctechView'])->name('admin.report.nuctech');
         });
+
+
+        // Master Data Mesin Penyinaran (CRUD)
+        Route::resource('production-lines', AdminProductionLineController::class)
+            ->except(['show', 'create', 'edit'])
+            ->names('admin.production-lines');
+
+        // Step 1 – Process Parameter Setting (Process Set)
+        Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])
+            ->name('admin.production.parameter');
+        Route::put('/production/batches/{batch}/parameter', [AdminProductionController::class, 'storeParameter'])
+            ->name('admin.production.batches.parameter.update');
+        Route::post('/production/process', [AdminProductionController::class, 'processBooking'])
+            ->name('admin.production.process');
+
+        // Step 2 – Batch Queue (legacy, tidak muncul di sidebar)
+        Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])
+            ->name('admin.production.batch-queue');
+        Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])
+            ->name('admin.production.batches.store');
+        Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])
+            ->name('admin.production.batches.start');
+
+        // Step 2 – Process Product Irradiation (In Irradiation)
+        Route::get('/production/offline', [AdminProductionController::class, 'offline'])
+            ->name('admin.production.offline');
+
+        // Step 3 – Product Finish
+        Route::get('/production/finish', [AdminProductionController::class, 'finishPage'])
+            ->name('admin.production.finish');
+        Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])
+            ->name('admin.production.batches.finish');
+        Route::get('/production/batches/{id}/certificate', [AdminProductionController::class, 'printCertificate'])
+            ->name('admin.production.certificate');
+
+        Route::get('/production/finish', [AdminBookingController::class, 'finishIndex'])->name('admin.production.finish');
+        Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->name('admin.production.relocate-pallet');
+
+        // Cari baris ini di bagian bawah routes/web.php
+        Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus']) // Ganti ke AdminProductionController
+            ->name('admin.bookings.paymentStatus');
     });
-
-
-
-    // Route::middleware(['role:technologist,production_engineer,admin'])->group(function () {
-
-//     // Master Data Mesin Penyinaran (CRUD)
-//     Route::resource('production-lines', AdminProductionLineController::class)
-//         ->except(['show', 'create', 'edit'])
-//         ->names('admin.production-lines');
-
-//     // Step 1 – Process Parameter Setting (Process Set)
-//     Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])
-//         ->name('admin.production.parameter');
-//     Route::put('/production/batches/{batch}/parameter', [AdminProductionController::class, 'storeParameter'])
-//         ->name('admin.production.batches.parameter.update');
-//     Route::post('/production/process', [AdminProductionController::class, 'processBooking'])
-//         ->name('admin.production.process');
-
-//     // Step 2 – Batch Queue (legacy, tidak muncul di sidebar)
-//     Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])
-//         ->name('admin.production.batch-queue');
-//     Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])
-//         ->name('admin.production.batches.store');
-//     Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])
-//         ->name('admin.production.batches.start');
-
-//     // Step 2 – Process Product Irradiation (In Irradiation)
-//     Route::get('/production/offline', [AdminProductionController::class, 'offline'])
-//         ->name('admin.production.offline');
-
-//     // Step 3 – Product Finish
-//     Route::get('/production/finish', [AdminProductionController::class, 'finishPage'])
-//         ->name('admin.production.finish');
-//     Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])
-//         ->name('admin.production.batches.finish');
-// });

@@ -660,4 +660,26 @@ class AdminBookingController extends Controller
 
         return redirect()->back()->with('success', "Berhasil menambahkan $addedCount petak baru pada Line $line.");
     }
+
+    public function destroy($id)
+    {
+        try {
+            $booking = \App\Models\Booking::findOrFail($id);
+
+            // 1. Hapus isi palet yang terkait dengan booking ini
+            // Pastikan model PalletContent sudah ada
+            \DB::table('pallet_contents')->where('booking_id', $id)->delete();
+
+            // 2. Hapus produk terkait (jika ada relasi)
+            $booking->products()->delete();
+
+            // 3. Baru hapus booking-nya
+            $booking->delete();
+
+            return redirect()->route('admin.bookings')
+                ->with('success', 'Booking and associated pallet contents deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error: ' + $e->getMessage());
+        }
+    }
 }

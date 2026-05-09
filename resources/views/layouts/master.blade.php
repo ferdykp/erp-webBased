@@ -41,7 +41,7 @@
                 </div>
 
                 {{-- Footer ini juga mungkin mau disembunyikan di landing page karena landing sudah punya footer sendiri --}}
-                @if (!request()->routeIs(['landing']))
+                @if (!request()->routeIs(['landing', 'admin.login']))
                     <footer class="py-6 mt-10 text-xs text-center text-gray-400 border-t border-gray-100">
                         &copy; {{ date('Y') }} BeamApp Customer Portal. All rights reserved.
                     </footer>

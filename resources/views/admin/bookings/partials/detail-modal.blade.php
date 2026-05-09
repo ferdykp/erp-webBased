@@ -55,13 +55,13 @@
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Product Information</p>
                     {{-- <p class="font-bold text-slate-800">{{ $product->product_name ?? '-' }}</p> --}}
                     <p class="flex justify-between text-xs font-bold text-slate-600">Name:
-                        <span class="text-indigo-700">{{ $product->product_name }}</span>
+                        <span class="text-indigo-700">{{ $product->product_name ?? '-' }}</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Type:
-                        <span class="text-indigo-700">{{ $product->product_type }}</span>
+                        <span class="text-indigo-700">{{ $product->product_type ?? '-' }}</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Dimension:
-                        <span class="text-indigo-700">{{ $product->dimension_pack }} cm</span>
+                        <span class="text-indigo-700">{{ $product->dimension_pack ?? '-' }} cm</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Dose:
                         <span class="text-indigo-700"> {{ number_format($product->dmin ?? 0, 0) }} -
@@ -72,10 +72,10 @@
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Vol Pcs:
-                        <span class="text-indigo-700">{{ number_format($product->vol_per_pcs) }} cm³</span>
+                        <span class="text-indigo-700">{{ number_format($product->vol_per_pcs ?? 0) }} cm³</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Vol Total:
-                        <span class="text-indigo-700">{{ number_format($product->vol_total) }} cm³</span>
+                        <span class="text-indigo-700">{{ number_format($product->vol_total ?? 0) }} cm³</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
@@ -87,29 +87,30 @@
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Nett Weigth</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
-                        <span class="text-indigo-700">{{ number_format($product->net_weight_pcs) }} kg</span>
+                        <span class="text-indigo-700">{{ number_format($product->net_weight_pcs ?? 0) }} kg</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Total:
-                        <span class="text-indigo-700">{{ number_format($product->total_net_weight) }} kg</span>
+                        <span class="text-indigo-700">{{ number_format($product->total_net_weight ?? 0) }} kg</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Gross Weigth</p>
 
                     <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
-                        <span class="text-indigo-700">{{ number_format($product->gross_weight_per_pcs) }} kg</span>
+                        <span class="text-indigo-700">{{ number_format($product->gross_weight_per_pcs ?? 0) }}
+                            kg</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Total:
-                        <span class="text-indigo-700">{{ number_format($product->total_gross_weight) }} kg</span>
+                        <span class="text-indigo-700">{{ number_format($product->total_gross_weight ?? 0) }} kg</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Density</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Nett:
-                        <span class="text-indigo-700">{{ $product->density_nett }}</span>
+                        <span class="text-indigo-700">{{ $product->density_nett ?? '-' }}</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Gross:
-                        <span class="text-indigo-700">{{ $product->density_gross }}</span>
+                        <span class="text-indigo-700">{{ $product->density_gross ?? '-' }}</span>
                     </p>
                 </div>
             </div>

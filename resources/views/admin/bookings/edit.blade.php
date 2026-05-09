@@ -3,31 +3,37 @@
 @section('title', 'Edit Booking - ' . $booking->booking_code)
 
 @section('content')
-    <div class="w-full space-y-6">
-        <div class="flex flex-col gap-2 mb-4">
-            <div class="flex items-center gap-3">
+    <div class="w-full pb-10 space-y-6">
+        {{-- HEADER SECTION --}}
+        <div class="flex flex-col gap-4 px-2 mb-4">
+            <div class="flex items-center gap-4">
                 <a href="{{ route('admin.bookings') }}"
-                    class="p-2 bg-white border border-gray-100 rounded-xl hover:bg-gray-50">
-                    <i class="text-gray-400 fa-solid fa-arrow-left"></i>
+                    class="flex items-center justify-center w-10 h-10 transition-colors bg-white border shadow-sm border-slate-100 rounded-xl hover:bg-slate-50 group">
+                    <i class="transition-colors text-slate-400 fa-solid fa-arrow-left group-hover:text-blue-600"></i>
                 </a>
-                <h2 class="text-3xl font-black tracking-tight text-gray-900">
-                    Edit <span class="text-blue-600">Booking</span>
-                </h2>
+                <div>
+                    <h2 class="text-2xl font-black tracking-tight md:text-3xl text-slate-900">
+                        Edit <span class="text-blue-600">Booking</span>
+                    </h2>
+                    <p class="text-xs font-medium md:text-sm text-slate-400">
+                        Perbarui detail pesanan: <span class="font-bold text-slate-600">{{ $booking->booking_code }}</span>
+                    </p>
+                </div>
             </div>
-            <p class="ml-12 text-sm font-medium text-gray-400">Perbarui detail pesanan untuk kode:
-                **{{ $booking->booking_code }}**</p>
         </div>
 
-        <div class="bg-white shadow-sm border border-gray-100 rounded-[2rem] overflow-hidden">
-            <div class="p-8">
+        <div class="bg-white shadow-sm border border-slate-100 rounded-[2rem] md:rounded-[3rem] overflow-hidden">
+            <div class="p-6 md:p-10">
                 <form id="mainBookingForm" class="space-y-8">
                     @csrf
+
                     {{-- SELECT CUSTOMER --}}
-                    <div class="p-6 space-y-3 border border-blue-100 bg-blue-50/50 rounded-3xl">
-                        <label class="text-[11px] font-black text-blue-600 uppercase tracking-widest ml-1">Customer
-                            Owner</label>
+                    <div class="p-5 space-y-3 border border-blue-100 bg-blue-50/50 rounded-3xl md:p-8">
+                        <label class="text-[10px] md:text-[11px] font-black text-blue-600 uppercase tracking-widest ml-1">
+                            Customer Owner
+                        </label>
                         <select id="in_customer_id"
-                            class="w-full px-4 py-3.5 bg-white border border-blue-100 rounded-2xl font-bold text-gray-700">
+                            class="w-full px-4 py-3.5 bg-white border border-blue-100 rounded-2xl font-bold text-slate-700 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all">
                             @foreach ($customers as $customer)
                                 <option value="{{ $customer->id }}"
                                     {{ $booking->customer_id == $customer->id ? 'selected' : '' }}>
@@ -37,136 +43,161 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Booking
-                            Code</label>
+                    {{-- BOOKING CODE (READONLY) --}}
+                    <div class="px-2">
+                        <label class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Booking Code
+                        </label>
                         <input type="text" id="display_booking_code_input"
-                            class="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-black text-blue-600 tracking-widest"
+                            class="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-black text-blue-600 tracking-widest mt-1"
                             readonly value="{{ $booking->booking_code }}">
                     </div>
 
-                    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                Name</label>
-                            <input type="text" id="in_product_name" value="{{ $booking->product_name }}"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                Type</label>
-                            <input type="text" id="in_product_type" value="{{ $booking->product_type }}"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Nett Weight /
-                                Pcs (Kg)</label>
-                            <input type="number" step="any" id="in_net_pcs" value="{{ $booking->net_weight_pcs }}"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Gross Weight
-                                / Pcs (Kg)</label>
-                            <input type="number" step="any" id="in_gross_pcs"
-                                value="{{ $booking->gross_weight_per_pcs }}"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dose Range
-                                (kGy)</label>
-                            <div class="flex gap-4">
-                                <input type="number" step="any" id="in_dmin" value="{{ $booking->dmin }}"
-                                    placeholder="Min"
-                                    class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                                <input type="number" step="any" id="in_dmax" value="{{ $booking->dmax }}"
-                                    placeholder="Max"
-                                    class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dimension (P
-                                x L x T) cm</label>
-                            @php
-                                $dims = explode('x', $booking->dimension_pack);
-                            @endphp
-                            <div class="flex items-center space-x-2">
-                                <input type="number" id="in_length" value="{{ $dims[0] ?? '' }}" placeholder="P"
-                                    class="w-1/3 px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold">
-                                <input type="number" id="in_width" value="{{ $dims[1] ?? '' }}" placeholder="L"
-                                    class="w-1/3 px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold">
-                                <input type="number" id="in_height" value="{{ $dims[2] ?? '' }}" placeholder="T"
-                                    class="w-1/3 px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                    {{-- PRODUCT INFO GRID --}}
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
                         <div class="space-y-2">
                             <label
-                                class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Quantity</label>
-                            <input type="number" id="in_qty" value="{{ $booking->quantity }}"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Product
+                                Name</label>
+                            <input type="text" id="in_product_name" value="{{ $booking->product_name }}"
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white focus:border-blue-300 transition-all outline-none">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Unit</label>
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Product
+                                Type</label>
+                            <input type="text" id="in_product_type" value="{{ $booking->product_type }}"
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white focus:border-blue-300 transition-all outline-none">
+                        </div>
+                    </div>
+
+                    {{-- WEIGHT GRID --}}
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Nett
+                                Weight / Pcs (Kg)</label>
+                            <input type="number" step="any" id="in_net_pcs" value="{{ $booking->net_weight_pcs }}"
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white focus:border-blue-300 transition-all outline-none">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Gross
+                                Weight / Pcs (Kg)</label>
+                            <input type="number" step="any" id="in_gross_pcs"
+                                value="{{ $booking->gross_weight_per_pcs }}"
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white focus:border-blue-300 transition-all outline-none">
+                        </div>
+                    </div>
+
+                    {{-- DOSE & DIMENSION GRID --}}
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Dose
+                                Range (kGy)</label>
+                            <div class="flex gap-3">
+                                <input type="number" step="any" id="in_dmin" value="{{ $booking->dmin }}"
+                                    placeholder="Min"
+                                    class="w-1/2 px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white transition-all outline-none">
+                                <input type="number" step="any" id="in_dmax" value="{{ $booking->dmax }}"
+                                    placeholder="Max"
+                                    class="w-1/2 px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white transition-all outline-none">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Dimension
+                                (P x L x T) cm</label>
+                            @php $dims = explode('x', $booking->dimension_pack); @endphp
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="number" id="in_length" value="{{ $dims[0] ?? '' }}" placeholder="P"
+                                    class="px-2 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-center font-bold focus:bg-white transition-all outline-none">
+                                <input type="number" id="in_width" value="{{ $dims[1] ?? '' }}" placeholder="L"
+                                    class="px-2 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-center font-bold focus:bg-white transition-all outline-none">
+                                <input type="number" id="in_height" value="{{ $dims[2] ?? '' }}" placeholder="T"
+                                    class="px-2 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-center font-bold focus:bg-white transition-all outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- QTY & UNIT GRID --}}
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Quantity</label>
+                            <input type="number" id="in_qty" value="{{ $booking->quantity }}"
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white transition-all outline-none">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Unit</label>
                             <select id="in_unit"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:bg-white transition-all">
                                 <option value="box" {{ $booking->unit == 'box' ? 'selected' : '' }}>BOX / DUS</option>
                                 <option value="sack" {{ $booking->unit == 'sack' ? 'selected' : '' }}>SACK</option>
                                 <option value="drum" {{ $booking->unit == 'drum' ? 'selected' : '' }}>DRUM</option>
                             </select>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Temp
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Temp
                                 Req.</label>
                             <input type="text" id="in_temp" value="{{ $booking->expect_temp }}" placeholder="None"
-                                class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white transition-all outline-none">
                         </div>
                     </div>
 
                     {{-- LIVE CALCULATION RESULTS --}}
-                    <div class="p-6 space-y-4 border border-gray-100 bg-gray-50 rounded-3xl">
-                        <h3 class="text-[11px] font-black text-blue-600 uppercase tracking-widest ml-1">Calculated Results
-                        </h3>
-                        <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase">Volume/Pcs (cm³)</span>
-                                <p id="res_vol_pcs" class="text-lg font-black text-gray-800">0</p>
+                    <div class="p-6 space-y-6 border border-slate-100 bg-slate-50 rounded-[2rem] md:p-8">
+                        <div class="flex items-center gap-2">
+                            <i class="text-blue-600 fa-solid fa-calculator"></i>
+                            <h3 class="text-[10px] md:text-[11px] font-black text-blue-600 uppercase tracking-widest">
+                                Calculated Results</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 lg:gap-6">
+                            <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Vol/Pcs
+                                    (cm³)</span>
+                                <p id="res_vol_pcs" class="text-lg font-black truncate text-slate-800">0</p>
                             </div>
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase">Total Volume (cm³)</span>
-                                <p id="res_vol_total" class="text-lg font-black text-gray-800">0</p>
+                            <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Total Vol
+                                    (cm³)</span>
+                                <p id="res_vol_total" class="text-lg font-black truncate text-slate-800">0</p>
                             </div>
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase">Nett Total (kg)</span>
-                                <p id="res_net_total" class="text-lg font-black text-gray-800">0</p>
+                            <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Nett Total
+                                    (kg)</span>
+                                <p id="res_net_total" class="text-lg font-black truncate text-slate-800">0</p>
                             </div>
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase">Total Gross (kg)</span>
-                                <p id="res_gross_total" class="text-lg font-black text-gray-800">0</p>
+                            <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Total Gross
+                                    (kg)</span>
+                                <p id="res_gross_total" class="text-lg font-black truncate text-slate-800">0</p>
                             </div>
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase">Density (Nett)</span>
-                                <p id="res_density_nett" class="text-lg font-black text-blue-600">0</p>
+                            <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Density
+                                    (Nett)</span>
+                                <p id="res_density_nett" class="text-lg font-black text-blue-600 truncate">0</p>
                             </div>
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase">Density (Gross)</span>
-                                <p id="res_density_gross" class="text-lg font-black text-blue-600">0</p>
+                            <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Density
+                                    (Gross)</span>
+                                <p id="res_density_gross" class="text-lg font-black text-blue-600 truncate">0</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-8 border-t">
+                    {{-- FOOTER BUTTONS --}}
+                    <div
+                        class="flex flex-col items-center justify-between gap-4 pt-8 border-t border-slate-100 sm:flex-row">
                         <a href="{{ route('admin.bookings') }}"
-                            class="text-sm font-bold text-gray-400 transition-colors hover:text-red-500">Batal</a>
+                            class="w-full text-sm font-bold text-center transition-colors text-slate-400 sm:w-auto hover:text-rose-500">
+                            Batal
+                        </a>
                         <button type="button" onclick="openVerifyModal()"
-                            class="px-10 py-4 text-sm font-black text-white transition-all bg-blue-600 shadow-xl rounded-2xl hover:bg-blue-700">
+                            class="w-full px-12 py-4 text-sm font-black text-white transition-all bg-blue-600 shadow-xl sm:w-auto rounded-2xl hover:bg-blue-700 active:scale-95 shadow-blue-200">
                             Update & Review <i class="ml-2 fa-solid fa-magnifying-glass"></i>
                         </button>
                     </div>

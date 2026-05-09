@@ -22,10 +22,16 @@ class AdminAuthController extends Controller
         if (Auth::guard('admin')->attempt($credentials)) {
             return redirect()->route('admin.dashboard');
         }
+        // Contoh di AdminLoginController
+        // if (!Auth::guard('admin')->attempt($credentials)) {
+        //     return back()->withErrors([
+        //         'email' => 'Credentials do not match our secure records.',
+        //     ])->withInput($request->only('email'));
+        // }
 
         return back()->withErrors([
-            'email' => 'Invalid credentials'
-        ]);
+            'email' => 'INVALID CREDENTIALS: Access denied for the provided secure keys.',
+        ])->withInput($request->only('email'));
     }
 
     public function logout()
