@@ -61,7 +61,7 @@ class AdminBookingController extends Controller
         // return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters'));
     }
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, int $id)
     {
         // dd($request->all()); // Ini akan menghentikan proses dan menampilkan isi data yang dikirim
         $request->validate([
@@ -115,7 +115,7 @@ class AdminBookingController extends Controller
         return view('admin.business.index', compact('customers', 'pageTitle', 'search'));
     }
 
-    public function businessDetail($id)
+    public function businessDetail(int $id)
     {
         $booking = Booking::with(['customer', 'products', 'batches', 'pallets'])->findOrFail($id);
         $isSpecial = false;
@@ -141,7 +141,7 @@ class AdminBookingController extends Controller
         return view('admin.business.detail', compact('booking', 'isSpecial', 'reasons'));
     }
 
-    public function businessApprove(Request $request, $id)
+    public function businessApprove(Request $request, int $id)
     {
         $booking = Booking::findOrFail($id);
         $booking->update(['status' => 'approved']);
@@ -214,7 +214,7 @@ class AdminBookingController extends Controller
     }
 
 
-    public function statusPage($status)
+    public function statusPage(string $status)
     {
         $bookings = Booking::with(['customer', 'products', 'batches', 'pallets'])
             ->where('status', $status)
@@ -296,7 +296,7 @@ class AdminBookingController extends Controller
         }
     }
 
-    public function palletDestroy($id)
+    public function palletDestroy(int $id)
     {
         $pallet = Pallet::findOrFail($id);
         // if ($pallet->status == 'filled')
@@ -383,7 +383,7 @@ class AdminBookingController extends Controller
     /**
      * Menampilkan form edit untuk booking tertentu.
      */
-    public function edit($id)
+    public function edit(int $id)
     {
         // Load booking beserta relasi produknya
         $booking = Booking::with('products')->findOrFail($id);
@@ -421,7 +421,7 @@ class AdminBookingController extends Controller
     /**
      * Memperbarui data booking di database.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $booking = Booking::findOrFail($id);
 
@@ -491,7 +491,7 @@ class AdminBookingController extends Controller
             'code' => $prefix . $sequence
         ]);
     }
-    public function storePlacement(Request $request, $bookingId)
+    public function storePlacement(Request $request, int $bookingId)
     {
         $request->validate([
             'product_names' => 'required|array',
@@ -550,14 +550,14 @@ class AdminBookingController extends Controller
             return back()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
-    public function show($id)
+    public function show(int $id)
     {
         $booking = Booking::with(['customer.contacts', 'products', 'batches', 'pallets'])->findOrFail($id);
 
         return view('admin.bookings.partials.detail-content', compact('booking'));
     }
 
-    public function previewInvoice($id)
+    public function previewInvoice(int $id)
     {
         $booking = Booking::with(['products', 'batches', 'customer.contacts'])->findOrFail($id);
 
@@ -669,7 +669,7 @@ class AdminBookingController extends Controller
         return redirect()->back()->with('success', "Berhasil menambahkan $addedCount petak baru pada Line $line.");
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         try {
             $booking = \App\Models\Booking::findOrFail($id);
@@ -687,7 +687,7 @@ class AdminBookingController extends Controller
             return redirect()->route('admin.bookings')
                 ->with('success', 'Booking and associated pallet contents deleted successfully');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error: ' + $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }

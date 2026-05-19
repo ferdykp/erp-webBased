@@ -19,8 +19,11 @@
                     <label for="name" class="block text-sm font-medium text-slate-700">Nama Lengkap <span
                             class="text-red-500">*</span></label>
                     <input type="text" name="name" id="name" value="{{ old('name', $warehousePic->name) }}"
-                        class="w-full mt-1 border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('name') border-red-500 @enderror"
-                        required>
+                        @class([
+                            'w-full mt-1 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                            'border-red-500' => $errors->has('name'),
+                            'border-slate-300' => !$errors->has('name'),
+                        ]) required>
                     @error('name')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
@@ -31,8 +34,11 @@
                     <label for="email" class="block text-sm font-medium text-slate-700">Alamat Email <span
                             class="text-red-500">*</span></label>
                     <input type="email" name="email" id="email" value="{{ old('email', $warehousePic->email) }}"
-                        class="w-full mt-1 border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('email') border-red-500 @enderror"
-                        required>
+                        @class([
+                            'w-full mt-1 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                            'border-red-500' => $errors->has('email'),
+                            'border-slate-300' => !$errors->has('email'),
+                        ]) required>
                     @error('email')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
@@ -42,7 +48,11 @@
                 <div>
                     <label for="phone" class="block text-sm font-medium text-slate-700">Nomor Telepon</label>
                     <input type="text" name="phone" id="phone" value="{{ old('phone', $warehousePic->phone) }}"
-                        class="w-full mt-1 border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('phone') border-red-500 @enderror">
+                        @class([
+                            'w-full mt-1 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                            'border-red-500' => $errors->has('phone'),
+                            'border-slate-300' => !$errors->has('phone'),
+                        ])>
                     @error('phone')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror

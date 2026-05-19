@@ -51,18 +51,43 @@
 
         {{-- MAIN CONTAINER --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2rem] md:rounded-[3rem] overflow-hidden">
+
+            {{-- TOPBAR TABLE: FILTER, SEARCH & ACTION BUTTON --}}
             <div
-                class="flex flex-col items-start justify-between gap-4 p-6 border-b sm:flex-row sm:items-center border-slate-50">
-                <h3 class="text-lg font-bold text-slate-800">Order List</h3>
+                class="flex flex-col items-stretch justify-between gap-4 p-6 border-b lg:flex-row lg:items-center border-slate-50">
+                <div class="flex flex-col flex-1 gap-3 sm:flex-row sm:items-center">
+                    <h3 class="text-lg font-bold text-slate-800 shrink-0">Order List</h3>
+
+                    {{-- INPUT SEARCH BOX --}}
+                    <div class="relative w-full max-w-md">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                            <i class="text-sm fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="bookingSearchInput" onkeyup="filterBookingList()"
+                            placeholder="Search by customer, code (#BK-xxxx), or product..."
+                            class="w-full py-2.5 pl-11 pr-4 text-xs font-medium bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 placeholder-slate-400 transition-all">
+                    </div>
+                </div>
+
                 <a href="{{ route('admin.bookings.create') }}"
-                    class="flex items-center justify-center w-full gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg sm:w-auto rounded-xl shadow-blue-100 active:scale-95">
+                    class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-xl shadow-blue-100 active:scale-95">
                     <i class="fa-solid fa-plus"></i>
                     <span>Add New Order</span>
                 </a>
             </div>
 
+            {{-- EMPTY DATA ALERT COMPONENT --}}
+            <div id="emptySearchState" class="flex-col items-center justify-center hidden p-12 text-center bg-white">
+                <div class="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-slate-50 text-slate-400">
+                    <i class="text-xl fa-solid fa-box-open"></i>
+                </div>
+                <h4 class="text-sm font-bold text-slate-700">No Orders Found</h4>
+                <p class="max-w-xs mt-1 text-xs text-slate-400">We couldn't find any match for your keyword. Try checking
+                    for typos or use different keywords.</p>
+            </div>
+
             {{-- DESKTOP TABLE VIEW (Visible on MD and up) --}}
-            <div class="hidden overflow-x-auto md:block">
+            <div id="desktopTableContainer" class="hidden overflow-x-auto md:block">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="text-[10px] font-black tracking-[0.15em] text-slate-400 uppercase bg-slate-50/50">
@@ -75,7 +100,10 @@
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         @foreach ($bookings as $booking)
-                            <tr class="transition-colors group hover:bg-slate-50/50">
+                            <tr class="transition-colors group hover:bg-slate-50/50 booking-row-item"
+                                data-search-customer="{{ strtolower($booking->customer->contacts->first()->name ?? 'guest') }}"
+                                data-search-code="{{ strtolower($booking->booking_code) }}"
+                                data-search-product="{{ strtolower($booking->products->first()->product_name ?? '-') }}">
                                 <td class="px-8 py-5">
                                     <div class="flex items-center gap-4 text-left">
                                         <div
@@ -142,9 +170,12 @@
             </div>
 
             {{-- MOBILE/CARD VIEW (Visible on SM and below) --}}
-            <div class="p-4 space-y-4 md:hidden bg-slate-50/50">
+            <div id="mobileCardContainer" class="p-4 space-y-4 md:hidden bg-slate-50/50">
                 @foreach ($bookings as $booking)
-                    <div class="p-5 space-y-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
+                    <div class="p-5 space-y-4 bg-white border shadow-sm border-slate-100 rounded-2xl booking-card-item"
+                        data-search-customer="{{ strtolower($booking->customer->contacts->first()->name ?? 'guest') }}"
+                        data-search-code="{{ strtolower($booking->booking_code) }}"
+                        data-search-product="{{ strtolower($booking->products->first()->product_name ?? '-') }}">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center gap-3">
                                 <div
@@ -163,7 +194,8 @@
                         <div class="grid grid-cols-2 gap-4 py-3 border-y border-slate-50">
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Date</p>
-                                <p class="text-xs font-bold text-slate-700">{{ $booking->created_at->format('d M Y') }}</p>
+                                <p class="text-xs font-bold text-slate-700">{{ $booking->created_at->format('d M Y') }}
+                                </p>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Product</p>
@@ -204,7 +236,8 @@
                 @endforeach
             </div>
 
-            <div class="px-6 py-6 border-t md:px-10 border-slate-50">
+            {{-- PAGINATION SECTIONS --}}
+            <div id="paginationBlock" class="px-6 py-6 border-t md:px-10 border-slate-50">
                 {{ $bookings->links() }}
             </div>
         </div>
@@ -250,6 +283,71 @@
 
 @push('scripts')
     <script>
+        // CLIENT-SIDE SEARCH FUNCTION
+        function filterBookingList() {
+            const query = document.getElementById('bookingSearchInput').value.toLowerCase().trim();
+            const desktopRows = document.querySelectorAll('.booking-row-item');
+            const mobileCards = document.querySelectorAll('.booking-card-item');
+            const emptyState = document.getElementById('emptySearchState');
+            const desktopTable = document.getElementById('desktopTableContainer');
+            const mobileContainer = document.getElementById('mobileCardContainer');
+            const paginationBlock = document.getElementById('paginationBlock');
+
+            let visibleCount = 0;
+
+            // 1. Filter desktop rows
+            desktopRows.forEach(row => {
+                const customer = row.getAttribute('data-search-customer');
+                const code = row.getAttribute('data-search-code');
+                const product = row.getAttribute('data-search-product');
+
+                if (customer.includes(query) || code.includes(query) || product.includes(query)) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            // 2. Filter mobile cards
+            let mobileVisibleCount = 0;
+            mobileCards.forEach(card => {
+                const customer = card.getAttribute('data-search-customer');
+                const code = card.getAttribute('data-search-code');
+                const product = card.getAttribute('data-search-product');
+
+                if (customer.includes(query) || code.includes(query) || product.includes(query)) {
+                    card.style.setProperty('display', '', 'important');
+                    mobileVisibleCount++;
+                } else {
+                    card.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            // Tentukan target visibility berdasarkan ukuran layar saat ini
+            const totalVisible = window.innerWidth >= 768 ? visibleCount : mobileVisibleCount;
+
+            // 3. Handle Empty State & Visibility Layout
+            if (totalVisible === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                desktopTable.classList.add('md:hidden');
+                mobileContainer.classList.add('hidden');
+                if (paginationBlock) paginationBlock.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+                desktopTable.classList.remove('md:hidden');
+                mobileContainer.classList.remove('hidden');
+                if (paginationBlock) paginationBlock.classList.remove('hidden');
+            }
+
+            // Kembalikan ke layout default jika input dikosongkan
+            if (query === "") {
+                if (paginationBlock) paginationBlock.classList.remove('hidden');
+            }
+        }
+
         function toggleDetailModal(id, show) {
             const modal = document.getElementById(`modal-detail-${id}`);
             if (!modal) return;

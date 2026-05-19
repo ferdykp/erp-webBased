@@ -49,13 +49,13 @@ class UserAdminController extends Controller
         return redirect()->route('admin.profile')->with('success', 'Add Admin Success');
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
         $user = Admin::findOrFail($id);
         return view('admin.profile.edit', compact('user'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $user = Admin::findOrFail($id);
         $request->validate([
@@ -88,7 +88,7 @@ class UserAdminController extends Controller
         return back()->with('success', 'Password berhasil diubah!');
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $admin = Admin::findOrFail($id);
         $admin->delete();
