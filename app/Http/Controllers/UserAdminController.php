@@ -49,16 +49,15 @@ class UserAdminController extends Controller
         return redirect()->route('admin.profile')->with('success', 'Add Admin Success');
     }
 
-    public function edit()
+    public function edit($id)
     {
-        $user = Auth::guard('admin')->user();
+        $user = Admin::findOrFail($id);
         return view('admin.profile.edit', compact('user'));
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $user = Auth::guard('admin')->user();
-
+        $user = Admin::findOrFail($id);
         $request->validate([
             'name'  => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:admins,email,' . $user->id],
@@ -89,12 +88,11 @@ class UserAdminController extends Controller
         return back()->with('success', 'Password berhasil diubah!');
     }
 
-    public function destroy()
+    public function destroy($id)
     {
-        $admins = Admin::findOrFail();
+        $admin = Admin::findOrFail($id);
+        $admin->delete();
 
-        $admins = delete();
-
-        return redirect()->route('admin.profile');
+        return redirect()->route('admin.profile.profileList')->with('success', 'Admin Berhasil Dihapus');
     }
 }

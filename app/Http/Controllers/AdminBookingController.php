@@ -7,7 +7,8 @@ use App\Models\BookingProduct;
 use App\Models\Customer;
 use App\Models\Pallet;
 use App\Models\Porter;
-use Illuminate\Support\Str;
+use App\Models\WarehousePic;
+// use Illuminate\Support\Str;
 // use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +32,10 @@ class AdminBookingController extends Controller
         $pallets = Pallet::orderBy('line')
             ->orderBy('slot_section')
             ->get();
+        $warehousePics = WarehousePic::where('is_active', true)->get();
 
-        return view('admin.dashboard.index', compact('bookings', 'porters', 'pallets'));
+
+        return view('admin.dashboard.index', compact('bookings', 'porters', 'pallets', 'warehousePics'));
     }
 
     public function allOrder()
@@ -51,8 +54,10 @@ class AdminBookingController extends Controller
             ->orderBy('slot_section')
             ->get();
 
+        $warehousePics = WarehousePic::where('is_active', true)->get();
+
         // Diarahkan ke view table (index.blade.php di folder bookings)
-        return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters', 'pallets'));
+        return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters', 'pallets', 'warehousePics'));
         // return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters'));
     }
 
@@ -225,7 +230,10 @@ class AdminBookingController extends Controller
             ->orderBy('slot_section')
             ->get();
 
-        return view('admin.bookings.index', compact('bookings', 'pageTitle', 'status', 'porters', 'pallets'));
+        $warehousePics = WarehousePic::where('is_active', true)->get();
+
+
+        return view('admin.bookings.index', compact('bookings', 'pageTitle', 'status', 'porters', 'pallets', 'warehousePics'));
         // return view('admin.bookings.index', compact('bookings', 'pageTitle', 'status', 'porters'));
     }
 

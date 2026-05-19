@@ -28,12 +28,14 @@
                     </div>
 
                     {{-- Action Buttons --}}
-                    <div class="flex flex-col w-full gap-3 mt-6 sm:mt-0 sm:w-auto sm:flex-row">
-                        <a href="{{ route('admin.profile.profileList') }}"
-                            class="flex items-center justify-center px-6 py-3 text-sm font-bold transition-all border text-slate-700 border-slate-100 bg-slate-50 rounded-xl sm:rounded-2xl hover:bg-slate-100 hover:shadow-md">
-                            <i class="mr-2 fa-solid fa-list-ul"></i> Profile List
-                        </a>
-                    </div>
+                    @if (in_array(auth()->user()->role, ['superadmin', 'manager']))
+                        <div class="flex flex-col w-full gap-3 mt-6 sm:mt-0 sm:w-auto sm:flex-row">
+                            <a href="{{ route('admin.profile.profileList') }}"
+                                class="flex items-center justify-center px-6 py-3 text-sm font-bold transition-all border text-slate-700 border-slate-100 bg-slate-50 rounded-xl sm:rounded-2xl hover:bg-slate-100 hover:shadow-md">
+                                <i class="mr-2 fa-solid fa-list-ul"></i> Profile List
+                            </a>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- User Basic Info --}}
@@ -100,8 +102,8 @@
 
                     <div class="pt-2">
                         <a class="inline-flex items-center text-sm font-black text-blue-600 transition-all hover:text-blue-700 group"
-                            href="{{ route('admin.profile.edit') }}">
-                            Ganti Password
+                            href="{{ route('admin.profile.edit', $user->id) }}">
+                            Edit Profile
                             <i class="ml-2 transition-transform fa-solid fa-arrow-right group-hover:translate-x-1"></i>
                         </a>
                     </div>

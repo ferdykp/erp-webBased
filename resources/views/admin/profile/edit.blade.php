@@ -17,7 +17,7 @@
         <div class="space-y-6">
 
             {{-- FORM INFORMASI PRIBADI --}}
-            <form action="{{ route('admin.profile.update') }}" method="POST"
+            <form action="{{ route('admin.profile.update', $user->id) }}" method="POST"
                 class="bg-white p-6 sm:p-8 md:p-10 border border-slate-100 shadow-sm rounded-[1.5rem] sm:rounded-[2.5rem]">
                 @csrf
                 @method('PUT')

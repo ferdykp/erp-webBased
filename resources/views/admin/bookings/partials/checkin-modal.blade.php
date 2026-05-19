@@ -175,10 +175,17 @@
                 <div class="hidden step-content" id="step2">
                     <div class="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 md:gap-6">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">PIC
-                                Warehouse</label>
-                            <input type="text" name="pic_warehouse" placeholder="Nama penanggung jawab..." required
-                                class="w-full px-5 py-3.5 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">
+                                PIC Warehouse
+                            </label>
+                            <select name="pic_warehouse" required
+                                class="w-full px-5 py-3.5 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500 text-gray-700">
+                                <option value="">Pilih PIC Warehouse</option>
+                                @foreach ($warehousePics as $pic)
+                                    <option value="{{ $pic->name }}">{{ $pic->name }} (Shift:
+                                        {{ $pic->shift ?? '-' }})</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Porter
