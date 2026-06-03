@@ -243,7 +243,7 @@ Route::prefix('admin')
         Route::middleware(['role:superadmin|manager|cargo_admin'])->group(function () {
             Route::get('/bookings', [AdminBookingController::class, 'allOrder'])->name('admin.bookings');
             Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
-            Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update');
+            Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update-status');
             Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
             Route::get('/admin/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
             Route::put('/admin/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
