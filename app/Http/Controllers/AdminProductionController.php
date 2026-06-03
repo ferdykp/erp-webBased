@@ -315,4 +315,33 @@ class AdminProductionController extends Controller
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
     }
+
+    // 🟢 TAMBAHKAN METHOD INI DI DALAM CONTROLLER
+    public function updateDuration(Request $request)
+    {
+        // 1. Validasi input
+        $request->validate([
+            'batch_id'       => 'required|exists:booking_batches,id',
+            'offline_at'     => 'nullable|date',
+            'finished_at'    => 'nullable|date',
+            'total_duration' => 'required|integer|min:0',
+        ]);
+
+        try {
+            // 2. Cari batch berdasarkan ID
+            $batch = BookingBatch::findOrFail($request->batch_id);
+
+            // 3. Update data waktu dan total durasi
+            $batch->update([
+                // Mengubah format dari datetime-local picker (T) kembali ke format database standar Y-m-d H:i:s
+                'offline_at'     => $request->offline_at ? date('Y-m-d H:i:s', strtotime($request->offline_at)) : null,
+                'finished_at'    => $request->finished_at ? date('Y-m-d H:i:s', strtotime($request->finished_at)) : null,
+                'total_duration' => $request->total_duration,
+            ]);
+
+            return back()->with('success', "Durasi untuk Batch #{$batch->batch_number} berhasil diperbarui.");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui durasi: ' . $e->getMessage());
+        }
+    }
 }
