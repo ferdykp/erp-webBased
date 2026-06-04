@@ -64,7 +64,7 @@ class UnirradiatedExport implements WithMapping, FromCollection, WithStyles, Wit
         $sheet->mergeCells('A2:F2');
 
         // Sidebar Label "Unirradiated"
-        $sheet->setCellValue('A3', 'Irradiated');
+        $sheet->setCellValue('A3', 'Unirradiated');
         $sheet->mergeCells('A3:B11');
 
         // Label Baris

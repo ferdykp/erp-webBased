@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 // use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Carbon\Carbon;
 
-class UnirradiatedExport implements WithMapping, FromCollection, WithStyles, WithEvents
+class IrradiatedExport implements WithMapping, FromCollection, WithStyles, WithEvents
 {
     protected $id;
     protected $bookingInstance;
