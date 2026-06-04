@@ -195,8 +195,18 @@
 
     <script>
         // Fungsi pembantu agar angka rapi
+        // function formatNum(num, decimals = 2) {
+        //     if (num === null || num === undefined || isNaN(num)) return "0";
+        //     return new Intl.NumberFormat('id-ID', {
+        //         minimumFractionDigits: 0,
+        //         maximumFractionDigits: decimals
+        //     }).format(num);
+        // }
         function formatNum(num, decimals = 2) {
-            if (num === null || num === undefined || isNaN(num)) return "0";
+            // Jika nilainya kosong, null, atau tidak diisi, kembalikan string kosong
+            if (num === null || num === undefined || num === "") return "";
+            if (isNaN(num)) return "0";
+
             return new Intl.NumberFormat('id-ID', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: decimals
@@ -273,8 +283,22 @@
                 document.getElementById('check_product_name').innerText = prodName.value;
                 document.getElementById('check_qty').innerText = formatNum(qtyVal, 0);
                 document.getElementById('check_unit').innerText = document.getElementById('in_unit').value;
-                document.getElementById('check_dmin').innerText = formatNum(document.getElementById('in_dmin').value, 2);
-                document.getElementById('check_dmax').innerText = formatNum(document.getElementById('in_dmax').value, 2);
+                // document.getElementById('check_dmin').innerText = formatNum(document.getElementById('in_dmin').value, 2);
+                // document.getElementById('check_dmax').innerText = formatNum(document.getElementById('in_dmax').value, 2);
+                const dminValue = document.getElementById('in_dmin').value;
+                const dmaxValue = document.getElementById('in_dmax').value;
+
+                // Ambil element pembungkus teks dose (cari tag <p class="font-bold text-emerald-600"> di partials)
+                const doseContainer = document.getElementById('check_dmin').parentElement;
+
+                if (dmaxValue) {
+                    // Jika dmax diisi, tampilkan "Min - Max kGy"
+                    doseContainer.innerHTML =
+                        `<span id="check_dmin">${formatNum(dminValue, 2)}</span> - <span id="check_dmax">${formatNum(dmaxValue, 2)}</span> kGy`;
+                } else {
+                    // Jika dmax kosong, hanya tampilkan "Min kGy"
+                    doseContainer.innerHTML = `<span id="check_dmin">${formatNum(dminValue, 2)}</span> kGy`;
+                }
                 document.getElementById('check_dimension').innerText =
                     `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value} cm`;
 
@@ -290,8 +314,11 @@
                 document.getElementById('final_product_type').value = document.getElementById('in_product_type').value;
                 document.getElementById('final_qty').value = qtyVal;
                 document.getElementById('final_unit').value = document.getElementById('in_unit').value;
-                document.getElementById('final_dmin').value = document.getElementById('in_dmin').value || 0;
-                document.getElementById('final_dmax').value = document.getElementById('in_dmax').value || 0;
+                // document.getElementById('final_dmin').value = document.getElementById('in_dmin').value || 0;
+                // document.getElementById('final_dmax').value = document.getElementById('in_dmax').value;
+                // Biarkan kosong jika memang user tidak menginputkan apa-apa
+                document.getElementById('final_dmin').value = document.getElementById('in_dmin').value;
+                document.getElementById('final_dmax').value = document.getElementById('in_dmax').value;
                 document.getElementById('final_dim_pack').value =
                     `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value}`;
                 document.getElementById('final_temp').value = document.getElementById('in_temp').value;

@@ -86,8 +86,8 @@
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dose</p>
-                                <p class="font-bold text-emerald-600"><span id="check_dmin">0</span> - <span
-                                        id="check_dmax">0</span> kGy</p>
+                                <p class="font-bold text-emerald-600"><span id="check_dmin"></span> - <span
+                                        id="check_dmax"></span> kGy</p>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dimension</p>
@@ -308,7 +308,7 @@
             qty: parseFloat(qtyInput.value) || 0,
             unit: document.getElementById('in_unit').value,
             dmin: parseFloat(document.getElementById('in_dmin').value) || 0,
-            dmax: parseFloat(document.getElementById('in_dmax').value) || 0,
+            dmax: parseFloat(document.getElementById('in_dmax').value),
             net_pcs: parseFloat(document.getElementById('in_net_pcs').value) || 0,
             gross_pcs: parseFloat(document.getElementById('in_gross_pcs').value) || 0,
             l: parseFloat(document.getElementById('in_length').value) || 0,
