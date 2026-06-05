@@ -437,15 +437,18 @@
             const content = document.getElementById('modalContent');
             const data = button.dataset;
 
-            // Mapping Data
+            // Mapping Data dengan pembersihan angka 0 di belakang koma menggunakan parseFloat
             modal.querySelector('#headerBookingCode').textContent = `Order #${data.bookingCode}`;
             modal.querySelector('#detailCompanyName').textContent = data.companyName;
             modal.querySelector('#detailProductName').textContent = data.productName;
+
+            // Quantity & Unit
             modal.querySelector('#detailBatchInfo').textContent = `${parseFloat(data.quantity)} ${data.unit}`;
 
-            modal.querySelector('#detailTargetDose').textContent = `${data.targetDose} kGy`;
-            modal.querySelector('#detailBeamSpeed').textContent = `${data.beamSpeed} m/s`;
-            modal.querySelector('#detailFrequency').textContent = `${data.frequency} Hz`;
+            // Parameter Proses (Diformat agar tidak kebanyakan 0)
+            modal.querySelector('#detailTargetDose').textContent = `${parseFloat(data.targetDose)} kGy`;
+            modal.querySelector('#detailBeamSpeed').textContent = `${parseFloat(data.beamSpeed)} m/s`;
+            modal.querySelector('#detailFrequency').textContent = `${parseFloat(data.frequency)} Hz`;
             modal.querySelector('#detailLoadingMode').textContent = data.loadingMode;
 
             // Set Form Action
@@ -480,9 +483,6 @@
             } else {
                 timerDisplay.textContent = "Time not recorded";
             }
-
-            // Set Form Action & Show Modal
-            document.getElementById('detailFinishForm').action = `/admin/production/batches/${data.batchId}/finish`;
 
             // Reset Alpine State
             try {
