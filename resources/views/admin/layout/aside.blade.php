@@ -208,22 +208,22 @@
                         class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-work')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
                         1. Workshop Team Daily Work
                     </a>
-                    {{-- <a href="{{ route('admin.report.nuctech', 'processing-record') }}"
-                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'processing-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                        2. Irradiation Processing Record
+                    <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-schedule')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        2. Daily Processing Schedule
                     </a>
                     <a href="{{ route('admin.report.nuctech', 'delivery-form') }}"
                         class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'delivery-form')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
                         3. Product Processing & Delivery
                     </a>
-                    <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}"
-                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-schedule')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                        4. Daily Processing Schedule
+                    <a href="{{ route('admin.report.nuctech', 'processing-record') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'processing-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        4. Irradiation Processing Record
                     </a>
                     <a href="{{ route('admin.report.nuctech', 'equipment-record') }}"
                         class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'equipment-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
                         5. Equipment Operation Record
-                    </a> --}}
+                    </a>
                 </div>
             </div>
         @endif

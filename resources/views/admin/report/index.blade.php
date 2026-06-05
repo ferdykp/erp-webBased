@@ -105,9 +105,9 @@
                                             'delivery-inbound' => 'jts_delivery_inbound',
                                             'irradiated-card' => 'jts_irradiated_card',
                                             'daily-work' => 'nuc_daily_work',
-                                            'processing-record' => 'nuc_processing_record',
-                                            'delivery-form' => 'nuc_delivery_form',
                                             'daily-schedule' => 'nuc_daily_schedule',
+                                            'delivery-form' => 'nuc_delivery_form',
+                                            'processing-record' => 'nuc_processing_record',
                                             'equipment-record' => 'nuc_equipment_record',
                                         ];
 

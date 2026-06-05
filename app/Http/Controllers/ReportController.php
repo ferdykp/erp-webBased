@@ -51,24 +51,47 @@ class ReportController extends Controller
     //     return Excel::download(new BookingDetailExport($id), $fileName);
     // }
 
+    // public function exportExcel($id, $type)
+    // {
+    //     $report = Booking::with(['customer', 'products', 'pallets'])->findOrFail($id);
+
+    //     // Seleksi class berdasarkan parameter type dari URL
+    //     return match ($type) {
+    //         // JTS Groups
+    //         'jts_unirradiated_card' => Excel::download(new UnirradiatedExport($report), "JTS_Unirradiated_{$report->booking_code}.xlsx"),
+    //         'jts_delivery_outbound' => Excel::download(new DeliveryOutboundExport($report), "JTS_Outbound_{$report->booking_code}.xlsx"),
+    //         'jts_delivery_inbound'  => Excel::download(new DeliveryInboundExport($report), "JTS_Inbound_{$report->booking_code}.xlsx"),
+    //         'jts_irradiated_card'   => Excel::download(new IrradiatedExport($report), "JTS_Irradiated_{$report->booking_code}.xlsx"),
+
+    //         // Nuctech Groups
+    //         'nuc_daily_work'        => Excel::download(new DailyWorkExport($report), "Nuc_Daily_Work_{$report->booking_code}.xlsx"),
+    //         'nuc_processing_record' => Excel::download(new ProcessingRecordExport($report), "Nuc_Processing_{$report->booking_code}.xlsx"),
+    //         'nuc_delivery_form'     => Excel::download(new NucDeliveryExport($report), "Nuc_Delivery_{$report->booking_code}.xlsx"),
+    //         'nuc_daily_schedule'    => Excel::download(new ScheduleExport($report), "Nuc_Schedule_{$report->booking_code}.xlsx"),
+    //         'nuc_equipment_record'  => Excel::download(new EquipmentExport($report), "Nuc_Equipment_{$report->booking_code}.xlsx"),
+
+    //         default => abort(404, "Format laporan tidak terdaftar"),
+    //     };
+    // }
     public function exportExcel($id, $type)
     {
-        $report = Booking::with(['customer', 'products', 'pallets'])->findOrFail($id);
+        // Cukup pastikan ID-nya ada di database terlebih dahulu
+        $report = Booking::findOrFail($id);
 
-        // Seleksi class berdasarkan parameter type dari URL
+        // Kirim $id (bukan $report) ke dalam class Export masing-masing
         return match ($type) {
             // JTS Groups
-            'jts_unirradiated_card' => Excel::download(new UnirradiatedExport($report), "JTS_Unirradiated_{$report->booking_code}.xlsx"),
-            'jts_delivery_outbound' => Excel::download(new DeliveryOutboundExport($report), "JTS_Outbound_{$report->booking_code}.xlsx"),
-            'jts_delivery_inbound'  => Excel::download(new DeliveryInboundExport($report), "JTS_Inbound_{$report->booking_code}.xlsx"),
-            'jts_irradiated_card'   => Excel::download(new IrradiatedExport($report), "JTS_Irradiated_{$report->booking_code}.xlsx"),
+            'jts_unirradiated_card' => Excel::download(new UnirradiatedExport($id), "JTS_Unirradiated_{$report->booking_code}.xlsx"),
+            'jts_delivery_outbound' => Excel::download(new DeliveryOutboundExport($id), "JTS_Outbound_{$report->booking_code}.xlsx"),
+            'jts_delivery_inbound'  => Excel::download(new DeliveryInboundExport($id), "JTS_Inbound_{$report->booking_code}.xlsx"),
+            'jts_irradiated_card'   => Excel::download(new IrradiatedExport($id), "JTS_Irradiated_{$report->booking_code}.xlsx"),
 
             // Nuctech Groups
-            'nuc_daily_work'        => Excel::download(new DailyWorkExport($report), "Nuc_Daily_Work_{$report->booking_code}.xlsx"),
-            'nuc_processing_record' => Excel::download(new ProcessingRecordExport($report), "Nuc_Processing_{$report->booking_code}.xlsx"),
-            'nuc_delivery_form'     => Excel::download(new NucDeliveryExport($report), "Nuc_Delivery_{$report->booking_code}.xlsx"),
-            'nuc_daily_schedule'    => Excel::download(new ScheduleExport($report), "Nuc_Schedule_{$report->booking_code}.xlsx"),
-            'nuc_equipment_record'  => Excel::download(new EquipmentExport($report), "Nuc_Equipment_{$report->booking_code}.xlsx"),
+            'nuc_daily_work'        => Excel::download(new DailyWorkExport($id), "Nuc_Daily_Work_{$report->booking_code}.xlsx"),
+            'nuc_processing_record' => Excel::download(new ProcessingRecordExport($id), "Nuc_Processing_{$report->booking_code}.xlsx"),
+            'nuc_delivery_form'     => Excel::download(new NucDeliveryExport($id), "Nuc_Delivery_{$report->booking_code}.xlsx"),
+            'nuc_daily_schedule'    => Excel::download(new ScheduleExport($id), "Nuc_Schedule_{$report->booking_code}.xlsx"),
+            'nuc_equipment_record'  => Excel::download(new EquipmentExport($id), "Nuc_Equipment_{$report->booking_code}.xlsx"),
 
             default => abort(404, "Format laporan tidak terdaftar"),
         };

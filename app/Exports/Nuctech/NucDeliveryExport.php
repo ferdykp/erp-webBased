@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Carbon\Carbon;
 
 class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithMapping
 {
@@ -20,8 +21,8 @@ class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithM
     public function __construct($id)
     {
         $this->id = $id;
-        // Menggunakan find() untuk memastikan kita mendapat model instance tunggal
-        $this->bookingInstance = Booking::with(['customer', 'products'])->find($this->id);
+        // Ambil satu model instance dengan eager loading agar sinkron dengan data pilihan user
+        $this->bookingInstance = Booking::with(['customer.contacts', 'products', 'batches'])->find($this->id);
     }
 
     public function collection()
@@ -31,94 +32,181 @@ class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithM
 
     public function map($row): array
     {
-        // Mencegah data mentah muncul otomatis di kolom kanan
         return [];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Safe access model
+        // Proteksi objek single model
         $booking = ($this->bookingInstance instanceof \Illuminate\Support\Collection)
             ? $this->bookingInstance->first()
             : $this->bookingInstance;
 
-        if (!$booking) return [];
+        if (!$booking) {
+            $sheet->setCellValue('A1', 'Data Tidak Ditemukan');
+            return [];
+        }
 
-        $product = $booking->products->first();
+        $contact = $booking->customer->contacts->first();
+        $contactName = $contact ? $contact->name : '-';
+        $products = $booking->products;
 
-        // --- HEADER ATAS ---
-        $sheet->setCellValue('A1', 'Irradiated Product Processing and Delivery Order');
-        $sheet->mergeCells('A1:I1');
+        // --- LOGIKA KALKULASI WAKTU (PROCESSING TIME) ---
+        // Kita ambil offline_at terkecil (paling awal) dan finished_at terbesar (paling akhir)
+        $startTime = $booking->batches->min('offline_at');
+        $endTime = $booking->batches->max('finished_at');
 
-        $sheet->setCellValue('A2', "Processing task order number: Number: " . ($booking->booking_code ?? ''));
-        $sheet->mergeCells('A2:I2');
+        $durationText = '-';
+        if ($startTime && $endTime) {
+            $start = Carbon::parse($startTime);
+            $end = Carbon::parse($endTime);
 
-        // Baris Nama Customer & Tanggal
-        $sheet->setCellValue('A3', 'Customer Name');
-        $sheet->mergeCells('B3:E3');
-        $sheet->setCellValue('B3', $booking->customer->company_name ?? '-');
+            // Gunakan round() untuk membulatkan desimal ke angka bulat terdekat
+            $diffInMinutes = round($start->diffInMinutes($end));
 
-        $sheet->setCellValue('F3', 'Processing date');
-        $sheet->mergeCells('G3:I3');
-        $sheet->setCellValue('G3', $booking->created_at ? $booking->created_at->format('d/m/Y') : '-');
+            // Output akan bersih: 15:33 - 15:36 (3 min)
+            $durationText = $start->format('H:i') . ' - ' . $end->format('H:i') . ' (' . $diffInMinutes . ' min)';
+        }
 
-        // --- TABLE HEADERS (Baris 4) ---
-        $sheet->setCellValue('A4', "Serial\nNumber");
-        $sheet->setCellValue('B4', 'Product Name');
-        $sheet->setCellValue('C4', 'Packaging specifications');
-        $sheet->setCellValue('D4', 'quantity');
-        $sheet->setCellValue('E4', 'Weight ( kg )');
-        $sheet->setCellValue('F4', 'Dosage ( kGy )');
-        $sheet->setCellValue('G4', "Processing\nTime (minutes)");
-        $sheet->setCellValue('H4', 'Remark');
-        $sheet->mergeCells('H4:I4');
+        // --- KONSTRUKSI FORM (Berdasarkan Gambar: Irradiated Product Processing and Delivery Order) ---
 
-        // --- DATA ROWS (Baris 5, 6, 7) ---
-        // Row 1
-        $sheet->setCellValue('A5', '1');
-        $sheet->setCellValue('B5', strtoupper($product->product_name ?? '-'));
-        $sheet->setCellValue('C5', ($product->unit ?? 'none')); // Statis sesuai gambar
-        $sheet->setCellValue('D5', ($product->quantity ?? 0));
-        $sheet->setCellValue('E5', (($product->total_gross_weight ?? 0) / 1000) . ' ton');
-        $sheet->setCellValue('F5', ($product->dmin ?? 0) . 'kGy');
-        $sheet->setCellValue('G5', '((Fill By Yourself))');
-        $sheet->mergeCells('H5:I5');
+        // 1. Judul Utama (Baris 2)
+        $sheet->setCellValue('A2', 'Irradiated Product Processing and Delivery Order');
+        $sheet->mergeCells('A2:H2');
 
-        // Row 2 & 3 (Contoh kosong sesuai gambar)
-        $sheet->setCellValue('A6', '2');
-        $sheet->mergeCells('H6:I6');
-        $sheet->setCellValue('A7', '3');
-        $sheet->mergeCells('H7:I7');
+        // 2. Processing Task Order Number (Baris 3)
+        $sheet->setCellValue('A3', 'Processing task order number: Number: ' . ($booking->booking_code ?? '-'));
+        $sheet->mergeCells('A3:H3');
 
-        // --- FOOTER SECTION ---
-        // Other matters
-        $sheet->setCellValue('A8', 'Other matters:');
-        $sheet->mergeCells('A8:I8');
+        // 3. Header Info Customer & Processing Date (Baris 4 & 5)
+        $sheet->setCellValue('A4', 'Customer Name');
+        $sheet->mergeCells('A4:D4');
+        $sheet->setCellValue('E4', 'Processing date');
+        $sheet->mergeCells('E4:H4');
 
-        // Signatures Row
-        $sheet->setCellValue('A9', 'Shift Leader');
-        $sheet->mergeCells('B9:C9');
+        $sheet->setCellValue('A5', $contactName);
+        $sheet->mergeCells('A5:D5');
+        $sheet->setCellValue('E5', $booking->arrival_time ? Carbon::parse($booking->arrival_time)->format('d/m/Y') : '-');
+        $sheet->mergeCells('E5:H5');
 
-        $sheet->setCellValue('D9', 'Production Manager');
-        $sheet->mergeCells('E9:F9');
+        // 4. Header Tabel Utama (Baris 6)
+        $headers = [
+            'A6' => 'Serial Number',
+            'B6' => 'Product Name',
+            'C6' => 'Packaging specifications',
+            'D6' => 'quantity',
+            'E6' => 'Weight ( kg )',
+            'F6' => 'Dosage ( kGy )',
+            'G6' => 'Processing Time (minutes)',
+            'H6' => 'Remark'
+        ];
+        foreach ($headers as $cell => $text) {
+            $sheet->setCellValue($cell, $text);
+        }
 
-        $sheet->setCellValue('G9', "Marketing\nDepartment");
-        $sheet->mergeCells('H9:I9');
+        // 5. Data Loop Grid (Sesuai Gambar ada 3 baris slot data utama: Baris 7, 8, 9)
+        $startRow = 7;
+        $maxRows = 3;
 
-        // --- STYLING ---
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        for ($i = 0; $i < $maxRows; $i++) {
+            $currentRow = $startRow + $i;
+            $sheet->setCellValue('A' . $currentRow, $i + 1); // Serial Number 1, 2, 3
 
-        // Border Tabel (A3 sampai I9)
-        $sheet->getStyle('A3:I9')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            if ($i === 0 && $products->count() > 0) {
+                // Isi data riil item pertama di baris nomor 1
+                $product = $products->first();
+                $sheet->setCellValue('B' . $currentRow, $product->product_name ?? '-');
+                $sheet->setCellValue('C' . $currentRow, $product->unit ?? '-'); // Sesuaikan field db anda jika ada
+                $sheet->setCellValue('D' . $currentRow, $product->quantity ?? 0);
+                $sheet->setCellValue('E' . $currentRow, $product->total_gross_weight ?? 0);
+                $sheet->setCellValue('F' . $currentRow, ($product->dmin ?? '') . '-' . ($product->dmax ?? ''));
+                $sheet->setCellValue('G' . $currentRow, $durationText ?? '-'); // Processing Time (minutes)
+                $sheet->setCellValue('H' . $currentRow, $booking->notes ?? '-');
+            } else {
+                // Slot kosong nomor 2 dan 3 untuk kebutuhan tulis tangan/template fisik
+                $sheet->setCellValue('B' . $currentRow, '');
+                $sheet->setCellValue('C' . $currentRow, '');
+                $sheet->setCellValue('D' . $currentRow, '');
+                $sheet->setCellValue('E' . $currentRow, '');
+                $sheet->setCellValue('F' . $currentRow, '');
+                $sheet->setCellValue('G' . $currentRow, '');
+                $sheet->setCellValue('H' . $currentRow, '');
+            }
+        }
 
-        // Alignment
-        $sheet->getStyle('A3:I9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A3:I9')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('A4:I4')->getFont()->setBold(true);
-        $sheet->getStyle('A4:G4')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('G9')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        // 6. Other matters (Baris 10 & 11)
+        $sheet->setCellValue('A10', 'Other matters:');
+        $sheet->mergeCells('A10:H10');
+        $sheet->mergeCells('A11:H11'); // Digabung jadi ruang kosong ketikan
+
+        // 7. Kolom Tanda Tangan / Persetujuan (Baris 12 & 13)
+        $sheet->setCellValue('A12', 'Shift Leader');
+        $sheet->mergeCells('A12:B12');
+        $sheet->mergeCells('A13:B13'); // Kolom TTD kosong
+
+        $sheet->setCellValue('C12', 'Production Manager');
+        $sheet->mergeCells('C12:E12');
+        $sheet->mergeCells('C13:E13'); // Kolom TTD kosong
+
+        $sheet->setCellValue('F12', 'Marketing Department');
+        $sheet->mergeCells('F12:H12');
+        $sheet->mergeCells('F13:H13'); // Kolom TTD kosong
+
+        // 8. Teks Vertikal Distribusi Dokumen (Kolom I disamping tabel)
+        // Disimulasikan rapi di kolom sebelah kanan tabel utama
+        $sheet->setCellValue('I4', "① Production Department (white)  ② Marketing Department (yellow)  ③ Finance Department (yellow)");
+        $sheet->mergeCells('I4:I13');
+
+        // 9. Footer Dokumen (Baris 15)
+        $sheet->setCellValue('A15', 'Document Number: QR / PD-034');
+        $sheet->setCellValue('D15', 'Effective Date: 2026/01/01');
+        $sheet->setCellValue('G15', 'Version / Status : A /00');
+        $sheet->mergeCells('G15:H15');
+
+
+        // --- PROSES STYLING & FORMATTING ---
+        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Arial');
+
+        // Style Judul Utama
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Style Sub-judul Nomor Order
+        $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(11);
+
+        // Aplikasikan Borders Tipis hanya ke area Grid Tabel Utama (A4 sampai H13)
+        $sheet->getStyle('A4:H13')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A4:H13')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+        // Style Label info customer & ttd (Bold judul cell)
+        $sheet->getStyle('A4:H4')->getFont()->setBold(true);
+        $sheet->getStyle('A4:H5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A6:H6')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A6:H6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
+
+        // Alignment isi data grid tabel
+        $sheet->getStyle('A7:A9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B7:C9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('D7:G9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Style area TTD bawah
+        $sheet->getStyle('A12:H12')->getFont()->setBold(true);
+        $sheet->getStyle('A12:H12')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+
+
+        // Style untuk teks vertikal / distribusi arsip di sebelah kanan (Kolom I)
+        $sheet->getStyle('I4')->getFont()->setSize(9)->setBold(true);
+        $sheet->getStyle('I4')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('I4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('I4')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('I4')->getBorders()->getLeft()->setBorderStyle(Border::BORDER_MEDIUM); // pemisah garis vertikal tebal
+
+        // Style Footer Metada Dokumen paling bawah
+        $sheet->getStyle('A15:H15')->getFont()->setSize(9)->setItalic(true);
+        $sheet->getStyle('G15')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         return [];
     }
@@ -129,22 +217,34 @@ class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithM
             AfterSheet::class => function (AfterSheet $event) {
                 $delegate = $event->sheet->getDelegate();
 
-                // Column Widths
-                $delegate->getColumnDimension('A')->setWidth(10);
-                $delegate->getColumnDimension('B')->setWidth(20);
-                $delegate->getColumnDimension('C')->setWidth(30);
-                $delegate->getColumnDimension('D')->setWidth(15);
-                $delegate->getColumnDimension('E')->setWidth(15);
-                $delegate->getColumnDimension('F')->setWidth(15);
-                $delegate->getColumnDimension('G')->setWidth(15);
-                $delegate->getColumnDimension('H')->setWidth(10);
-                $delegate->getColumnDimension('I')->setWidth(10);
+                // Mengatur Lebar Kolom (Width) agar pas dengan susunan teks gambar ke-2
+                $delegate->getColumnDimension('A')->setWidth(10);  // Serial Number
+                $delegate->getColumnDimension('B')->setWidth(20);  // Product Name
+                $delegate->getColumnDimension('C')->setWidth(22);  // Packaging specifications
+                $delegate->getColumnDimension('D')->setWidth(12);  // quantity
+                $delegate->getColumnDimension('E')->setWidth(14);  // Weight (kg)
+                $delegate->getColumnDimension('F')->setWidth(14);  // Dosage (kGy)
+                $delegate->getColumnDimension('G')->setWidth(20);  // Processing time (minutes)
+                $delegate->getColumnDimension('H')->setWidth(16);  // Remark
+                $delegate->getColumnDimension('I')->setWidth(6);   // Kolom Samping Teks Vertikal
 
-                // Row Heights
-                $delegate->getRowDimension(4)->setRowHeight(40); // Header
-                $delegate->getRowDimension(5)->setRowHeight(40); // Data 1
-                $delegate->getRowDimension(8)->setRowHeight(40); // Other matters
-                $delegate->getRowDimension(9)->setRowHeight(50); // Signatures
+                // Mengatur Tinggi Baris (Row Height) agar proporsional dan longgar
+                $delegate->getRowDimension(2)->setRowHeight(30);   // Judul
+                $delegate->getRowDimension(3)->setRowHeight(22);   // Task Number
+                $delegate->getRowDimension(4)->setRowHeight(20);   // Label Cust
+                $delegate->getRowDimension(5)->setRowHeight(24);   // Isi Cust Name
+                $delegate->getRowDimension(6)->setRowHeight(35);   // Header Tabel (Wrap Text)
+
+                // Tinggi grid data utama 1, 2, 3
+                $delegate->getRowDimension(7)->setRowHeight(30);
+                $delegate->getRowDimension(8)->setRowHeight(30);
+                $delegate->getRowDimension(9)->setRowHeight(30);
+
+                // Baris Other Matters & Area Tanda Tangan
+                $delegate->getRowDimension(10)->setRowHeight(20);
+                $delegate->getRowDimension(11)->setRowHeight(35);  // Space kosong other matters
+                $delegate->getRowDimension(12)->setRowHeight(22);  // Baris Nama Jabatan TTD
+                $delegate->getRowDimension(13)->setRowHeight(55);  // Space kosong untuk tanda tangan fisik
             },
         ];
     }

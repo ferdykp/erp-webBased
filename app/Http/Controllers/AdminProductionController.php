@@ -299,22 +299,7 @@ class AdminProductionController extends Controller
         }
     }
 
-    public function printCertificate($id)
-    {
-        $batch = \App\Models\BookingBatch::with(['booking.customer', 'booking.products', 'qa', 'productionLine'])->findOrFail($id);
 
-        return view('admin.production.certificate', compact('batch'));
-    }
-
-    public function updatePaymentStatus(Request $request, $id)
-    {
-        $booking = Booking::findOrFail($id);
-        $booking->update([
-            'payment_status' => $request->payment_status
-        ]);
-
-        return back()->with('success', 'Status pembayaran berhasil diperbarui.');
-    }
 
     // 🟢 TAMBAHKAN METHOD INI DI DALAM CONTROLLER
     public function updateDuration(Request $request)
@@ -343,5 +328,21 @@ class AdminProductionController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui durasi: ' . $e->getMessage());
         }
+    }
+    public function printCertificate($id)
+    {
+        $batch = \App\Models\BookingBatch::with(['booking.customer', 'booking.products', 'qa', 'productionLine'])->findOrFail($id);
+
+        return view('admin.production.certificate', compact('batch'));
+    }
+
+    public function updatePaymentStatus(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+        $booking->update([
+            'payment_status' => $request->payment_status
+        ]);
+
+        return back()->with('success', 'Status pembayaran berhasil diperbarui.');
     }
 }
