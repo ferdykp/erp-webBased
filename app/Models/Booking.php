@@ -12,7 +12,6 @@ class Booking extends Model
         'booking_code',
         'customer_id',
         'user_id',
-
         'arrival_time',
         'pic_warehouse',
         'status',

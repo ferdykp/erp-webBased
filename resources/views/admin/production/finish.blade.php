@@ -330,86 +330,7 @@
     </div>
 
 
-    {{-- ═══ MODAL RELOKASI PALLET ═══ --}}
-    <div id="relocationModal"
-        class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-800">Pallet Management</h3>
-                    <p id="modal_batch_title" class="text-xs text-emerald-600 font-medium mt-0.5">BATCH #---</p>
-                </div>
-                <button onclick="closeRelocationModal()"
-                    class="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
 
-            <div class="flex flex-col flex-1 overflow-hidden md:flex-row">
-                <div
-                    class="w-full p-5 overflow-y-auto border-b border-gray-100 md:w-1/2 md:border-b-0 md:border-r bg-gray-50/50">
-                    <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Pilih Pallet</p>
-                    <div id="pallet_list_container" class="space-y-2"></div>
-                </div>
-
-                <div class="w-full p-5 bg-white md:w-1/2">
-                    <div id="empty_selection_state"
-                        class="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
-                        <div
-                            class="flex items-center justify-center w-12 h-12 border border-gray-100 rounded-xl bg-gray-50">
-                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
-                            </svg>
-                        </div>
-                        <p class="text-xs text-gray-400">Pilih pallet dari kiri<br>untuk memulai relokasi</p>
-                    </div>
-
-                    <form id="relocationForm" action="{{ route('admin.production.relocate-pallet') }}" method="POST"
-                        class="hidden space-y-5">
-                        @csrf
-                        <input type="hidden" name="pallet_content_id" id="relocate_content_id">
-
-                        <div class="p-4 border bg-emerald-50 border-emerald-100 rounded-xl">
-                            <p class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2">Pallet
-                                Dipilih</p>
-                            <div class="flex items-end justify-between">
-                                <div>
-                                    <p id="selected_pallet_loc" class="text-sm font-semibold text-gray-800">-</p>
-                                    <p class="text-[11px] text-gray-400 mt-0.5">Lokasi saat ini</p>
-                                </div>
-                                <div class="text-right">
-                                    <p id="selected_pallet_qty" class="text-sm font-semibold text-emerald-700">-</p>
-                                    <p class="text-[11px] text-gray-400 mt-0.5">Jumlah</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tujuan
-                                Baru</label>
-                            <select name="new_pallet_id" required
-                                class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 outline-none transition-all">
-                                <option value="">-- Pilih Slot Target --</option>
-                                @foreach ($allLocations ?? [] as $loc)
-                                    <option value="{{ $loc->id }}">Line {{ $loc->line }} | Petak
-                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} kotak)</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <button type="submit"
-                            class="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]">
-                            Pindahkan Pallet
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
     {{-- ═══ DETAIL & EDIT MODAL ═══ --}}
@@ -683,6 +604,101 @@
         </div>
     </div>
 
+    {{-- ═══ MODAL RELOKASI PALLET ═══ --}}
+    <div id="relocationModal"
+        class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">Pallet Management</h3>
+                    <p id="modal_batch_title" class="text-xs text-emerald-600 font-medium mt-0.5">BATCH #---</p>
+                </div>
+                <button onclick="closeRelocationModal()"
+                    class="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex flex-col flex-1 overflow-hidden md:flex-row">
+                {{-- Sisi Kiri: Daftar Pallet --}}
+                <div
+                    class="flex flex-col w-full p-5 overflow-y-auto border-b border-gray-100 md:w-1/2 md:border-b-0 md:border-r bg-gray-50/50">
+                    <div class="flex items-center justify-between mb-3 shrink-0">
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Pilih Pallet</p>
+                        {{-- Tombol Aksi Massal Baru --}}
+                        <button type="button" id="btn_relocate_all"
+                            class="text-[11px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider hidden">
+                            ⚡ Kosongkan Semua
+                        </button>
+                    </div>
+                    <div id="pallet_list_container" class="flex-1 space-y-2"></div>
+                </div>
+
+                {{-- Sisi Kanan: Form Relokasi --}}
+                <div class="w-full p-5 bg-white md:w-1/2">
+                    <div id="empty_selection_state"
+                        class="flex flex-col items-center justify-center h-full gap-3 py-10 text-center">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 border border-gray-100 rounded-xl bg-gray-50">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
+                            </svg>
+                        </div>
+                        <p class="text-xs text-gray-400">Pilih pallet dari kiri<br>atau gunakan fitur massal untuk memulai
+                        </p>
+                    </div>
+
+                    <form id="relocationForm" action="{{ route('admin.production.relocate-pallet') }}" method="POST"
+                        class="hidden space-y-5">
+                        @csrf
+                        {{-- Menyimpan id pallet tunggal ATAU list ID berupa array/string terpisah koma --}}
+                        <input type="hidden" name="pallet_content_id" id="relocate_content_id">
+                        <input type="hidden" name="is_bulk" id="relocate_is_bulk" value="0">
+
+                        <div id="selected_pallet_card" class="p-4 border bg-emerald-50 border-emerald-100 rounded-xl">
+                            <p id="selected_card_label"
+                                class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2">Pallet
+                                Dipilih</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p id="selected_pallet_loc" class="text-sm font-semibold text-gray-800">-</p>
+                                    <p id="selected_pallet_loc_sub" class="text-[11px] text-gray-400 mt-0.5">Lokasi saat
+                                        ini</p>
+                                </div>
+                                <div class="text-right">
+                                    <p id="selected_pallet_qty" class="text-sm font-semibold text-emerald-700">-</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">Jumlah</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tujuan Baru /
+                                Slot Kosong</label>
+                            <select name="new_pallet_id" required
+                                class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 outline-none transition-all">
+                                <option value="">-- Pilih Slot Target --</option>
+                                @foreach ($allLocations ?? [] as $loc)
+                                    <option value="{{ $loc->id }}">Line {{ $loc->line }} | Petak
+                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} kotak)</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <button type="submit" id="btn_submit_relocation"
+                            class="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]">
+                            Pindahkan Pallet
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Form khusus untuk update status billing/payment agar terpisah --}}
     <form id="updatePaymentForm" method="POST" class="hidden">
         @csrf
@@ -698,29 +714,45 @@
         function openRelocationModal(batchNo, pallets) {
             document.getElementById('modal_batch_title').innerText = 'BATCH #' + batchNo;
             const container = document.getElementById('pallet_list_container');
+            const bulkBtn = document.getElementById('btn_relocate_all');
             container.innerHTML = '';
 
-            pallets.forEach((p, index) => {
-                const item = document.createElement('div');
-                item.className =
-                    'group p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all';
-                item.onclick = () => selectPalletForMove(p.id, p.loc, p.qty);
-                item.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 group-hover:bg-emerald-100 group-hover:text-emerald-600">
-                                P${index + 1}
+            if (pallets && pallets.length > 0) {
+                // Tampilkan tombol "Kosongkan Semua" jika pallet lebih dari 0
+                bulkBtn.classList.remove('hidden');
+
+                // Kumpulkan data semua ID dan Total Box untuk proses massal
+                const allIds = pallets.map(p => p.id).join(',');
+                const totalBoxes = pallets.reduce((sum, p) => sum + parseInt(p.qty || 0), 0);
+                const totalLocations = pallets.map(p => p.loc).join(', ');
+
+                bulkBtn.onclick = () => selectAllPalletsForMove(allIds, totalLocations, totalBoxes, pallets.length);
+
+                pallets.forEach((p, index) => {
+                    const item = document.createElement('div');
+                    item.className =
+                        'group p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all';
+                    item.onclick = () => selectPalletForMove(p.id, p.loc, p.qty);
+                    item.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 group-hover:bg-emerald-100 group-hover:text-emerald-600">
+                                    P${index + 1}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800">${p.loc}</p>
+                                    <p class="text-[10px] text-gray-400">Pre-Irradiation</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">${p.loc}</p>
-                                <p class="text-[10px] text-gray-400">Pre-Irradiation</p>
-                            </div>
+                            <p class="text-sm font-semibold text-emerald-600">${p.qty} Box</p>
                         </div>
-                        <p class="text-sm font-semibold text-emerald-600">${p.qty} Box</p>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
+                    `;
+                    container.appendChild(item);
+                });
+            } else {
+                bulkBtn.classList.add('hidden');
+                container.innerHTML = '<p class="py-4 text-xs text-center text-gray-400">Tidak ada pallet aktif</p>';
+            }
 
             document.getElementById('relocationForm').classList.add('hidden');
             document.getElementById('empty_selection_state').classList.remove('hidden');
@@ -730,12 +762,56 @@
             modal.classList.add('flex');
         }
 
+        // Fungsi memilih satu per satu (Tetap untuk pindah slot)
         function selectPalletForMove(id, loc, qty) {
             document.getElementById('empty_selection_state').classList.add('hidden');
             document.getElementById('relocationForm').classList.remove('hidden');
+
+            // Tampilkan kembali select tujuan karena ini pindah slot
+            const selectTarget = document.querySelector('select[name="new_pallet_id"]');
+            selectTarget.parentElement.classList.remove('hidden');
+            selectTarget.required = true;
+
             document.getElementById('relocate_content_id').value = id;
+            document.getElementById('relocate_is_bulk').value = "0";
+
+            document.getElementById('selected_card_label').innerText = "Pallet Dipilih";
+            document.getElementById('selected_card_label').className =
+                "text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2";
+            document.getElementById('selected_pallet_card').className =
+                "p-4 border bg-emerald-50 border-emerald-100 rounded-xl";
             document.getElementById('selected_pallet_loc').innerText = loc;
+            document.getElementById('selected_pallet_loc_sub').innerText = "Lokasi saat ini";
             document.getElementById('selected_pallet_qty').innerText = qty + ' Boxes';
+            document.getElementById('btn_submit_relocation').innerText = "Pindahkan Pallet";
+            document.getElementById('btn_submit_relocation').className =
+                "w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]";
+        }
+
+        // Fungsi Baru: Kosongkan Semua (Barang langsung dikirim)
+        function selectAllPalletsForMove(allIds, locations, totalQty, count) {
+            document.getElementById('empty_selection_state').classList.add('hidden');
+            document.getElementById('relocationForm').classList.remove('hidden');
+
+            // Sembunyikan select tujuan karena barang langsung keluar dari rak/line
+            const selectTarget = document.querySelector('select[name="new_pallet_id"]');
+            selectTarget.parentElement.classList.add('hidden');
+            selectTarget.required = false;
+            selectTarget.value = ""; // Reset value
+
+            document.getElementById('relocate_content_id').value = allIds;
+            document.getElementById('relocate_is_bulk').value = "1";
+
+            document.getElementById('selected_card_label').innerText = `🚚 KOSONGKAN BATCH (${count} PALLET)`;
+            document.getElementById('selected_card_label').className =
+                "text-[10px] font-semibold text-red-600 uppercase tracking-wider mb-2";
+            document.getElementById('selected_pallet_card').className = "p-4 border bg-red-50 border-red-100 rounded-xl";
+            document.getElementById('selected_pallet_loc').innerText = "KOSONGKAN & SET SUDAH DIKIRIM";
+            document.getElementById('selected_pallet_loc_sub').innerText = "Pallet asal: " + locations;
+            document.getElementById('selected_pallet_qty').innerText = totalQty + ' Boxes';
+            document.getElementById('btn_submit_relocation').innerText = "Konfirmasi Barang Sudah Dikirim (Kosongkan Rak)";
+            document.getElementById('btn_submit_relocation').className =
+                "w-full h-10 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]";
         }
 
         function closeRelocationModal() {
@@ -805,7 +881,6 @@
             document.getElementById('editFinishedAt').addEventListener('change', calculateAutoMinutes);
 
             // ═══ VALIDASI PAYMENT & LINK DOWNLOAD SERTIFIKAT ═══
-            // ═══ VALIDASI PAYMENT & LINK DOWNLOAD SERTIFIKAT (MODIFIED) ═══
             const isPaid = d.paymentStatus === 'paid';
             const printBtn = document.getElementById('printCertificateBtn');
             const unpaidAlert = document.getElementById('unpaidAlert');
@@ -820,7 +895,6 @@
             paymentForm.action = `/admin/bookings/${d.bookingId}/payment-status`;
 
             if (isPaid) {
-                // Sembunyikan dropdown select, tampilkan text biasa (Read-only jika sudah lunas)
                 paymentSelectWrapper.classList.add('hidden');
                 paymentText.classList.remove('hidden');
 
@@ -835,11 +909,9 @@
                 unpaidAlert.classList.add('hidden');
                 printBtn.href = `/admin/production/batches/${d.batchId}/certificate`;
             } else {
-                // Sembunyikan text biasa, tampilkan dropdown select jika belum bayar (Editable)
                 paymentText.classList.add('hidden');
                 paymentSelectWrapper.classList.remove('hidden');
 
-                // Reset value dropdown kembali ke default 'unpaid' setiap modal dibuka
                 paymentSelectInput.value = 'unpaid';
 
                 paymentCont.className = 'p-5 border border-red-100 rounded-xl bg-red-50/40 transition-all';
@@ -850,7 +922,7 @@
                 printBtn.classList.add('hidden');
                 unpaidAlert.classList.remove('hidden');
             }
-            // Damage Description Wrapper
+
             const damageWrapper = document.getElementById('damageDescWrapper');
             if (d.damaged.includes('YES')) {
                 damageWrapper.classList.remove('hidden');
@@ -859,7 +931,6 @@
                 damageWrapper.classList.add('hidden');
             }
 
-            // Buka Modal dengan transisi css
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
@@ -868,7 +939,6 @@
             }, 10);
         }
 
-        // Kalkulator asinkron berbasis selisih Menit
         function calculateAutoMinutes() {
             const startVal = document.getElementById('editOfflineAt').value;
             const endVal = document.getElementById('editFinishedAt').value;
@@ -905,7 +975,7 @@
                     document.getElementById('payment_status_input').value = 'paid';
                     form.submit();
                 } else {
-                    selectElement.value = 'unpaid'; // Reset jika dibatalkan
+                    selectElement.value = 'unpaid';
                 }
             }
         }

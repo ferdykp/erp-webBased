@@ -27,7 +27,6 @@ class BookingBatch extends Model
         'loading_mode',
         'freq',
         'scan_gear',
-
         'offline_at',  // <--- Tambahkan ini
         'finished_at', // <--- Tambahkan ini
     ];

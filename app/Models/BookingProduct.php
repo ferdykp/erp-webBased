@@ -19,7 +19,6 @@ class BookingProduct extends Model
         'dimension_pack',
         'gross_weight_per_pcs',
         'expect_temp',
-
         'vol_per_pcs',
         'vol_total',
         'net_weight_pcs',
@@ -28,7 +27,6 @@ class BookingProduct extends Model
         'total_gross_weight',
         'density_gross',
         'density_nett'
-
     ];
 
     public function booking(): BelongsTo

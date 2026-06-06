@@ -51,6 +51,8 @@ class ScheduleExport implements FromCollection, WithStyles, WithEvents, WithMapp
 
         $contact = $booking->customer->contacts->first();
         $contactName = $contact ? $contact->name : '-';
+        $companyName = $booking->customer->company_name ?? '-';
+
 
 
         // --- KONSTRUKSI FORM (Berdasarkan Gambar: Daily processing schedule) ---
@@ -103,11 +105,19 @@ class ScheduleExport implements FromCollection, WithStyles, WithEvents, WithMapp
 
                 $sheet->setCellValue('A' . $currentRow, $booking->arrival_time ? Carbon::parse($booking->arrival_time)->format('12/03/2026') : '-');
                 $sheet->setCellValue('B' . $currentRow, $booking->booking_code ?? '-');
-                $sheet->setCellValue('C' . $currentRow, $contactName ?? '-');
+                $sheet->setCellValue('C' . $currentRow, ($contactName ?? '-') . ($companyName ? " ({$companyName})" : ""));
                 $sheet->setCellValue('D' . $currentRow, $product->product_name ?? '-');
                 $sheet->setCellValue('E' . $currentRow, $product->quantity ?? 0);
-                $sheet->setCellValue('F' . $currentRow, $product->total_gross_weight ? (($product->total_gross_weight / 1) . ' Kg') : '0');
-                $sheet->setCellValue('G' . $currentRow, $product->dmin . '-' . $product->dmax ?? ' - '); // Ambil kolom dosis jika ada di db anda
+                $sheet->setCellValue('F' . $currentRow, $product->gross_weight_per_pcs ? (($product->gross_weight_per_pcs / 1) . ' Kg') : '0');
+                if ($product && isset($product->dmin)) {
+                    // Cast ke (float) untuk membuang angka 0 di belakang koma secara otomatis
+                    $dminClean = (float) $product->dmin;
+                    $dosageText = "{$dminClean}";
+                } else {
+                    $dosageText = '-';
+                }
+
+                $sheet->setCellValue('G' . $currentRow, $dosageText);
                 $sheet->setCellValue('H' . $currentRow, '-'); // Delivery Period
                 $sheet->setCellValue('I' . $currentRow, $booking->notes ?? '-'); // Remark
             } else {
@@ -154,11 +164,16 @@ class ScheduleExport implements FromCollection, WithStyles, WithEvents, WithMapp
         $tableGridStyle->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
         $tableGridStyle->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
+        $sheet->getStyle("A6:I6")->getAlignment()->setWrapText(true);
+        $sheet->getStyle("A6:I6")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A6:I6")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+
         // Alignment per kolom data agar rapi
         $sheet->getStyle("A6:B{$endTableId}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle("C6:D{$endTableId}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        // $sheet->getStyle("C6:D{$endTableId}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle("E6:G{$endTableId}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle("H6:I{$endTableId}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        // $sheet->getStyle("H6:I{$endTableId}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
         // Style Footer (Baris 17)
         $sheet->getStyle('A' . $footerRow)->getFont()->setSize(9)->setItalic(true);
@@ -177,7 +192,7 @@ class ScheduleExport implements FromCollection, WithStyles, WithEvents, WithMapp
                 // Menyesuaikan Lebar Kolom (Width) agar proporsional mirip gambar Word/Excel target
                 $delegate->getColumnDimension('A')->setWidth(14);  // Date
                 $delegate->getColumnDimension('B')->setWidth(14);  // Task Number
-                $delegate->getColumnDimension('C')->setWidth(24);  // Customer Name
+                $delegate->getColumnDimension('C')->setWidth(28);  // Customer Name
                 $delegate->getColumnDimension('D')->setWidth(22);  // Goods Name
                 $delegate->getColumnDimension('E')->setWidth(12);  // Quantity
                 $delegate->getColumnDimension('F')->setWidth(12);  // Weight
@@ -188,9 +203,11 @@ class ScheduleExport implements FromCollection, WithStyles, WithEvents, WithMapp
                 // Set Tinggi Baris (Row Height)
                 $delegate->getRowDimension(3)->setRowHeight(30);  // Baris Judul
                 $delegate->getRowDimension(5)->setRowHeight(35);  // Baris Header Tabel (wrap text kGy aman)
+                $delegate->getRowDimension(6)->setRowHeight(55);
+
 
                 // Set Tinggi Baris data tabel kosong biar tinggi-tinggi/longgar seperti contoh gambar Anda (0.8 cm ~ 24-26 pt)
-                for ($row = 6; $row <= 15; $row++) {
+                for ($row = 7; $row <= 15; $row++) {
                     $delegate->getRowDimension($row)->setRowHeight(26);
                 }
             },

@@ -572,41 +572,66 @@ class AdminBookingController extends Controller
 
     public function relocatePallet(Request $request)
     {
+        // new_pallet_id dibikin nullable karena kalau langsung dikirim tidak butuh slot baru
         $request->validate([
-            'pallet_content_id' => 'required|exists:pallet_contents,id',
-            'new_pallet_id'     => 'required|exists:pallets,id',
+            'pallet_content_id' => 'required|string',
+            'new_pallet_id'     => 'nullable|exists:pallets,id',
         ]);
 
         try {
             DB::transaction(function () use ($request) {
-                // 1. Ambil data isi pallet (barang) yang akan dipindah
-                $content = \App\Models\PalletContent::findOrFail($request->pallet_content_id);
-                $oldPallet = Pallet::findOrFail($content->pallet_id);
-                $newPallet = Pallet::findOrFail($request->new_pallet_id);
+                $isBulk = $request->input('is_bulk') == "1";
+                $contentIds = explode(',', $request->pallet_content_id);
+                $contents = \App\Models\PalletContent::whereIn('id', $contentIds)->get();
 
-                // 2. Kurangi 'filled_boxes' di pallet asal (Pre-Irradiation)
-                $oldPallet->decrement('filled_boxes', $content->quantity);
+                if ($isBulk) {
+                    // ====== SKENARIO KOSONGKAN SEMUA (BARANG DIKIRIM) ======
+                    foreach ($contents as $content) {
+                        $oldPallet = Pallet::find($content->pallet_id);
+                        if ($oldPallet) {
+                            // Kurangi box di rak asal
+                            $oldPallet->decrement('filled_boxes', $content->quantity);
 
-                // Opsional: Jika pallet lama benar-benar kosong, hapus booking_id-nya
-                if ($oldPallet->filled_boxes <= 0) {
-                    $oldPallet->update(['current_booking_id' => null]);
+                            // Jika rak kosong, hapus booking_id pengikatnya
+                            if ($oldPallet->filled_boxes <= 0) {
+                                $oldPallet->update(['current_booking_id' => null]);
+                            }
+                        }
+
+                        // Opsional A: Jika data barang keluar tetap mau disimpan di DB dengan status 'shipped'
+                        // $content->update(['pallet_id' => null, 'status' => 'shipped']); 
+
+                        // Opsional B: Langsung hapus dari data antrean rak aktif karena sudah dikirim
+                        $content->delete();
+                    }
+                } else {
+                    // ====== SKENARIO PINDAH SLOT PER PALLET (SEPERTI BIASA) ======
+                    $newPallet = Pallet::findOrFail($request->new_pallet_id);
+
+                    foreach ($contents as $content) {
+                        $oldPallet = Pallet::find($content->pallet_id);
+                        if ($oldPallet) {
+                            $oldPallet->decrement('filled_boxes', $content->quantity);
+                            if ($oldPallet->filled_boxes <= 0) {
+                                $oldPallet->update(['current_booking_id' => null]);
+                            }
+                        }
+
+                        // Tambah ke pallet baru dan ikat datanya
+                        $newPallet->increment('filled_boxes', $content->quantity);
+                        $content->update(['pallet_id' => $newPallet->id]);
+                        $newPallet->update(['current_booking_id' => $content->booking_id]);
+                    }
                 }
-
-                // 3. Tambah 'filled_boxes' di pallet tujuan (Post-Irradiation)
-                $newPallet->increment('filled_boxes', $content->quantity);
-
-                // 4. Update relasi di tabel isi pallet agar menunjuk ke lokasi (pallet) baru
-                $content->update([
-                    'pallet_id' => $newPallet->id
-                ]);
-
-                // 5. Tandai pallet baru dengan booking_id tersebut
-                $newPallet->update(['current_booking_id' => $content->booking_id]);
             });
 
-            return back()->with('success', 'Pallet berhasil dipindahkan ke area Post-Irradiation.');
+            $message = $request->input('is_bulk') == "1"
+                ? 'Seluruh rak pallet berhasil dikosongkan (Barang Terkirim).'
+                : 'Pallet berhasil dipindahkan ke area Post-Irradiation.';
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses tindakan: ' . $e->getMessage());
         }
     }
     public function finishIndex()
