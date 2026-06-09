@@ -47,9 +47,11 @@ class EquipmentExport implements FromCollection, WithStyles, WithEvents, WithMap
         }
 
         $companyName = $booking->customer->company_name ?? '-';
+        $contact = $booking->customer->contacts->first();
+        $contactName = $contact ? $contact->name : '-';
         $product = $booking->products->first();
         $productName = $product ? $product->product_name : '-';
-        $targetDose = $product ? ($product->dmin . '-' . $product->dmax) : '-';
+        $targetDose = $product ? $product->dmin : '-';
 
         // --- BARIS 2: JUDUL UTAMA & EQUIPMENT SN ---
         $sheet->setCellValue('A2', 'Equipment Operation Record');
@@ -130,7 +132,9 @@ class EquipmentExport implements FromCollection, WithStyles, WithEvents, WithMap
             $sheet->setCellValue('A' . $currentRow, $index + 1);
             $sheet->setCellValue('B' . $currentRow, $batch->offline_at ? Carbon::parse($batch->offline_at)->format('d/m/Y') : '-');
 
-            $sheet->setCellValue('C' . $currentRow, $companyName);
+            // $sheet->setCellValue('C' . $currentRow, $companyName);
+            $sheet->setCellValue('C' . $currentRow, ($contactName ?? '-') . ($companyName ? " ({$companyName})" : ""));
+
             $sheet->mergeCells("C{$currentRow}:D{$currentRow}");
 
             $sheet->setCellValue('E' . $currentRow, $productName);
@@ -140,7 +144,7 @@ class EquipmentExport implements FromCollection, WithStyles, WithEvents, WithMap
             $sheet->setCellValue('H' . $currentRow, $targetDose);
             $sheet->setCellValue('I' . $currentRow, $batch->scan_gear ?? '-');
             $sheet->setCellValue('J' . $currentRow, $batch->beam_speed ?? '-');
-            $sheet->setCellValue('K' . $currentRow, 'Single'); // Default value sesuai jenis mesin
+            $sheet->setCellValue('K' . $currentRow, $batch->loading_mode); // Default value sesuai jenis mesin
 
             $sheet->setCellValue('L' . $currentRow, $batch->offline_at ? Carbon::parse($batch->offline_at)->format('H:i') : '-');
             $sheet->setCellValue('M' . $currentRow, $batch->finished_at ? Carbon::parse($batch->finished_at)->format('H:i') : '-');
@@ -171,15 +175,21 @@ class EquipmentExport implements FromCollection, WithStyles, WithEvents, WithMap
         $sheet->getStyle("A2:S{$lastRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
         $sheet->getStyle("A2:S{$lastRow}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getStyle("A2:S{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A5:S{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A5:S{$lastRow}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+
 
         // Bold Header Spesifik
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('O2')->getFont()->setBold(true)->setSize(11);
         $sheet->getStyle("A3:S4")->getFont()->setBold(true);
         $sheet->getStyle("A3:S4")->getAlignment()->setWrapText(true);
+        $sheet->getStyle("A5:S5")->getAlignment()->setWrapText(true);
+
 
         // Custom Alignment Baris Data (Nama perusahaan & produk rata kiri agar terbaca rapi)
-        $sheet->getStyle("C5:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        // $sheet->getStyle("C5:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
         return [];
     }
@@ -215,9 +225,11 @@ class EquipmentExport implements FromCollection, WithStyles, WithEvents, WithMap
                 $delegate->getRowDimension(2)->setRowHeight(35); // Judul Form
                 $delegate->getRowDimension(3)->setRowHeight(20); // Header Atas
                 $delegate->getRowDimension(4)->setRowHeight(25); // Header Bawah (Wrap Text)
+                $delegate->getRowDimension(5)->setRowHeight(55); // Header Bawah (Wrap Text)
+
 
                 // Tinggi Baris Baris Grid Pengisian Data Log (Baris 5 s/d 25+)
-                for ($row = 5; $row <= 30; $row++) {
+                for ($row = 6; $row <= 30; $row++) {
                     $delegate->getRowDimension($row)->setRowHeight(22);
                 }
             },

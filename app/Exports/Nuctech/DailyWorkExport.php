@@ -21,25 +21,22 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
     public function __construct($id)
     {
         $this->id = $id;
-        // Ambil satu model instance dengan eager loading
-        $this->bookingInstance = Booking::with(['customer', 'products'])->find($this->id);
+        // Ambil model dengan eager loading relasi batches untuk kalkulasi waktu & qty proses
+        $this->bookingInstance = Booking::with(['customer', 'products', 'batches'])->find($this->id);
     }
 
     public function collection()
     {
-        // Tetap kirim sebagai collection untuk memenuhi interface
         return collect([$this->bookingInstance]);
     }
 
     public function map($row): array
     {
-        // Return array kosong agar tidak ada data mentah di kolom kanan (G, H, I...)
         return [];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // PROTEKSI: Pastikan kita mendapatkan single model object
         $booking = ($this->bookingInstance instanceof \Illuminate\Support\Collection)
             ? $this->bookingInstance->first()
             : $this->bookingInstance;
@@ -49,10 +46,37 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
             return [];
         }
 
-        // Akses produk pertama secara aman
         $product = $booking->products->first();
 
-        // --- KONSTRUKSI FORM (Berdasarkan image_9d707f.png) ---
+        // --- KALKULASI DATA REAL DARI RELEVANSI BATCHES ---
+        $qty = $product->quantity ?? 0;
+        $unit = $product->unit ?? 'box';
+
+        // 1. Total qty yang sudah diproses diambil dari sum qty di tabel batches
+        $processedQty = $booking->batches->sum('qty') ?? 0;
+
+        // 2. Sisa qty yang belum diproses
+        $remainingQty = max(0, $qty - $processedQty);
+
+        // 3. Waktu Mulai (Paling Awal) dan Selesai (Paling Akhir)
+        $minOffline = $booking->batches->whereNotNull('offline_at')->min('offline_at');
+        $maxFinished = $booking->batches->whereNotNull('finished_at')->max('finished_at');
+
+        $processingTimeStr = "-";
+        $totalTimeMinutes = 0;
+
+        if ($minOffline && $maxFinished) {
+            $startTime = Carbon::parse($minOffline);
+            $endTime = Carbon::parse($maxFinished);
+
+            // Format rentang waktu
+            $processingTimeStr = $startTime->format('H:i') . ' – ' . $endTime->format('H:i') . ' WIB';
+
+            // Paksa hasil pembulatan selisih ke integer menit bulat
+            $totalTimeMinutes = (int) $startTime->diffInMinutes($endTime);
+        }
+
+        // --- KONSTRUKSI FORM ---
 
         // 1. Judul Utama
         $sheet->setCellValue('A2', 'Daily Work Record');
@@ -67,7 +91,7 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
         // 3. Petugas & Jam Kerja
         $sheet->setCellValue('A4', "Duty Officer: " . ($booking->pic_warehouse ?? '-'));
         $sheet->mergeCells('A4:E4');
-        $sheet->setCellValue('F4', "((Fill By Yourself))");
+        $sheet->setCellValue('F4', "Time: " . ($processingTimeStr != '-' ? $processingTimeStr : '((Fill By Yourself))'));
         $sheet->mergeCells('F4:H4');
 
         // 4. Operator
@@ -91,50 +115,81 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
         $sheet->setCellValue('C8', "Good");
         $sheet->mergeCells('C8:H8');
 
-        // 7. JOB DUTIES (Area Teks Besar)
+        // 7. JOB DUTIES (Struktur tabel dipecah per baris agar rata kanan-kiri sempurna)
         $sheet->setCellValue('A9', "Job Duties");
-        $sheet->mergeCells('A9:B9');
+        $sheet->mergeCells('A9:B15'); // Menggabungkan Label Utama vertikal ke bawah dari baris 9 s/d 15
 
         $arrivedDate = $booking->arrival_time ? Carbon::parse($booking->arrival_time)->format('d F Y') : '-';
-        $weight = $product ? (($product->total_gross_weight ?? 0) / 1000) : 0;
-        $qty = $product->quantity ?? 0;
-        $unit = $product->unit ?? 'box';
+        $weightKg = $product ? ($product->total_gross_weight ?? 0) : 0; // Tetap KG asli, tidak dibagi 1000
 
-        $jobContent = "Container Arrived        : " . $arrivedDate . "\n" .
-            "Weight                          : " . $weight . " Ton\n" .
-            "Total Quantity              : " . $qty . " " . $unit . "\n\n" .
-            "Processed Products                  : 720 " . $unit . "\n" .
-            "Remaining Unprocessed Products      : 480 " . $unit . "\n" .
-            "Processing Time                     : 08:00 – 14:30 WIB\n" .
-            "Total Time                          : 390 min";
+        // Baris 9: Container Arrived
+        $sheet->setCellValue('C9', "Container Arrived");
+        $sheet->setCellValue('D9', ": " . $arrivedDate);
+        $sheet->mergeCells('D9:H9');
 
-        $sheet->setCellValue('C9', $jobContent);
-        $sheet->mergeCells('C9:H9');
-        $sheet->getStyle('C9')->getAlignment()->setWrapText(true);
+        // Baris 10: Weight
+        $sheet->setCellValue('C10', "Weight");
+        $sheet->setCellValue('D10', ": " . number_format($weightKg, 0, ',', '.') . " KG");
+        $sheet->mergeCells('D10:H10');
 
-        // 8. Other & Handover
-        $sheet->setCellValue('A10', "Other matters");
-        $sheet->mergeCells('A10:B10');
-        $sheet->mergeCells('C10:H10');
+        // Baris 11: Total Quantity
+        $sheet->setCellValue('C11', "Total Quantity");
+        $sheet->setCellValue('D11', ": " . number_format($qty, 0, ',', '.') . " " . $unit);
+        $sheet->mergeCells('D11:H11');
 
-        $sheet->setCellValue('A11', "Handover content");
-        $sheet->mergeCells('A11:B11');
-        $sheet->mergeCells('C11:H11');
+        // Baris 12: Processed Products
+        $sheet->setCellValue('C12', "Remaining Unprocessed Products");
+        $sheet->setCellValue('D12', ": " . number_format($processedQty, 0, ',', '.') . " " . $unit);
+        $sheet->mergeCells('D12:H12');
+
+        // Baris 13: Remaining Unprocessed Products
+        $sheet->setCellValue('C13', "Processed Products");
+        $sheet->setCellValue('D13', ": " . number_format($remainingQty, 0, ',', '.') . " " . $unit);
+        $sheet->mergeCells('D13:H13');
+
+        // Baris 14: Processing Time
+        $sheet->setCellValue('C14', "Processing Time");
+        $sheet->setCellValue('D14', ": " . $processingTimeStr);
+        $sheet->mergeCells('D14:H14');
+
+        // Baris 15: Total Time
+        $sheet->setCellValue('C15', "Total Time");
+        $sheet->setCellValue('D15', ": " . ($totalTimeMinutes > 0 ? $totalTimeMinutes . " min" : "0 min"));
+        $sheet->mergeCells('D15:H15');
+
+        // 8. Other & Handover (Mundur ke baris 16 dan 17 akibat ekspansi baris Job Duties)
+        $sheet->setCellValue('A16', "Other matters");
+        $sheet->mergeCells('A16:B16');
+        $sheet->mergeCells('C16:H16');
+
+        $sheet->setCellValue('A17', "Handover content");
+        $sheet->mergeCells('A17:B17');
+        $sheet->mergeCells('C17:H17');
 
         // 9. Footer & Signature
-        $sheet->setCellValue('A12', "Successor's signature:");
-        $sheet->mergeCells('A12:H12');
-        $sheet->getStyle('A12')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->setCellValue('A18', "Successor's signature:");
+        $sheet->mergeCells('A18:H18');
+        $sheet->getStyle('A18')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-        $sheet->setCellValue('A13', "Effective Date: 2026/01/01 Version/Status: A/00");
+        $sheet->setCellValue('A19', "Effective Date: 2026/01/01 Version/Status: A/00");
 
         // --- STYLING ---
+        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Times New Roman')->setSize(10);
         $sheet->getStyle('A2:H2')->getFont()->setBold(true)->setSize(16);
-        $sheet->getStyle('A2:H11')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet->getStyle('A2:H11')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A2:H17')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A2:H17')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getStyle('A2:H2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A8:B11')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Penyelarasan letak teks label kiri Job Duties
+        $sheet->getStyle('A8:B15')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A16:B17')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('A8:B8')->getAlignment()->setWrapText(true);
+
+        // Set seluruh label komponen Job Duties di Kolom C menjadi Rata Kiri (Left Alignment)
+        for ($row = 9; $row <= 15; $row++) {
+            $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        }
 
         return [];
     }
@@ -146,13 +201,21 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
                 $delegate = $event->sheet->getDelegate();
                 $delegate->getColumnDimension('A')->setWidth(15);
                 $delegate->getColumnDimension('B')->setWidth(15);
-                $delegate->getColumnDimension('C')->setWidth(20);
+                $delegate->getColumnDimension('C')->setWidth(30); // Lebar proporsional untuk label deskripsi tugas
                 $delegate->getColumnDimension('D')->setWidth(15);
+                $delegate->getColumnDimension('E')->setWidth(15);
+                $delegate->getColumnDimension('F')->setWidth(15);
+                $delegate->getColumnDimension('G')->setWidth(15);
+                $delegate->getColumnDimension('H')->setWidth(15);
 
-                // Set Tinggi Baris Khusus
-                $delegate->getRowDimension(8)->setRowHeight(50);
-                $delegate->getRowDimension(9)->setRowHeight(200);
-                $delegate->getRowDimension(11)->setRowHeight(80);
+                $delegate->getRowDimension(8)->setRowHeight(40);
+
+                // Tinggi baris seragam dan rapi untuk data pecahan Job Duties
+                for ($row = 9; $row <= 15; $row++) {
+                    $delegate->getRowDimension($row)->setRowHeight(22);
+                }
+
+                $delegate->getRowDimension(17)->setRowHeight(60); // Handover Content
             },
         ];
     }

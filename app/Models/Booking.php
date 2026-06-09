@@ -59,4 +59,9 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function warehousePic()
+    {
+        return $this->belongsTo(WarehousePic::class, 'pic_warehouse');
+    }
 }

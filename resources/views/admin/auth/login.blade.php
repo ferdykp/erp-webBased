@@ -21,14 +21,16 @@
 
                 {{-- Header --}}
                 <div class="flex flex-col items-center mb-6 sm:mb-8">
-                    <div
-                        class="flex items-center justify-center mb-4 transition-transform duration-500 shadow-lg cursor-default w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl rotate-6 shadow-indigo-200 group hover:rotate-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="text-white w-7 h-7 sm:w-8 sm:h-8" fill="none"
+                    {{-- <div
+                        class="flex items-center justify-center mb-4 transition-transform duration-500 shadow-lg cursor-default w-34 h-34 sm:w-16 sm:h-16 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl rotate-6 shadow-indigo-200 group hover:rotate-0"> --}}
+                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="text-white w-7 h-7 sm:w-8 sm:h-8" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 003.207 4c1.947 0 3.799.442 5.451 1.238m11.838 7.32a10.003 10.003 0 01-11.838 7.32c1.947 0 3.799-.442 5.451-1.238m0 0A10.003 10.003 0 0120.793 4c-1.947 0-3.799.442-5.451 1.238" />
-                        </svg>
-                    </div>
+                        </svg> --}}
+                    {{-- <img src="{{ asset('img/logo-txt-removebg.png') }}" alt=""> --}}
+                    {{-- </div> --}}
+                    <div class="mb-5"> <img src="{{ asset('img/logo-txt-removebg.png') }}" alt=""> </div>
                     <h2 class="text-xl font-black tracking-tight sm:text-2xl text-slate-950">Admin Console</h2>
                     <p class="text-[10px] sm:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-[0.15em]">Security
                         Gate</p>

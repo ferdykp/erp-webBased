@@ -12,6 +12,7 @@ use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerBookingController;
 use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\CustomerProfileController;
+use App\Http\Controllers\DosimeterController;
 use App\Http\Controllers\PorterController;
 use App\Http\Controllers\UserAdminController;
 use App\Http\Controllers\UserCustomController;
@@ -138,6 +139,19 @@ Route::prefix('admin')
         // Route::put('/profile/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
         Route::put('/profile/password', [UserAdminController::class, 'updatePassword'])->name('admin.profile.password');
 
+        // Cari bagian ini di routes/web.php Anda, lalu ubah menjadi:
+
+        Route::get('/dosimeter', [DosimeterController::class, 'index'])->name('admin.dosimeter.index');
+
+        // Pastikan yang ini diubah menjadi admin.dosimeter.show
+        Route::get('/dosimeter/show/{booking_id}', [DosimeterController::class, 'show'])->name('admin.dosimeter.show');
+
+        // Sesuaikan juga untuk route store AJAX-nya agar serasi
+        Route::post('/dosimeter/store-quantity', [DosimeterController::class, 'storeQuantity'])->name('admin.dosimeter.store-quantity');
+        Route::post('/dosimeter/store-absorbance/{record_id}', [DosimeterController::class, 'storeAbsorbance'])->name('admin.dosimeter.store-absorbance');
+
+        Route::get('/admin/report/export-word/{id}', [ReportController::class, 'exportWord'])
+            ->name('admin.report.export-word');
 
         // =================================================================
         // 1. ROLE KHUSUS: SUPERADMIN & MANAGER (Bisnis, Approval, & User Management)
