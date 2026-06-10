@@ -3,11 +3,13 @@
 @section('content')
     <div class="min-h-screen overflow-x-hidden font-sans bg-slate-50 text-slate-900">
         <nav
-            class="sticky top-0 z-50 flex items-center justify-between px-6 py-5 border-b bg-white/80 backdrop-blur-md border-slate-100 md:px-12">
+            class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b bg-white/80 backdrop-blur-md border-slate-100 md:px-12">
             <div class="flex items-center gap-3">
-                <div
-                    class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 animate-[spin_8s_linear_infinite]">
-                    <i class="text-xl fa-solid fa-atom"></i>
+                {{-- <div  class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 animate-[spin_8s_linear_infinite]"> --}}
+                <div class="flex items-center justify-center h-10 text-white w-25 rounded-xl ">
+
+                    {{-- <i class="text-xl fa-solid fa-atom"></i> --}}
+                    <img src="{{ asset('img/logo-txt-removebg.png') }}" class="h-10 w-25" alt="">
                 </div>
                 <div class="flex flex-col">
                     <span class="text-xl font-black leading-none tracking-tighter text-slate-800">E-BEAM</span>
@@ -53,9 +55,9 @@
                     <h1 class="text-5xl font-black leading-[1.1] text-slate-900 md:text-7xl mb-8 tracking-tight">
                         Integrated <br>
                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">
-                            E-Beam Booking & Monitoring
+                            E-Beam Management System
                         </span> <br>
-                        Platform
+                        {{-- Platform --}}
                     </h1>
 
                     {{-- <p class="max-w-lg mb-12 text-lg leading-relaxed text-slate-500">

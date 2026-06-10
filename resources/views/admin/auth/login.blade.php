@@ -30,7 +30,14 @@
                         </svg> --}}
                     {{-- <img src="{{ asset('img/logo-txt-removebg.png') }}" alt=""> --}}
                     {{-- </div> --}}
-                    <div class="mb-5"> <img src="{{ asset('img/logo-txt-removebg.png') }}" alt=""> </div>
+                    {{-- <div class="mb-5">
+                        <a href="{{ route('landing') }}"> <img src="{{ asset('img/logo-txt-removebg.png') }}"
+                                alt=""></a>
+                    </div> --}}
+                    <a href="{{ route('landing') }}" class="block max-w-sm cursor-pointer group rounded-xl">
+                        <img src="{{ asset('img/logo-txt-removebg.png') }}" alt="Post Image"
+                            class="object-cover px-8 transition-transform duration-500 ease-in-out group-hover:scale-110" />
+                    </a>
                     <h2 class="text-xl font-black tracking-tight sm:text-2xl text-slate-950">Admin Console</h2>
                     <p class="text-[10px] sm:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-[0.15em]">Security
                         Gate</p>
