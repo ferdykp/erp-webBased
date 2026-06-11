@@ -30,7 +30,7 @@ class AdminAuthController extends Controller
         // }
 
         return back()->withErrors([
-            'email' => 'INVALID CREDENTIALS: Access denied for the provided secure keys.',
+            'email' => 'Email or password is incorrect.',
         ])->withInput($request->only('email'));
     }
 

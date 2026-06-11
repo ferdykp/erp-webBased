@@ -17,12 +17,13 @@
                         Manajemen Hak Akses Pengguna
                     </p>
                 </div>
-
-                <a href="{{ route('admin.profile.create') }}"
-                    class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-emerald-500 rounded-xl sm:rounded-2xl hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-100">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>TAMBAH ADMIN</span>
-                </a>
+                @if (in_array(auth()->user()->role, ['superadmin']))
+                    <a href="{{ route('admin.profile.create') }}"
+                        class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-emerald-500 rounded-xl sm:rounded-2xl hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-100">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add User</span>
+                    </a>
+                @endif
             </div>
 
             {{-- TABLE SECTION --}}
@@ -39,9 +40,11 @@
                                 <th
                                     class="px-4 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hidden md:table-cell text-center">
                                     Role</th>
-                                <th
-                                    class="px-4 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center rounded-r-xl">
-                                    Action</th>
+                                @if (in_array(auth()->user()->role, ['superadmin']))
+                                    <th
+                                        class="px-4 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center rounded-r-xl">
+                                        Action</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -86,24 +89,29 @@
                                     </td>
 
                                     {{-- ACTION --}}
-                                    <td class="px-4 py-4 border-r border-y border-slate-50 rounded-r-2xl">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <a href="{{ route('admin.profile.edit', $user->id) }}"
-                                                class="flex items-center justify-center text-blue-600 transition-all bg-white border shadow-sm w-9 h-9 border-slate-100 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600">
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                            </a>
+                                    @if (in_array(auth()->user()->role, ['superadmin']))
+                                        <td class="px-4 py-4 border-r border-y border-slate-50 rounded-r-2xl">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <a href="{{ route('admin.profile.edit', $user->id) }}"
+                                                    class="flex items-center justify-center text-blue-600 transition-all bg-white border shadow-sm w-9 h-9 border-slate-100 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </a>
 
-                                            <form action="{{ route('admin.profile.destroy', $user->id) }}" method="POST"
-                                                onsubmit="return confirm('Apakah Anda Yakin Ingin Menghapus Admin Ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="flex items-center justify-center text-red-500 transition-all bg-white border shadow-sm w-9 h-9 border-slate-100 rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                                <form action="{{ route('admin.profile.destroy', $user->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Apakah Anda Yakin Ingin Menghapus Admin Ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="flex items-center justify-center text-red-500 transition-all bg-white border shadow-sm w-9 h-9 border-slate-100 rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+
+                                            </div>
+                                        </td>
+                                    @endif
+
                                 </tr>
                             @empty
                                 <tr>

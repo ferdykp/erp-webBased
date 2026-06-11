@@ -1,21 +1,12 @@
-<!-- Mobile Overlay: Muncul hanya di layar kecil (< md) saat sidebarOpen = true -->
-<div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak x-transition:enter="transition opacity duration-300"
-    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-    x-transition:leave="transition opacity duration-200" x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0" class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm md:hidden">
-</div>
-
-<!-- Sidebar Container -->
-<aside id="sidebar" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-    class="fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-300 ease-in-out 
+<aside id="sidebar"
+    :class="sidebarOpen ? 'w-72 opacity-100 translate-x-0 md:m-4' : 'w-0 -translate-x-full opacity-0 md:m-0'"
+    class="fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out 
     text-slate-300 bg-gray-900 shadow-2xl 
-    m-0 md:m-4 md:translate-x-0 md:sticky md:top-4 
-    h-full md:h-[calc(100vh-2rem)] 
-    rounded-none md:rounded-2xl border border-gray-800 overflow-y-auto">
+    rounded-none md:rounded-2xl border border-gray-800 overflow-y-auto
+    md:sticky md:top-4 h-full md:h-[calc(100vh-2rem)]">
 
-    <!-- Brand Logo -->
     <div
-        class="sticky top-0 z-10 flex items-center justify-center px-6 py-8 bg-gray-900 border-b border-gray-800/50 rounded-t-2xl">
+        class="sticky top-0 z-10 flex items-center justify-between px-6 py-8 bg-gray-900 border-b border-gray-800/50 rounded-t-2xl">
         <div class="flex items-center gap-3">
             <div class="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-600/20">
                 <i class="text-xl text-white fas fa-bolt"></i>
@@ -24,75 +15,74 @@
                 Beam <span class="text-blue-500">Admin</span>
             </h2>
         </div>
+
+        <button @click="sidebarOpen = false"
+            class="p-2 text-gray-400 transition-colors rounded-xl hover:bg-gray-800 hover:text-white md:hidden">
+            <i class="text-lg fas fa-bars"></i>
+        </button>
     </div>
 
-    <!-- Navigation Menu -->
-    <nav class="px-4 py-6 space-y-1.5">
-
+    <nav class="px-4 py-6 space-y-1.5 whitespace-nowrap">
         <p class="px-4 mb-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase">Main Menu</p>
 
-        <!-- Dashboard -->
         <a href="{{ route('admin.dashboard') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
             <i class="w-5 text-center transition-transform fas fa-chart-pie group-hover:scale-110"></i>
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <!-- Customer Management -->
-        @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'cargo_admin']))
-            <a href="{{ route('admin.customerList.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.customerList.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
-                <i class="w-5 text-center transition-transform fas fa-users group-hover:scale-110"></i>
-                <span class="font-medium">Customer Management</span>
-            </a>
-        @endif
+        {{-- @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'cargo_admin'])) --}}
+        <a href="{{ route('admin.customerList.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.customerList.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
+            <i class="w-5 text-center transition-transform fas fa-users group-hover:scale-110"></i>
+            <span class="font-medium">Customer Management</span>
+        </a>
+        {{-- @endif --}}
 
-        <!-- Dropdown: Order Management -->
-        @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'cargo_admin']))
-            <div x-data="{ open: {{ request()->routeIs('admin.bookings*') ? 'true' : 'false' }} }">
-                <button @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.bookings*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white group' }}">
-                    <div class="flex items-center gap-3">
-                        <i class="w-5 text-center text-blue-400 fas fa-book-bookmark"></i>
-                        <span class="font-medium">Order Management</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        @php $pendingCount = \App\Models\Booking::where('status', 'pending')->count(); @endphp
-                        @if ($pendingCount > 0)
-                            <span
-                                class="bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-500/20">{{ $pendingCount }}</span>
-                        @endif
-                        <i class="fas fa-chevron-down text-[10px] transition-transform duration-300"
-                            :class="open ? 'rotate-180' : ''"></i>
-                    </div>
-                </button>
-
-                <div x-show="open" x-cloak x-collapse class="pl-5 mt-1 ml-4 space-y-1 border-l border-gray-800">
-                    <a href="{{ route('admin.bookings') }}"
-                        class="block py-2 text-sm transition-colors {{ request()->routeIs('admin.bookings') && !request()->route('status') ? 'text-blue-200 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
-                        All Orders
-                    </a>
-                    <a href="{{ route('admin.bookings.status', 'pending') }}"
-                        class="flex items-center justify-between py-2 text-sm transition-colors {{ request()->route('status') == 'pending' ? 'text-amber-400 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
-                        <span>Incoming Order</span>
-                        @if ($pendingCount > 0)
-                            <span class="w-2 h-2 mr-2 rounded-full bg-amber-400 animate-pulse"></span>
-                        @endif
-                    </a>
-                    <a href="{{ route('admin.bookings.status', 'processing') }}"
-                        class="block py-2 text-sm transition-colors {{ request()->route('status') == 'processing' ? 'text-blue-400 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
-                        On Progress
-                    </a>
-                    <a href="{{ route('admin.bookings.status', 'completed') }}"
-                        class="block py-2 text-sm transition-colors {{ request()->route('status') == 'completed' ? 'text-emerald-400 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
-                        Completed
-                    </a>
+        {{-- @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'cargo_admin'])) --}}
+        <div x-data="{ open: {{ request()->routeIs('admin.bookings*') ? 'true' : 'false' }} }">
+            <button @click="open = !open"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.bookings*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white group' }}">
+                <div class="flex items-center gap-3">
+                    <i class="w-5 text-center text-blue-400 fas fa-book-bookmark"></i>
+                    <span class="font-medium">Order Management</span>
                 </div>
-            </div>
-        @endif
+                <div class="flex items-center gap-2">
+                    @php $pendingCount = \App\Models\Booking::where('status', 'pending')->count(); @endphp
+                    @if ($pendingCount > 0)
+                        <span
+                            class="bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-500/20">{{ $pendingCount }}</span>
+                    @endif
+                    <i class="fas fa-chevron-down text-[10px] transition-transform duration-300"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </div>
+            </button>
 
-        <!-- Dropdown: Production Management -->
-        @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'production']))
+            <div x-show="open" x-cloak x-collapse class="pl-5 mt-1 ml-4 space-y-1 border-l border-gray-800">
+                <a href="{{ route('admin.bookings') }}"
+                    class="block py-2 text-sm transition-colors {{ request()->routeIs('admin.bookings') && !request()->route('status') ? 'text-blue-200 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
+                    All Orders
+                </a>
+                <a href="{{ route('admin.bookings.status', 'pending') }}"
+                    class="flex items-center justify-between py-2 text-sm transition-colors {{ request()->route('status') == 'pending' ? 'text-amber-400 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
+                    <span>Incoming Order</span>
+                    @if ($pendingCount > 0)
+                        <span class="w-2 h-2 mr-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    @endif
+                </a>
+                <a href="{{ route('admin.bookings.status', 'processing') }}"
+                    class="block py-2 text-sm transition-colors {{ request()->route('status') == 'processing' ? 'text-blue-400 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
+                    On Progress
+                </a>
+                <a href="{{ route('admin.bookings.status', 'completed') }}"
+                    class="block py-2 text-sm transition-colors {{ request()->route('status') == 'completed' ? 'text-emerald-400 font-semibold' : 'text-slate-500 hover:text-slate-200' }}">
+                    Completed
+                </a>
+            </div>
+        </div>
+        {{-- @endif --}}
+
+        @if (in_array(auth()->user()->role, ['superadmin', 'production']))
             <div x-data="{ open: {{ request()->routeIs('admin.production*') ? 'true' : 'false' }} }">
                 <button @click="open = !open"
                     class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.production*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white group' }}">
@@ -125,32 +115,30 @@
             </div>
         @endif
 
-        <!-- Master Logistics & Inventory Section -->
-        @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'cargo_admin']))
+        @if (in_array(auth()->user()->role, ['superadmin', 'cargo_admin']))
             <hr class="my-4 border-gray-800/50">
             <p class="px-4 mb-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase">Logistics & Warehouse</p>
 
-            <!-- Pallet -->
             <a href="{{ route('admin.pallets.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.pallets.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
                 <i class="w-5 text-center transition-transform fas fa-boxes-stacked group-hover:scale-110"></i>
                 <span class="font-medium">Pallet Management</span>
             </a>
 
-            <!-- Porter -->
             <a href="{{ route('admin.porter.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.porter.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
                 <i class="w-5 text-center transition-transform fas fa-people-carry-box group-hover:scale-110"></i>
                 <span class="font-medium">Porter Management</span>
             </a>
 
-            <!-- PIC Warehouse -->
             <a href="{{ route('admin.warehouse-pics.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.warehouse-pics.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
                 <i class="w-5 text-center transition-transform fas fa-user-shield group-hover:scale-110"></i>
                 <span class="font-medium">PIC Warehouse</span>
             </a>
+        @endif
 
+        @if (in_array(auth()->user()->role, ['superadmin', 'production']))
             <a href="{{ route('admin.dosimeter.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dosimeter.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'hover:bg-gray-800 hover:text-white group' }}">
                 <i class="w-5 text-center transition-transform fa-solid fa-flask group-hover:scale-110"></i>
@@ -158,51 +146,45 @@
             </a>
         @endif
 
-
-
-        <!-- Reporting Section -->
-        @if (in_array(auth()->user()->role, ['superadmin', 'manager']))
+        @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'production']))
             <hr class="my-4 border-gray-800/50">
             <p class="px-4 mb-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase">Reports</p>
 
             <!-- Layer 5: Nuctech Reporting (Teknis Produksi) -->
-            @if (in_array(auth()->user()->role, ['superadmin', 'manager']))
-                <div x-data="{ open: {{ request()->is('admin/report/nuctech*') ? 'true' : 'false' }} }">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->is('admin/report/nuctech*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white' }}">
-                        <div class="flex items-center gap-3">
-                            <i class="w-5 text-center text-indigo-400 fas fa-file-contract"></i>
-                            <span class="font-medium">Reporting Nuctech</span>
-                        </div>
-                        <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
-                            :class="open ? 'rotate-180' : ''"></i>
-                    </button>
-
-                    <div x-show="open" x-cloak x-collapse
-                        class="pl-2 mt-1 ml-4 space-y-1 border-l border-indigo-800/50">
-                        <a href="{{ route('admin.report.nuctech', 'daily-work') }}"
-                            class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-work')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                            1. Workshop Team Daily Work
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}"
-                            class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-schedule')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                            2. Daily Processing Schedule
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'delivery-form') }}"
-                            class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'delivery-form')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                            3. Product Processing & Delivery
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'processing-record') }}"
-                            class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'processing-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                            4. Irradiation Processing Record
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'equipment-record') }}"
-                            class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'equipment-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
-                            5. Equipment Operation Record
-                        </a>
+            <div x-data="{ open: {{ request()->is('admin/report/nuctech*') ? 'true' : 'false' }} }">
+                <button @click="open = !open"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->is('admin/report/nuctech*') ? 'bg-gray-800 text-white' : 'hover:bg-gray-800 hover:text-white' }}">
+                    <div class="flex items-center gap-3">
+                        <i class="w-5 text-center text-indigo-400 fas fa-file-contract"></i>
+                        <span class="font-medium">Reporting Nuctech</span>
                     </div>
+                    <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="open" x-cloak x-collapse class="pl-2 mt-1 ml-4 space-y-1 border-l border-indigo-800/50">
+                    <a href="{{ route('admin.report.nuctech', 'daily-work') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-work')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        1. Workshop Team Daily Work
+                    </a>
+                    <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-schedule')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        2. Daily Processing Schedule
+                    </a>
+                    <a href="{{ route('admin.report.nuctech', 'delivery-form') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'delivery-form')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        3. Product Processing & Delivery
+                    </a>
+                    <a href="{{ route('admin.report.nuctech', 'processing-record') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'processing-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        4. Irradiation Processing Record
+                    </a>
+                    <a href="{{ route('admin.report.nuctech', 'equipment-record') }}"
+                        class="block px-4 py-2 text-[11px] rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'equipment-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-gray-500 hover:text-slate-200' }}">
+                        5. Equipment Operation Record
+                    </a>
                 </div>
-            @endif
+            </div>
 
 
             <!-- Layer 4: JTS Reporting (Gudang/Logistik) -->

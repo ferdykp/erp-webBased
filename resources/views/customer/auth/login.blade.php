@@ -2,6 +2,12 @@
 
 @section('content')
     <section class="flex items-center justify-center min-h-screen px-4 bg-gray-50">
+        @if (session('error'))
+            <div class="flex items-center gap-2 p-4 mb-4 text-sm text-red-800 border border-red-100 bg-red-50 rounded-xl">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span class="font-bold">{{ session('error') }}</span>
+            </div>
+        @endif
         <div class="flex w-full max-w-4xl overflow-hidden bg-white shadow-xl rounded-[2rem] border border-gray-100">
 
             {{-- LEFT SIDE: Welcome Text --}}

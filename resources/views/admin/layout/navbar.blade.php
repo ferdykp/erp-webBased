@@ -1,14 +1,18 @@
 <nav
     class="sticky z-30 flex items-center justify-between px-6 py-4 mx-4 border shadow-lg top-4 bg-white/80 backdrop-blur-md border-white/20 md:ml-0 rounded-2xl">
+    <button @click="sidebarOpen = !sidebarOpen"
+        class="p-2 bg-white border text-slate-600 border-slate-200 rounded-xl hover:bg-slate-50 focus:outline-none">
+        <i class="text-lg fas fa-bars"></i>
+    </button>
 
     <div class="flex items-center gap-4">
         {{-- Burger Menu for Mobile (Ensure sidebarOpen variable exists in your Alpine store/data) --}}
-        <button @click="sidebarOpen = true" class="p-2 text-gray-600 rounded-lg md:hidden hover:bg-gray-100">
+        {{-- <button @click="sidebarOpen = true" class="p-2 text-gray-600 rounded-lg md:hidden hover:bg-gray-100">
             <i class="text-xl fa-solid fa-bars-staggered"></i>
-        </button>
+        </button> --}}
 
         <div class="hidden sm:block">
-            <h1 class="text-sm font-medium text-gray-400">Pages /</h1>
+            {{-- <h1 class="text-sm font-medium text-gray-400">Pages /</h1> --}}
             <p class="text-base font-bold tracking-tight text-gray-800">
                 @yield('title', 'Dashboard')
             </p>

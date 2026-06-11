@@ -14,7 +14,7 @@
         {{-- HEADER --}}
         <div class="flex flex-col justify-between gap-6 px-2 lg:flex-row lg:items-center">
             <div>
-                <h2 class="text-2xl font-black tracking-tight md:text-3xl text-slate-800">Customer Management</h2>
+                <h2 class="text-2xl font-black tracking-tight md:text-3xl text-slate-800">Customer List</h2>
                 <p class="text-xs font-medium md:text-sm text-slate-500">Nuctech ERP - Business Management System</p>
             </div>
 
@@ -26,12 +26,14 @@
                     <i
                         class="absolute transition-colors -translate-y-1/2 fa-solid fa-magnifying-glass left-5 top-1/2 text-slate-400 group-focus-within:text-blue-500"></i>
                 </div>
+                @if (in_array(auth()->user()->role, ['superadmin']))
+                    <button @click="openCreate = true"
+                        class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white transition-all bg-blue-600 shadow-lg rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add Customer</span>
+                    </button>
+                @endif
 
-                <button @click="openCreate = true"
-                    class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white transition-all bg-blue-600 shadow-lg rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Add Customer</span>
-                </button>
             </div>
         </div>
 

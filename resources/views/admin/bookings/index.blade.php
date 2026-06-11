@@ -69,11 +69,13 @@
                     </div>
                 </div>
 
-                <a href="{{ route('admin.bookings.create') }}"
-                    class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-xl shadow-blue-100 active:scale-95">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Add New Order</span>
-                </a>
+                @if (in_array(auth()->user()->role, ['superadmin']))
+                    <a href="{{ route('admin.bookings.create') }}"
+                        class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-xl shadow-blue-100 active:scale-95">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add New Order</span>
+                    </a>
+                @endif
             </div>
 
             {{-- EMPTY DATA ALERT COMPONENT --}}
@@ -138,29 +140,33 @@
                                             class="p-2 text-blue-600 transition-colors rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white">
                                             <i class="text-xs fa-solid fa-eye"></i>
                                         </button>
-                                        <a href="{{ route('admin.bookings.edit', $booking->id) }}"
-                                            class="p-2 transition-colors rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-500 hover:text-white">
-                                            <i class="text-xs fa-solid fa-pen-to-square"></i>
-                                        </a>
-                                        <button
-                                            onclick="confirmDelete('{{ $booking->id }}', '{{ $booking->booking_code }}')"
-                                            class="p-2 transition-colors rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white">
-                                            <i class="text-xs fa-solid fa-trash"></i>
-                                        </button>
-
-                                        <div class="w-px h-6 mx-1 bg-slate-100"></div>
-
-                                        @if ($booking->status == 'pending')
-                                            <button onclick="openWarehouseModal('{{ $booking->booking_code }}')"
-                                                class="px-4 py-2 text-[10px] font-black uppercase bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
-                                                Check-in
-                                            </button>
-                                        @elseif($booking->arrival_time)
-                                            <a href="{{ route('admin.bookings.invoice', $booking->id) }}" target="_blank"
-                                                class="px-4 py-2 text-[10px] font-black text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 shadow-sm transition-all">
-                                                Invoice
+                                        @if (in_array(auth()->user()->role, ['superadmin', 'production']))
+                                            <a href="{{ route('admin.bookings.edit', $booking->id) }}"
+                                                class="p-2 transition-colors rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-500 hover:text-white">
+                                                <i class="text-xs fa-solid fa-pen-to-square"></i>
                                             </a>
+                                            <button
+                                                onclick="confirmDelete('{{ $booking->id }}', '{{ $booking->booking_code }}')"
+                                                class="p-2 transition-colors rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white">
+                                                <i class="text-xs fa-solid fa-trash"></i>
+                                            </button>
+
+                                            {{-- <div class="w-px h-6 mx-1 bg-slate-100">tes</div> --}}
+
+                                            @if ($booking->status == 'pending')
+                                                <button onclick="openWarehouseModal('{{ $booking->booking_code }}')"
+                                                    class="px-4 py-2 text-[10px] font-black uppercase bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+                                                    Check-in
+                                                </button>
+                                            @elseif($booking->arrival_time)
+                                                <a href="{{ route('admin.bookings.invoice', $booking->id) }}"
+                                                    target="_blank"
+                                                    class="px-4 py-2 text-[10px] font-black text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 shadow-sm transition-all">
+                                                    Invoice
+                                                </a>
+                                            @endif
                                         @endif
+
                                     </div>
                                 </td>
                             </tr>
@@ -210,14 +216,17 @@
                                     class="p-2.5 text-blue-600 bg-blue-50 rounded-xl">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                <a href="{{ route('admin.bookings.edit', $booking->id) }}"
-                                    class="p-2.5 text-amber-600 bg-amber-50 rounded-xl">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </a>
-                                <button onclick="confirmDelete('{{ $booking->id }}', '{{ $booking->booking_code }}')"
-                                    class="p-2.5 text-rose-600 bg-rose-50 rounded-xl">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                @if (in_array(auth()->user()->role, ['superadmin', 'production']))
+                                    <a href="{{ route('admin.bookings.edit', $booking->id) }}"
+                                        class="p-2.5 text-amber-600 bg-amber-50 rounded-xl">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                    <button
+                                        onclick="confirmDelete('{{ $booking->id }}', '{{ $booking->booking_code }}')"
+                                        class="p-2.5 text-rose-600 bg-rose-50 rounded-xl">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                @endif
                             </div>
 
                             @if ($booking->status == 'pending')
