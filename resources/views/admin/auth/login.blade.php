@@ -3,12 +3,6 @@
 @section('content')
     {{-- Container utama: h-screen menjaga tetap 1 layar, overflow-hidden mencegah scroll --}}
     <section class="h-screen w-full flex items-center justify-center bg-[#f1f5f9] px-4 font-sans relative overflow-hidden">
-        @if (session('error'))
-            <div class="flex items-center gap-2 p-4 mb-4 text-sm text-red-800 border border-red-100 bg-red-50 rounded-xl">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <span class="font-bold">{{ session('error') }}</span>
-            </div>
-        @endif
 
         {{-- Background Accents: Responsive sizing --}}
         <div
