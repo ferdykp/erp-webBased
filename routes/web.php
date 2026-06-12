@@ -24,86 +24,92 @@ use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
-| ======================= DOMAIN CUSTOMER & LANDING =======================
+| 1. PUBLIC LANDING & REDIRECTOR
 |--------------------------------------------------------------------------
 */
 
-Route::domain('ebeam.nucindo.com')->group(function () {
-
-    Route::get('/', function () {
-        if (Auth::check()) {
-            if (Auth::user()->role === 'admin') {
-                return redirect()->away('https://adminebeam.nucindo.com/dashboard');
-            }
-            return redirect()->route('customer.dashboard');
+Route::get('/', function () {
+    if (Auth::check()) {
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
         }
-        return view('landing');
-    })->name('landing');
+        return redirect()->route('customer.dashboard');
+    }
+    return view('landing');
+})->name('landing');
 
-    Route::prefix('customer')->middleware('nocache')->group(function () {
-        // Guest Routes
-        Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
-        Route::post('/register', [CustomerAuthController::class, 'register']);
-        Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
-        Route::post('/login', [CustomerAuthController::class, 'login']);
-        Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
 
-        // Authenticated Customer Routes (Guard: Web)
-        Route::middleware(['auth'])->group(function () {
-            Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
-            Route::get('/profile/complete', [CustomerProfileController::class, 'showCompleteProfile'])->name('customer.profile.complete');
-            Route::post('/profile/complete', [CustomerProfileController::class, 'completeProfile'])->name('customer.profile.complete.store');
+/*
+|--------------------------------------------------------------------------
+| 2. CUSTOMER ROUTES (GUEST & AUTHENTICATED)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('customer')->middleware('nocache')->group(function () {
+    // Guest Routes
+    Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
+    Route::post('/register', [CustomerAuthController::class, 'register']);
+    Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
+    Route::post('/login', [CustomerAuthController::class, 'login']);
+    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
 
-            // Booking System
-            Route::get('/booking/create', [CustomerBookingController::class, 'create'])->name('customer.booking.create');
-            Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('customer.booking.store');
-            Route::get('/booking/{id}', [CustomerBookingController::class, 'show'])->name('customer.booking.show');
-            Route::get('/booking/{id}/print', [CustomerBookingController::class, 'print'])->name('customer.booking.print');
+    // Authenticated Customer Routes (Guard: Web)
+    Route::middleware(['auth'])->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
 
-            // General Profile & Settings
-            Route::get('/profile', [UserCustomController::class, 'index'])->name('customer.profile');
-            Route::get('/profile/edit', [CustomerProfileController::class, 'edit'])->name('customer.profile.edit');
-            Route::put('/profile/update', [CustomerProfileController::class, 'update'])->name('customer.profile.update');
-            Route::put('/profile/password', [CustomerProfileController::class, 'updatePassword'])->name('customer.profile.password');
-            Route::get('/history', [UserCustomController::class, 'history'])->name('customer.history');
-        });
+        // Profile Completion
+        Route::get('/profile/complete', [CustomerProfileController::class, 'showCompleteProfile'])->name('customer.profile.complete');
+        Route::post('/profile/complete', [CustomerProfileController::class, 'completeProfile'])->name('customer.profile.complete.store');
+
+        // Booking System
+        Route::get('/booking/create', [CustomerBookingController::class, 'create'])->name('customer.booking.create');
+        Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('customer.booking.store');
+        Route::get('/booking/{id}', [CustomerBookingController::class, 'show'])->name('customer.booking.show');
+        Route::get('/booking/{id}/print', [CustomerBookingController::class, 'print'])->name('customer.booking.print');
+
+        // General Profile & Settings
+        Route::get('/profile', [UserCustomController::class, 'index'])->name('customer.profile');
+        Route::get('/profile/edit', [CustomerProfileController::class, 'edit'])->name('customer.profile.edit');
+        Route::put('/profile/update', [CustomerProfileController::class, 'update'])->name('customer.profile.update');
+        Route::put('/profile/password', [CustomerProfileController::class, 'updatePassword'])->name('customer.profile.password');
+        Route::get('/history', [UserCustomController::class, 'history'])->name('customer.history');
     });
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| ========================= DOMAIN ADMIN SYSTEM ==========================
+| 3. ADMIN AUTH ROUTES (GUEST ONLY)
 |--------------------------------------------------------------------------
 */
-Route::domain('adminebeam.nucindo.com')->group(function () {
+Route::prefix('admin')->middleware('nocache')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login']);
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+});
 
-    // Redirect root domain admin ke login atau dashboard
-    Route::get('/', function () {
-        if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
-        }
-        return redirect()->route('admin.login');
-    });
 
-    // --- ADMIN AUTH ROUTES (GUEST ONLY) ---
-    Route::middleware('nocache')->group(function () {
-        Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-        Route::post('/login', [AdminAuthController::class, 'login']);
-        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
-    });
-
-    // --- SECURE ADMIN ROUTES (HARUS LOGIN SEBAGAI ADMIN) ---
-    Route::middleware(['auth:admin', 'nocache'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| 4. SECURE ADMIN ROUTES (HARUS LOGIN SEBAGAI ADMIN)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')
+    ->middleware(['auth:admin', 'nocache'])
+    ->group(function () {
 
         /*
         |------------------------------------------------------------------
         | A. AKSES BERSAMA (Semua Staff Admin Tanpa Terkecuali)
         |------------------------------------------------------------------
+        | Catatan: Route dengan parameter dinamis seperti {id} dipindah ke bawah 
+        | agar tidak menabrak route statis (seperti /profile/create).
         */
         Route::get('/dashboard', [AdminBookingController::class, 'index'])->name('admin.dashboard');
         Route::get('/profile', [UserAdminController::class, 'index'])->name('admin.profile');
         Route::put('/profile/password', [UserAdminController::class, 'updatePassword'])->name('admin.profile.password');
+
+        // Route::middleware('role:superadmin')
 
         /*
         |------------------------------------------------------------------
@@ -111,6 +117,7 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
         |------------------------------------------------------------------
         */
         Route::middleware(['role:superadmin|production'])->group(function () {
+            // Data Dosimeter (Sekarang aman dari Cargo Admin)
             Route::get('/dosimeter', [DosimeterController::class, 'index'])->name('admin.dosimeter.index');
             Route::get('/dosimeter/show/{booking_id}', [DosimeterController::class, 'show'])->name('admin.dosimeter.show');
             Route::post('/dosimeter/store-quantity', [DosimeterController::class, 'storeQuantity'])->name('admin.dosimeter.store-quantity');
@@ -133,6 +140,8 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
             Route::put('/production/batches/{batch}/finish', [AdminProductionController::class, 'finishBatch'])->name('admin.production.batches.finish');
             Route::get('/production/batches/{id}/certificate', [AdminProductionController::class, 'printCertificate'])->name('admin.production.certificate');
 
+            // Reporting Teknis Nuctech
+            // Route::get('/report/nuctech/{type}', [ReportController::class, 'nuctechView'])->name('admin.report.nuctech');
             Route::post('/production/batches/update-duration', [AdminProductionController::class, 'updateDuration'])->name('admin.production.update-duration');
         });
 
@@ -142,9 +151,28 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
         |------------------------------------------------------------------
         */
         Route::middleware(['role:superadmin|manager|cargo_admin|production'])->group(function () {
+            // Customer Management CRUD
             Route::get('/customerList', [CustomerProfileController::class, 'index'])->name('admin.customerList.index');
+            // Route::post('/customerList/create', [CustomerProfileController::class, 'create'])->name('admin.customerList.create');
+            // Route::post('/customerList/store', [CustomerProfileController::class, 'store'])->name('admin.customerList.store');
+            // Route::put('/customerList/{id}', [CustomerProfileController::class, 'updateAdmin'])->name('admin.customerList.update');
+            // Route::delete('/customerList/{id}', [CustomerProfileController::class, 'destroy'])->name('admin.customerList.destroy');
+
+            // Booking & Check-in
             Route::get('/bookings', [AdminBookingController::class, 'allOrder'])->name('admin.bookings');
+            // Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
+            // Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
             Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
+            // Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
+            // Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
+            // Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
+            // Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update-status');
+            // Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.invoice');
+            // Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus'])->name('admin.bookings.paymentStatus');
+            // Route::get('/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
+            // Route::put('/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
+
+            // Relokasi Produksi
             Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->name('admin.production.relocate-pallet');
 
             // Slot Gudang Management
@@ -162,6 +190,11 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
             // Master Data Resources (Porter & PIC)
             Route::resource('porters', PorterController::class)->names('admin.porter');
             Route::resource('warehouse-pics', WarehousePicController::class)->names('admin.warehouse-pics');
+
+            // Laporan Logistik & Umum
+            // Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
+            // Route::get('/report/jts/{type}', [ReportController::class, 'jtsView'])->name('admin.report.jts');
+            // Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->name('admin.report.export-excel');
         });
 
         /*
@@ -170,15 +203,22 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
         |------------------------------------------------------------------
         */
         Route::middleware(['role:superadmin|manager'])->group(function () {
+            // Monitor Bisnis & Approval
             Route::get('/business', [AdminBookingController::class, 'businessIndex'])->name('admin.business.index');
             Route::get('/business/{id}/detail', [AdminBookingController::class, 'businessDetail'])->name('admin.business.detail');
             Route::put('/business/{id}/approve', [AdminBookingController::class, 'businessApprove'])->name('admin.business.approve');
 
+            // Manajemen Akun Staf Admin Internal
             Route::get('/profile/list', [UserAdminController::class, 'profileList'])->name('admin.profile.profileList');
+            // Route::get('/profile/create', [UserAdminController::class, 'create'])->name('admin.profile.create');
+            // Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
+
             Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
             Route::get('/report/jts/{type}', [ReportController::class, 'jtsView'])->name('admin.report.jts');
             Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->name('admin.report.export-excel');
             Route::get('/report/nuctech/{type}', [ReportController::class, 'nuctechView'])->name('admin.report.nuctech');
+
+
 
             // Master Data Mesin Penyinaran 
             Route::resource('production-lines', AdminProductionLineController::class)
@@ -199,6 +239,7 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
 
             Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
             Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
+            // Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
             Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
             Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
             Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
@@ -208,6 +249,9 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
             Route::get('/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
             Route::put('/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
 
+
+
+            // Hanya Superadmin yang boleh menghapus data krusial atau akun orang lain
             Route::delete('/profile/{id}/destroy', [UserAdminController::class, 'destroy'])->name('admin.profile.destroy');
             Route::get('/profile/create', [UserAdminController::class, 'create'])->name('admin.profile.create');
             Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
@@ -221,8 +265,9 @@ Route::domain('adminebeam.nucindo.com')->group(function () {
         |------------------------------------------------------------------
         | F. AMAN SINKRONISASI BERSAMA (Route Diletakkan Paling Bawah)
         |------------------------------------------------------------------
+        | Sengaja ditaruh di paling bawah agar tidak menabrak route statis 
+        | seperti '/profile/create' atau '/profile/list'.
         */
         Route::get('/profile/{id}/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');
         Route::put('/profile/{id}/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
     });
-});
