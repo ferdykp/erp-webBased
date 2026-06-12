@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL; // <-- IMPORT INI
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Jika environment BUKAN local (artinya production/staging), paksa URL menggunakan HTTPS
+        if (config('app.env') !== 'local') {
+            URL::forceScheme('https');
+        }
     }
 }
