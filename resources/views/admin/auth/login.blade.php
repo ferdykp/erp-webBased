@@ -44,13 +44,41 @@
                 </div>
 
                 {{-- Validation Feedback: Menggunakan Arbitrary Animation Tailwind --}}
-                @if ($errors->any())
+                {{-- @if ($errors->any())
                     <div class="p-3 mb-5 bg-rose-50 border border-rose-200 rounded-xl animate-[shake_0.2s_ease-in-out_2]">
                         <p
                             class="text-[10px] sm:text-[11px] text-rose-700 text-center font-bold leading-tight uppercase tracking-wide">
                             {{ $errors->first() }}
                         </p>
                     </div>
+                @endif --}}
+                {{-- Validation Feedback: Menggunakan Arbitrary Animation Tailwind --}}
+                @if ($errors->any())
+                    {{-- Jika error spesifik email (Akun belum terdaftar), kita beri warna amber/kuning tua agar berbeda --}}
+                    @if ($errors->has('email'))
+                        <div
+                            class="p-3 mb-5 bg-amber-50 border border-amber-200 rounded-xl animate-[shake_0.2s_ease-in-out_2] flex flex-col items-center justify-center gap-1">
+                            <span
+                                class="text-[10px] font-black text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-full uppercase tracking-wider mb-0.5">NOT
+                                FOUND</span>
+                            <p
+                                class="text-[10px] sm:text-[11px] text-amber-900 text-center font-bold leading-tight uppercase tracking-wide">
+                                {{ $errors->first('email') }}
+                            </p>
+                        </div>
+                    @else
+                        {{-- Error lainnya seperti password salah tetap warna merah (rose) --}}
+                        <div
+                            class="p-3 mb-5 bg-rose-50 border border-rose-200 rounded-xl animate-[shake_0.2s_ease-in-out_2] flex flex-col items-center justify-center gap-1">
+                            <span
+                                class="text-[10px] font-black text-rose-800 bg-rose-200/60 px-2 py-0.5 rounded-full uppercase tracking-wider mb-0.5">AUTH
+                                ERROR</span>
+                            <p
+                                class="text-[10px] sm:text-[11px] text-rose-700 text-center font-bold leading-tight uppercase tracking-wide">
+                                {{ $errors->first() }}
+                            </p>
+                        </div>
+                    @endif
                 @endif
 
                 <form action="{{ route('admin.login') }}" method="POST" class="space-y-4 sm:space-y-5">

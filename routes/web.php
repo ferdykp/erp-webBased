@@ -24,15 +24,28 @@ use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
-| ======================= DOMAIN CUSTOMER & LANDING =======================
+| OPSI 2: DETEKSI LINGKUNGAN LOKAL VS PRODUCTION
 |--------------------------------------------------------------------------
 */
 
-Route::domain('ebeam.nucindo.com')->group(function () {
+$isLocal = app()->environment('local');
+$customerDomain = $isLocal ? null : 'ebeam.nucindo.com';
+$adminDomain    = $isLocal ? null : 'adminebeam.nucindo.com';
 
-    Route::get('/', function () {
+/*
+|--------------------------------------------------------------------------
+| ======================= DOMAIN CUSTOMER & LANDING =======================
+|--------------------------------------------------------------------------
+*/
+Route::domain($customerDomain)->group(function () use ($isLocal) {
+
+    Route::get('/', function () use ($isLocal) {
         if (Auth::check()) {
             if (Auth::user()->role === 'admin') {
+                // Jika di lokal, redirect ke path admin biasa demi kemudahan testing
+                if ($isLocal) {
+                    return redirect()->route('admin.dashboard');
+                }
                 return redirect()->away('https://adminebeam.nucindo.com/dashboard');
             }
             return redirect()->route('customer.dashboard');
@@ -76,7 +89,8 @@ Route::domain('ebeam.nucindo.com')->group(function () {
 | ========================= DOMAIN ADMIN SYSTEM ==========================
 |--------------------------------------------------------------------------
 */
-Route::domain('adminebeam.nucindo.com')->group(function () {
+// Di lokal, kita beri prefix tambahan 'dev-admin' agar tidak bentrok dengan route customer saat dites lewat 127.0.0.1
+Route::domain($adminDomain)->prefix($isLocal ? 'dev-admin' : '')->group(function () {
 
     // Redirect root domain admin ke login atau dashboard
     Route::get('/', function () {

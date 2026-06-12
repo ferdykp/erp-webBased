@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+// PENTING: Import model yang digunakan oleh guard admin kamu (misal: Admin atau User)
+use App\Models\Admin;
 
 class AdminAuthController extends Controller
 {
@@ -19,18 +21,24 @@ class AdminAuthController extends Controller
             'password' => 'required'
         ]);
 
+        // 1. Check if the email exists in the admin database
+        $adminExists = Admin::where('email', $credentials['email'])->exists();
+
+        if (!$adminExists) {
+            // Error jika akun belum terdaftar
+            return back()->withErrors([
+                'email' => 'Account not registered. Please contact the System Admin.',
+            ])->withInput($request->only('email'));
+        }
+
+        // 2. If email exists, attempt to authenticate (verify password)
         if (Auth::guard('admin')->attempt($credentials)) {
             return redirect()->route('admin.dashboard');
         }
-        // Contoh di AdminLoginController
-        // if (!Auth::guard('admin')->attempt($credentials)) {
-        //     return back()->withErrors([
-        //         'email' => 'Credentials do not match our secure records.',
-        //     ])->withInput($request->only('email'));
-        // }
 
+        // 3. If attempt fails, it means the password is incorrect
         return back()->withErrors([
-            'email' => 'Email or password is incorrect.',
+            'password' => 'Invalid password. Please try again.',
         ])->withInput($request->only('email'));
     }
 

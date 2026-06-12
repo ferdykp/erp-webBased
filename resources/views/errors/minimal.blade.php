@@ -65,7 +65,7 @@
         </div>
 
         {{-- ACTION BUTTON --}}
-        <div class="pt-2">
+        {{-- <div class="pt-2">
             @if (trim($__env->yieldContent('code')) === '419' || trim($__env->yieldContent('code')) === '401')
                 <a href="{{ route('admin.login') }}"
                     class="block w-full py-4 text-sm font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-xl rounded-2xl shadow-blue-100 hover:bg-blue-700 active:scale-95">
@@ -77,7 +77,7 @@
                     Back to Dashboard
                 </a>
             @endif
-        </div>
+        </div> --}}
     </div>
 
 </body>
