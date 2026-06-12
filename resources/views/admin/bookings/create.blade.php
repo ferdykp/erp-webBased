@@ -224,8 +224,8 @@
         });
 
         function fetchBookingCode() {
-            // Menggunakan helper route() Laravel agar otomatis membaca prefix 'dev-admin' saat lokal
-            fetch("{{ route('admin.bookings.generate-code') }}")
+            // Menambahkan parameter true di akhir untuk memaksa output URL menjadi https://
+            fetch("{{ route('admin.bookings.generate-code', [], true) }}")
                 .then(res => {
                     if (!res.ok) throw new Error('Network response was not ok');
                     return res.json();
