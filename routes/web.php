@@ -90,7 +90,7 @@ Route::domain($customerDomain)->group(function () use ($isLocal) {
 |--------------------------------------------------------------------------
 */
 // Di lokal, kita beri prefix tambahan 'dev-admin' agar tidak bentrok dengan route customer saat dites lewat 127.0.0.1
-Route::domain($adminDomain)->prefix($isLocal ? 'dev-admin' : '')->group(function () {
+Route::domain($adminDomain)->prefix($isLocal ? 'admin' : '')->group(function () {
 
     // Redirect root domain admin ke login atau dashboard
     Route::get('/', function () {
