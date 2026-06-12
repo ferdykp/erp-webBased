@@ -224,8 +224,12 @@
         });
 
         function fetchBookingCode() {
-            fetch('/admin/bookings/generate-code')
-                .then(res => res.json())
+            // Menggunakan helper route() Laravel agar otomatis membaca prefix 'dev-admin' saat lokal
+            fetch("{{ route('admin.bookings.generate-code') }}")
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
                 .then(data => {
                     document.getElementById('display_booking_code_input').value = data.code;
                 })

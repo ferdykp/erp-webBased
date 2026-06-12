@@ -211,8 +211,9 @@ Route::domain($adminDomain)->prefix($isLocal ? 'dev-admin' : '')->group(function
             Route::put('/customerList/{id}', [CustomerProfileController::class, 'updateAdmin'])->name('admin.customerList.update');
             Route::delete('/customerList/{id}', [CustomerProfileController::class, 'destroy'])->name('admin.customerList.destroy');
 
+            // Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
+            Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode'])->name('admin.bookings.generate-code');
             Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
-            Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
             Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
             Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
             Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
