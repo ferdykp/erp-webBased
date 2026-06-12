@@ -1,4 +1,3 @@
-gunakan opsi kedua
 <?php
 
 use Illuminate\Support\Facades\Route;
