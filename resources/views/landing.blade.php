@@ -19,7 +19,7 @@
             </div>
 
             <div>
-                <a href="{{ route('customer.login') }}"
+                <a href="{{ route('admin.login') }}"
                     class="px-6 py-2.5 text-xs font-black tracking-widest text-blue-600 border-2 border-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300">
                     SIGN IN
                 </a>
