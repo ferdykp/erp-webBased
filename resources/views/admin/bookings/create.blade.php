@@ -224,17 +224,8 @@
         });
 
         function fetchBookingCode() {
-            // 1. Ambil URL absolut dari Laravel (mengikuti routing local/production)
-            let laravelUrl = "{{ route('admin.bookings.generate-code') }}";
-
-            // 2. Paksa URL menggunakan protokol yang sedang aktif di browser saat ini (menghindari Mixed Content)
-            let secureUrl = laravelUrl.replace(/^https?:/, window.location.protocol);
-
-            fetch(secureUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error('Server responded with status: ' + res.status);
-                    return res.json();
-                })
+            fetch('/admin/bookings/generate-code')
+                .then(res => res.json())
                 .then(data => {
                     document.getElementById('display_booking_code_input').value = data.code;
                 })
