@@ -336,6 +336,7 @@ class AdminBookingController extends Controller
             'dimension_pack' => 'required|string',
             'vol_total'      => 'required|numeric',
             'payment_status' => 'required|in:paid,unpaid',
+            'product_type'   => 'required|string',
         ]);
 
         try {

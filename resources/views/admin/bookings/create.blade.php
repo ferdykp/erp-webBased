@@ -12,6 +12,18 @@
             <p class="text-xs font-medium text-gray-400 md:text-sm">Silakan isi detail produk untuk kalkulasi otomatis.</p>
         </div>
 
+        {{-- NOTIFIKASI ERROR VALIDASI LARAVEL --}}
+        {{-- @if ($errors->any())
+            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-2xl dark:bg-gray-800 dark:text-red-400">
+                <span class="font-bold">Terjadi Kesalahan:</span>
+                <ul class="mt-1 list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif --}}
+
         <div class="bg-white shadow-sm border border-gray-100 rounded-[2rem] md:rounded-[3rem] overflow-hidden">
             <div class="p-6 md:p-10">
                 <form id="mainBookingForm" class="space-y-8">
@@ -20,14 +32,16 @@
                     {{-- SELECT CUSTOMER --}}
                     <div class="p-5 space-y-3 border border-blue-100 bg-blue-50/50 rounded-3xl md:p-8">
                         <label class="text-[10px] md:text-[11px] font-black text-blue-600 uppercase tracking-widest ml-1">
-                            Customer Owner
+                            Customer Owner <span class="text-red-500">*</span>
                         </label>
                         <select id="in_customer_id"
                             class="w-full px-4 py-3.5 bg-white border border-blue-100 rounded-2xl font-bold text-gray-700 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all">
-                            <option value="" disabled selected>Pilih Customer...</option>
+                            <option value="" disabled {{ old('customer_id') ? '' : 'selected' }}>Pilih Customer...
+                            </option>
                             @foreach ($customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->contacts->first()->name ?? 'No Name' }}
-                                    ({{ $customer->email }})
+                                <option value="{{ $customer->id }}"
+                                    {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                    {{ $customer->contacts->first()->name ?? 'No Name' }} ({{ $customer->email }})
                                 </option>
                             @endforeach
                         </select>
@@ -47,16 +61,18 @@
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                Name</label>
-                            <input type="text" id="in_product_name"
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Product Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="in_product_name" value="{{ old('product_name') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:bg-white transition-colors">
                         </div>
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Product
-                                Type</label>
-                            <input type="text" id="in_product_type"
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Product Type <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="in_product_type" required value="{{ old('product_type') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:bg-white transition-colors">
                         </div>
                     </div>
@@ -65,43 +81,53 @@
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Nett
-                                Weight / Pcs (Kg)</label>
-                            <input type="number" step="any" id="in_net_pcs"
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Nett Weight / Pcs (Kg) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" step="any" id="in_net_pcs" value="{{ old('net_weight_pcs') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:bg-white transition-colors">
                         </div>
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Gross
-                                Weight / Pcs (Kg)</label>
-                            <input type="number" step="any" id="in_gross_pcs"
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Gross Weight / Pcs (Kg) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" step="any" id="in_gross_pcs" value="{{ old('gross_weight_per_pcs') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:bg-white transition-colors">
                         </div>
                     </div>
 
                     {{-- DOSE & DIMENSION GRID --}}
+                    @php
+                        // Memecah kembali string pack '20x10x10' menjadi P, L, T jika ada data old
+                        $oldDim = old('dimension_pack') ? explode('x', old('dimension_pack')) : ['', '', ''];
+                    @endphp
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dose
-                                Range (kGy)</label>
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Dose Range (kGy) <span class="text-red-500">*</span>
+                            </label>
                             <div class="flex gap-3">
                                 <input type="number" step="any" id="in_dmin" placeholder="Min"
+                                    value="{{ old('dmin') }}"
                                     class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:bg-white">
                                 <input type="number" step="any" id="in_dmax" placeholder="Max"
+                                    value="{{ old('dmax') }}"
                                     class="w-1/2 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:bg-white">
                             </div>
                         </div>
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Dimension
-                                (P x L x T) cm</label>
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Dimension (P x L x T) cm <span class="text-red-500">*</span>
+                            </label>
                             <div class="grid grid-cols-3 gap-2">
-                                <input type="number" id="in_length" placeholder="P"
+                                <input type="number" id="in_length" placeholder="P" value="{{ $oldDim[0] ?? '' }}"
                                     class="px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold focus:bg-white">
-                                <input type="number" id="in_width" placeholder="L"
+                                <input type="number" id="in_width" placeholder="L" value="{{ $oldDim[1] ?? '' }}"
                                     class="px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold focus:bg-white">
-                                <input type="number" id="in_height" placeholder="T"
+                                <input type="number" id="in_height" placeholder="T" value="{{ $oldDim[2] ?? '' }}"
                                     class="px-2 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-center font-bold focus:bg-white">
                             </div>
                         </div>
@@ -111,25 +137,30 @@
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Quantity</label>
-                            <input type="number" id="in_qty"
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Quantity <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="in_qty" value="{{ old('quantity') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Unit</label>
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Unit <span class="text-red-500">*</span>
+                            </label>
                             <select id="in_unit"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold outline-none">
-                                <option value="box">BOX / DUS</option>
-                                <option value="sack">SACK</option>
-                                <option value="drum">DRUM</option>
+                                <option value="box" {{ old('unit') == 'box' ? 'selected' : '' }}>BOX / DUS</option>
+                                <option value="sack" {{ old('unit') == 'sack' ? 'selected' : '' }}>SACK</option>
+                                <option value="drum" {{ old('unit') == 'drum' ? 'selected' : '' }}>DRUM</option>
                             </select>
                         </div>
                         <div class="space-y-2">
                             <label
-                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Temp
-                                Req.</label>
-                            <input type="text" id="in_temp" placeholder="None"
+                                class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
+                                Temp Req.
+                            </label>
+                            <input type="text" id="in_temp" placeholder="None" value="{{ old('expect_temp') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                     </div>
@@ -194,16 +225,7 @@
     @include('admin.bookings.partials.order-detail')
 
     <script>
-        // Fungsi pembantu agar angka rapi
-        // function formatNum(num, decimals = 2) {
-        //     if (num === null || num === undefined || isNaN(num)) return "0";
-        //     return new Intl.NumberFormat('id-ID', {
-        //         minimumFractionDigits: 0,
-        //         maximumFractionDigits: decimals
-        //     }).format(num);
-        // }
         function formatNum(num, decimals = 2) {
-            // Jika nilainya kosong, null, atau tidak diisi, kembalikan string kosong
             if (num === null || num === undefined || num === "") return "";
             if (isNaN(num)) return "0";
 
@@ -221,6 +243,9 @@
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('input', calculateSummary);
             });
+
+            // PICU UTK KALKULASI ULANG JIKA ADA DATA OLD/KEMBALI DARI ERROR VALIDASI
+            calculateSummary();
         });
 
         function fetchBookingCode() {
@@ -271,9 +296,10 @@
             const customer = document.getElementById('in_customer_id');
             const prodName = document.getElementById('in_product_name');
             const qtyVal = document.getElementById('in_qty').value;
+            const prodType = document.getElementById('in_product_type');
 
-            if (!customer.value || !prodName.value || !qtyVal) {
-                alert("Harap isi Nama Customer, Nama Produk, dan Quantity.");
+            if (!customer.value || !prodName.value || !qtyVal || !prodType) {
+                alert("Harap isi Nama Customer, Nama Produk, Jenis Product dan Quantity.");
                 return;
             }
 
@@ -283,22 +309,18 @@
                 document.getElementById('check_product_name').innerText = prodName.value;
                 document.getElementById('check_qty').innerText = formatNum(qtyVal, 0);
                 document.getElementById('check_unit').innerText = document.getElementById('in_unit').value;
-                // document.getElementById('check_dmin').innerText = formatNum(document.getElementById('in_dmin').value, 2);
-                // document.getElementById('check_dmax').innerText = formatNum(document.getElementById('in_dmax').value, 2);
+
                 const dminValue = document.getElementById('in_dmin').value;
                 const dmaxValue = document.getElementById('in_dmax').value;
-
-                // Ambil element pembungkus teks dose (cari tag <p class="font-bold text-emerald-600"> di partials)
                 const doseContainer = document.getElementById('check_dmin').parentElement;
 
                 if (dmaxValue) {
-                    // Jika dmax diisi, tampilkan "Min - Max kGy"
                     doseContainer.innerHTML =
                         `<span id="check_dmin">${formatNum(dminValue, 2)}</span> - <span id="check_dmax">${formatNum(dmaxValue, 2)}</span> kGy`;
                 } else {
-                    // Jika dmax kosong, hanya tampilkan "Min kGy"
                     doseContainer.innerHTML = `<span id="check_dmin">${formatNum(dminValue, 2)}</span> kGy`;
                 }
+
                 document.getElementById('check_dimension').innerText =
                     `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value} cm`;
 
@@ -314,9 +336,6 @@
                 document.getElementById('final_product_type').value = document.getElementById('in_product_type').value;
                 document.getElementById('final_qty').value = qtyVal;
                 document.getElementById('final_unit').value = document.getElementById('in_unit').value;
-                // document.getElementById('final_dmin').value = document.getElementById('in_dmin').value || 0;
-                // document.getElementById('final_dmax').value = document.getElementById('in_dmax').value;
-                // Biarkan kosong jika memang user tidak menginputkan apa-apa
                 document.getElementById('final_dmin').value = document.getElementById('in_dmin').value;
                 document.getElementById('final_dmax').value = document.getElementById('in_dmax').value;
                 document.getElementById('final_dim_pack').value =
