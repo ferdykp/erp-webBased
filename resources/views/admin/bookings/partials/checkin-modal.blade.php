@@ -249,7 +249,7 @@
                 </div>
 
                 {{-- STEP 3: PLACEMENT --}}
-                <div class="hidden step-content" id="step3">
+                {{-- <div class="hidden step-content" id="step3">
                     <div class="mb-6">
                         <h4 class="text-xs font-black tracking-widest uppercase md:text-sm text-slate-800">Assign
                             Location</h4>
@@ -258,6 +258,37 @@
                             each batch/pallet.</p>
                     </div>
                     <div id="placementContainer" class="space-y-3 md:space-y-4"></div>
+                </div> --}}
+
+                {{-- STEP 3: PLACEMENT --}}
+                <div class="hidden step-content" id="step3">
+                    <div class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h4 class="text-xs font-black tracking-widest uppercase md:text-sm text-slate-800">Assign
+                                Location</h4>
+                            <p class="mt-1 text-[10px] md:text-xs font-bold text-slate-400">Kelompokkan penempatan
+                                palet berdasarkan Line dan Petak.</p>
+                        </div>
+                        {{-- Info Status Alokasi Palet --}}
+                        <div class="p-3 text-right border border-blue-100 bg-blue-50 rounded-2xl">
+                            <p class="text-[10px] font-black uppercase text-slate-400">Status Alokasi Palet</p>
+                            <p class="text-xs font-black text-slate-700">
+                                <span id="allocated_pallets_display" class="text-blue-600">0</span> / <span
+                                    id="total_pallets_needed_display">0</span> Palet
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Kontainer baris lokasi --}}
+                    <div id="placementContainer" class="space-y-3 md:space-y-4"></div>
+
+                    {{-- Tombol Tambah Baris Lokasi Baru --}}
+                    <div class="mt-4">
+                        <button type="button" onclick="addPlacementRowGroup()"
+                            class="px-4 py-2.5 text-xs font-black text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-all">
+                            <i class="mr-1 fa-solid fa-plus"></i> Tambah Lokasi Penempatan
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -211,37 +211,56 @@ function generatePorterOptions() {
 
     return options;
 }
-function addPlacementRow() {
+// Fungsi untuk menambah baris grup lokasi baru secara dinamis
+function addPlacementRowGroup() {
     const container = document.getElementById("placementContainer");
 
-    const div = document.createElement("div");
+    // Gunakan nilai counter saat ini sebagai indeks unik
+    const index = placementRowCounter;
 
-    div.className = "grid grid-cols-3 gap-4 p-6 bg-slate-50 rounded-2xl";
+    const div = document.createElement("div");
+    div.className =
+        "grid items-end grid-cols-1 gap-4 p-4 duration-200 border placement-group-row sm:grid-cols-4 bg-slate-50 border-slate-100 rounded-2xl animate-in fade-in zoom-in";
+    div.setAttribute("id", `placement_row_${index}`);
+
+    // Tentukan apakah ini baris pertama di dalam container saat ini
+    const isFirstRow = container.children.length === 0;
 
     div.innerHTML = `
-
-        <select name="lines[]" class="px-4 py-3 bg-white rounded-xl">
-            <option value="">Line</option>
-            <option value="1">Line 1</option>
-            <option value="2">Line 2</option>
-        </select>
-
-        <select name="petaks[]" class="px-4 py-3 bg-white rounded-xl">
-            <option value="">Petak</option>
-            <option value="1">Petak 1</option>
-            <option value="2">Petak 2</option>
-            <option value="3">Petak 3</option>
-        </select>
-
-        <input type="number"
-            name="pallet_qty[]"
-            placeholder="Jumlah Pallet"
-            class="px-4 py-3 bg-white rounded-xl">
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Line</label>
+            <select name="lines[]" onchange="updateGroupPetakOptions(${index})" id="group_line_${index}" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+                <option value="">Choose Line</option>
+                ${generateLineOptions()}
+            </select>
+        </div>
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Petak (Section)</label>
+            <select name="petaks[]" id="group_petak_${index}" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+                <option value="">Choose Section</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Jumlah Palet</label>
+            <input type="number" name="pallet_qty[]" min="1" oninput="updateAllocatedPallets()" placeholder="Misal: 15" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+        <div class="flex items-center h-full pb-1">
+            ${
+                !isFirstRow
+                    ? `
+                <button type="button" onclick="document.getElementById('placement_row_${index}').remove(); updateAllocatedPallets();" class="text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1">
+                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                </button>
+            `
+                    : '<span class="text-[10px] text-slate-400 font-bold italic px-2">Lokasi Utama</span>'
+            }
+        </div>
     `;
-
     container.appendChild(div);
-}
 
+    // Naikkan nilai counter agar baris berikutnya mendapatkan ID yang berbeda
+    placementRowCounter++;
+}
 function changeStep(n) {
     if (n === 1 && !validateCurrentStep()) return;
 
@@ -464,49 +483,252 @@ document
     .addEventListener("input", syncHiddenInputs);
 
 // 4. PLACEMENT LOGIC
+// function preparePlacementFields() {
+//     const container = document.getElementById("placementContainer");
+//     container.innerHTML = "";
+
+//     // AMBIL NAMA PRODUK DARI ELEMEN UI YANG SUDAH ADA
+//     const namaProduk =
+//         document.getElementById("check_product_name").innerText || "Produk";
+
+//     const palletCount =
+//         parseInt(document.getElementById("pallet_count").value) || 0;
+//     const perPallet =
+//         parseInt(document.getElementById("per_pallet").value) || 0;
+//     const remainder =
+//         parseInt(document.getElementById("pallet_remainder").value) || 0;
+
+//     for (let i = 0; i < palletCount; i++) {
+//         let qty =
+//             i === palletCount - 1 && remainder > 0 ? remainder : perPallet;
+
+//         const div = document.createElement("div");
+//         div.className =
+//             "grid grid-cols-3 gap-4 p-4 border bg-slate-50 border-slate-100 rounded-2xl";
+
+//         div.innerHTML = `
+//             <div>
+//                 <p class="text-[10px] font-black text-slate-400 uppercase">Pallet ${i + 1}</p>
+//                 <p class="text-sm font-bold text-slate-800">${qty} Box</p>
+//                 <input type="hidden" name="pallet_qty[]" value="${qty}">
+//             </div>
+
+//             <input type="hidden" name="product_names[]" value="${namaProduk}">
+
+//             <select name="lines[]" onchange="updatePetakOptions(${i})" id="line_${i}" class="px-4 py-2 text-xs font-bold bg-white rounded-lg" required>
+//                 <option value="">Choose Line</option>
+//                 ${generateLineOptions()}
+//             </select>
+//             <select name="petaks[]" id="petak_${i}" class="px-4 py-3 text-xs font-bold bg-white rounded-lg" required>
+//                 <option value="">Choose Section</option>
+//             </select>
+//         `;
+//         container.appendChild(div);
+//     }
+// }
+
+// 4. PLACEMENT LOGIC
+
+// Sediakan satu variabel counter global agar ID elemen selalu unik
+let placementRowCounter = 0;
+
+// Fungsi yang dipanggil otomatis saat masuk ke Step 3
 function preparePlacementFields() {
     const container = document.getElementById("placementContainer");
-    container.innerHTML = "";
+    container.innerHTML = ""; // Reset container
 
-    // AMBIL NAMA PRODUK DARI ELEMEN UI YANG SUDAH ADA
-    const namaProduk =
-        document.getElementById("check_product_name").innerText || "Produk";
+    // Reset counter setiap kali masuk step 3 dari awal
+    placementRowCounter = 0;
 
     const palletCount =
         parseInt(document.getElementById("pallet_count").value) || 0;
-    const perPallet =
-        parseInt(document.getElementById("per_pallet").value) || 0;
-    const remainder =
-        parseInt(document.getElementById("pallet_remainder").value) || 0;
 
-    for (let i = 0; i < palletCount; i++) {
-        let qty =
-            i === palletCount - 1 && remainder > 0 ? remainder : perPallet;
+    // Update info display status alokasi di atas
+    document.getElementById("total_pallets_needed_display").innerText =
+        palletCount;
+    document.getElementById("allocated_pallets_display").innerText = 0;
 
-        const div = document.createElement("div");
-        div.className =
-            "grid grid-cols-3 gap-4 p-4 border bg-slate-50 border-slate-100 rounded-2xl";
+    // Secara default, buatkan 1 baris kosong pertama
+    addPlacementRowGroup();
+}
 
-        div.innerHTML = `
-            <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase">Pallet ${i + 1}</p>
-                <p class="text-sm font-bold text-slate-800">${qty} Box</p>
-                <input type="hidden" name="pallet_qty[]" value="${qty}">
-            </div>
-            
-            <input type="hidden" name="product_names[]" value="${namaProduk}">
-            
-            <select name="lines[]" onchange="updatePetakOptions(${i})" id="line_${i}" class="px-4 py-2 text-xs font-bold bg-white rounded-lg" required>
+// Fungsi untuk menambah baris grup lokasi baru secara dinamis
+function addPlacementRowGroup() {
+    const container = document.getElementById("placementContainer");
+
+    // Gunakan nilai counter saat ini sebagai indeks unik
+    const index = placementRowCounter;
+
+    const div = document.createElement("div");
+    div.className =
+        "grid items-end grid-cols-1 gap-4 p-4 duration-200 border placement-group-row sm:grid-cols-4 bg-slate-50 border-slate-100 rounded-2xl animate-in fade-in zoom-in";
+    div.setAttribute("id", `placement_row_${index}`);
+
+    // Tentukan apakah ini baris pertama di dalam container saat ini
+    const isFirstRow = container.children.length === 0;
+
+    div.innerHTML = `
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Line</label>
+            <select name="lines[]" onchange="updateGroupPetakOptions(${index})" id="group_line_${index}" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
                 <option value="">Choose Line</option>
                 ${generateLineOptions()}
             </select>
-            <select name="petaks[]" id="petak_${i}" class="px-4 py-3 text-xs font-bold bg-white rounded-lg" required>
+        </div>
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Petak (Section)</label>
+            <select name="petaks[]" id="group_petak_${index}" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
                 <option value="">Choose Section</option>
             </select>
-        `;
-        container.appendChild(div);
+        </div>
+        <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Jumlah Palet</label>
+            <input type="number" name="pallet_qty[]" min="1" oninput="updateAllocatedPallets()" placeholder="Misal: 15" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+        <div class="flex items-center h-full pb-1">
+            ${
+                !isFirstRow
+                    ? `
+                <button type="button" onclick="document.getElementById('placement_row_${index}').remove(); updateAllocatedPallets();" class="text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1">
+                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                </button>
+            `
+                    : '<span class="text-[10px] text-slate-400 font-bold italic px-2">Lokasi Utama</span>'
+            }
+        </div>
+    `;
+    container.appendChild(div);
+
+    // Naikkan nilai counter agar baris berikutnya mendapatkan ID yang berbeda
+    placementRowCounter++;
+}
+
+// Pembaruan select petak berdasarkan line terpilih pada baris spesifik
+function updateGroupPetakOptions(idx) {
+    const line = document.getElementById(`group_line_${idx}`).value;
+    const petakSelect = document.getElementById(`group_petak_${idx}`);
+
+    petakSelect.innerHTML = '<option value="">Choose Section</option>';
+    if (!line) return;
+
+    const availablePetaks = window.currentInventory.filter(
+        (i) => i.line == line,
+    );
+    const uniquePetaks = [...new Set(availablePetaks.map((i) => i.petak))];
+
+    uniquePetaks.forEach((p) => {
+        const pallet = availablePetaks.find((i) => i.petak == p);
+        const isFilled = pallet?.status === "filled";
+
+        petakSelect.innerHTML += `
+        <option value="${p}">
+            Petak ${p} ${isFilled ? "(Terisi)" : ""}
+        </option>`;
+    });
+}
+
+// Hitung total nilai input palet yang sudah dimasukkan oleh user
+function updateAllocatedPallets() {
+    const qtyInputs = document.querySelectorAll('input[name="pallet_qty[]"]');
+    let totalAllocated = 0;
+
+    qtyInputs.forEach((input) => {
+        totalAllocated += parseInt(input.value) || 0;
+    });
+
+    const displayEl = document.getElementById("allocated_pallets_display");
+    if (displayEl) {
+        displayEl.innerText = totalAllocated;
+
+        const totalNeeded =
+            parseInt(document.getElementById("pallet_count").value) || 0;
+        if (totalAllocated === totalNeeded) {
+            displayEl.className = "font-black text-emerald-600";
+        } else if (totalAllocated > totalNeeded) {
+            displayEl.className = "font-black text-red-600";
+        } else {
+            displayEl.className = "font-black text-blue-600";
+        }
     }
 }
+
+// Tambahkan pengecekan ini di bagian akhir fungsi penanganan submit form Anda
+// Validasi Step 3 dan generate input hidden name produk secara dinamis
+function validateStep3BeforeSubmit() {
+    const lines = document.querySelectorAll('select[name="lines[]"]');
+    const petaks = document.querySelectorAll('select[name="petaks[]"]');
+    const qtys = document.querySelectorAll('input[name="pallet_qty[]"]');
+    const totalNeeded =
+        parseInt(document.getElementById("pallet_count").value) || 0;
+    const form = document.getElementById("checkInForm");
+
+    let totalAllocated = 0;
+    let allFilled = true;
+
+    // 1. Validasi Kelengkapan Data Input
+    for (let i = 0; i < lines.length; i++) {
+        if (!lines[i].value || !petaks[i].value || !qtys[i].value) {
+            allFilled = false;
+        }
+        totalAllocated += parseInt(qtys[i].value) || 0;
+    }
+
+    if (!allFilled) {
+        alert(
+            "Mohon lengkapi semua pilihan Line, Petak, dan Jumlah Palet pada form!",
+        );
+        return false;
+    }
+
+    if (totalAllocated !== totalNeeded) {
+        alert(
+            `Jumlah palet yang dialokasikan (${totalAllocated}) tidak sesuai dengan total palet yang dibutuhkan (${totalNeeded})!`,
+        );
+        return false;
+    }
+
+    // 2. AMBIL NAMA PRODUK DARI UI HEADER MODAL ATAU STEP 1
+    const namaProduk =
+        document.getElementById("check_product_name")?.innerText || "Produk";
+
+    // 3. HAPUS INPUT PRODUCT_NAMES SEBELUMNYA AGAR TIDAK DUPLIKAT
+    const oldProductInputs = form.querySelectorAll(
+        'input[name="product_names[]"]',
+    );
+    oldProductInputs.forEach((el) => el.remove());
+
+    // 4. GENERATE INPUT HIDDEN BARU SEBANYAK JUMLAH BARIS LOCATION
+    // Ini menjamin Laravel menerima array dengan panjang yang sama persis
+    for (let i = 0; i < lines.length; i++) {
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "product_names[]";
+        hiddenInput.value = namaProduk;
+        form.appendChild(hiddenInput);
+    }
+
+    return true;
+}
+
+// Intercept form submit untuk validasi
+document.getElementById("checkInForm").addEventListener("submit", function (e) {
+    if (currentStep === 3) {
+        if (!validateStep3BeforeSubmit()) {
+            e.preventDefault(); // Batalkan submit jika validasi gagal atau kuantitas salah
+            return false;
+        }
+    }
+});
+// Hubungkan ke tombol finalSubmitBtn
+document.getElementById("checkInForm").addEventListener("submit", function (e) {
+    if (currentStep === 3) {
+        if (!validateStep3BeforeSubmit()) {
+            e.preventDefault(); // Batalkan submit jika salah kuantitas
+            return false;
+        }
+        syncHiddenInputs();
+    }
+});
 
 function generateLineOptions() {
     const uniqueLines = [
@@ -552,6 +774,22 @@ function updatePetakOptions(idx) {
     });
 }
 
+// function calculatePalletFromPerPallet() {
+//     const qty = maxQty;
+
+//     const perPallet =
+//         parseFloat(document.getElementById("per_pallet").value) || 0;
+
+//     if (perPallet <= 0) return;
+
+//     const pallet = Math.ceil(qty / perPallet);
+//     const remainder = qty % perPallet;
+
+//     document.getElementById("pallet_count").value = pallet;
+//     document.getElementById("pallet_remainder").value = remainder;
+
+//     updatePalletSummary(pallet, perPallet, remainder);
+// }
 function calculatePalletFromPerPallet() {
     const qty = maxQty;
 
@@ -560,12 +798,20 @@ function calculatePalletFromPerPallet() {
 
     if (perPallet <= 0) return;
 
-    const pallet = Math.ceil(qty / perPallet);
+    // 1. Hitung palet utama yang terisi penuh
+    let pallet = Math.floor(qty / perPallet);
     const remainder = qty % perPallet;
 
+    // 2. Jika ada sisa box, maka butuh +1 palet tambahan untuk menampungnya
+    if (remainder > 0) {
+        pallet = pallet + 1;
+    }
+
+    // Tuliskan hasil kalkulasi final ke input form
     document.getElementById("pallet_count").value = pallet;
     document.getElementById("pallet_remainder").value = remainder;
 
+    // Perbarui ringkasan visual hijau di bawahnya
     updatePalletSummary(pallet, perPallet, remainder);
 }
 
@@ -610,6 +856,7 @@ function updatePalletSummary(pallet, perPallet, remainder) {
     document.getElementById("sum_pallet").innerText = pallet;
     document.getElementById("sum_per_pallet").innerText = perPallet;
     document.getElementById("sum_remainder").innerText = remainder;
+    document.getElementById("sum_pallet").innerText = pallet; // Ini akan otomatis tercetak 39 sekarang!
 
     const dist = document.getElementById("pallet_distribution");
     dist.innerHTML = "";
