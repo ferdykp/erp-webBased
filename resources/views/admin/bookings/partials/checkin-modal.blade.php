@@ -181,7 +181,7 @@
                             </label>
                             <select name="pic_warehouse" required
                                 class="w-full px-5 py-3.5 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500 text-gray-700">
-                                <option value="">Pilih PIC Warehouse</option>
+                                <option value="">Choose PIC Warehouse</option>
                                 @foreach ($warehousePics as $pic)
                                     <option value="{{ $pic->name }}">{{ $pic->name }} (Shift:
                                         {{ $pic->shift ?? '-' }})</option>
@@ -194,7 +194,7 @@
                             <div id="porterContainer" class="space-y-2">
                                 <select name="porters[]"
                                     class="w-full px-5 py-3.5 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Pilih Porter Utama</option>
+                                    <option value="">Choose Porter</option>
                                     @foreach ($porters as $p)
                                         <option value="{{ $p->name }}">{{ $p->name }}</option>
                                     @endforeach
@@ -209,8 +209,8 @@
                             Pallet Planning</h4>
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
                             <div class="space-y-1">
-                                <label class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Jumlah
-                                    Palet</label>
+                                <label class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Number
+                                    of Pallets</label>
                                 <input type="number" id="pallet_count" min="1"
                                     class="w-full px-5 py-3.5 text-sm font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
                             </div>
@@ -221,8 +221,9 @@
                                     class="w-full px-5 py-3.5 text-sm font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div class="space-y-1">
-                                <label class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Sisa
-                                    Box</label>
+                                <label
+                                    class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Remaining
+                                    Qty</label>
                                 <input type="number" id="pallet_remainder" readonly
                                     class="w-full px-5 py-3.5 text-sm font-bold border-none bg-slate-100 rounded-2xl text-slate-500">
                             </div>
@@ -252,8 +253,9 @@
                     <div class="mb-6">
                         <h4 class="text-xs font-black tracking-widest uppercase md:text-sm text-slate-800">Assign
                             Location</h4>
-                        <p class="mt-1 text-[10px] md:text-xs font-bold text-slate-400">Tentukan lokasi rak untuk
-                            setiap batch/palet.</p>
+                        <p class="mt-1 text-[10px] md:text-xs font-bold text-slate-400">Determine the location of the
+                            shelves for
+                            each batch/pallet.</p>
                     </div>
                     <div id="placementContainer" class="space-y-3 md:space-y-4"></div>
                 </div>
