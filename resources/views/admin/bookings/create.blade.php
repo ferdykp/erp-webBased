@@ -7,9 +7,10 @@
         {{-- HEADER SECTION --}}
         <div class="flex flex-col gap-2 px-2 mb-4 text-center md:text-left">
             <h2 class="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">
-                Admin <span class="text-blue-600">Manual Booking</span>
+                Admin <span class="text-blue-600">Add Order</span>
             </h2>
-            <p class="text-xs font-medium text-gray-400 md:text-sm">Silakan isi detail produk untuk kalkulasi otomatis.</p>
+            <p class="text-xs font-medium text-gray-400 md:text-sm">Please fill in product details for automatic calculation.
+            </p>
         </div>
 
         {{-- NOTIFIKASI ERROR VALIDASI LARAVEL --}}
@@ -36,7 +37,7 @@
                         </label>
                         <select id="in_customer_id"
                             class="w-full px-4 py-3.5 bg-white border border-blue-100 rounded-2xl font-bold text-gray-700 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all">
-                            <option value="" disabled {{ old('customer_id') ? '' : 'selected' }}>Pilih Customer...
+                            <option value="" disabled {{ old('customer_id') ? '' : 'selected' }}>Choose Customer...
                             </option>
                             @foreach ($customers as $customer)
                                 <option value="{{ $customer->id }}"
