@@ -201,7 +201,7 @@ ${generatePorterOptions()}
 function generatePorterOptions() {
     const porterData = document.querySelectorAll("#porterDataSource div");
 
-    let options = '<option value="">Pilih Porter</option>';
+    let options = '<option value="">Choose Porter</option>';
 
     porterData.forEach((p) => {
         options += `<option value="${p.dataset.name}">
@@ -360,7 +360,7 @@ function submitCheckin() {
     });
 
     if (!valid) {
-        alert("Mohon pilih Line dan Petak untuk semua palet!");
+        alert("Please Choose Liane and Section for All Pallets!");
         return;
     }
 
@@ -375,7 +375,7 @@ function addPorterField() {
 
     const porterData = document.querySelectorAll("#porterDataSource div");
 
-    let options = '<option value="">Pilih Porter</option>';
+    let options = '<option value="">Choose Porter</option>';
 
     porterData.forEach((p) => {
         options += `<option value="${p.dataset.name}">
@@ -400,7 +400,7 @@ function addBatchField() {
     const container = document.getElementById("batchContainer");
     const porterData = document.querySelectorAll("#porterDataSource div");
 
-    let porterOptions = '<option value="">Pilih Porter</option>';
+    let porterOptions = '<option value="">Choose Porter</option>';
     porterData.forEach((p) => {
         porterOptions += `<option value="${p.dataset.name}">${p.dataset.name}</option>`;
     });
@@ -497,11 +497,11 @@ function preparePlacementFields() {
             <input type="hidden" name="product_names[]" value="${namaProduk}">
             
             <select name="lines[]" onchange="updatePetakOptions(${i})" id="line_${i}" class="px-4 py-2 text-xs font-bold bg-white rounded-lg" required>
-                <option value="">Pilih Line</option>
+                <option value="">Choose Line</option>
                 ${generateLineOptions()}
             </select>
             <select name="petaks[]" id="petak_${i}" class="px-4 py-3 text-xs font-bold bg-white rounded-lg" required>
-                <option value="">Pilih Petak</option>
+                <option value="">Choose Section</option>
             </select>
         `;
         container.appendChild(div);
@@ -521,7 +521,7 @@ function updatePetakOptions(idx) {
     const line = document.getElementById(`line_${idx}`).value;
     const petakSelect = document.getElementById(`petak_${idx}`);
 
-    petakSelect.innerHTML = '<option value="">Pilih Petak</option>';
+    petakSelect.innerHTML = '<option value="">Choose Section</option>';
 
     if (!line) return;
 
