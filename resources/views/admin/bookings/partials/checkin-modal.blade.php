@@ -51,7 +51,7 @@
                 {{-- STEP 1: VERIFICATION --}}
                 <div class="step-content" id="step1">
                     <div class="p-6 md:p-10 bg-blue-50/40 border border-blue-100 rounded-[2rem] md:rounded-[3rem] mb-8">
-                        <h4 class="mb-6 text-sm font-black md:text-lg text-slate-800">Mencocokkan Data Aktual</h4>
+                        <h4 class="mb-6 text-sm font-black md:text-lg text-slate-800">Matched Actual Data</h4>
                         <div class="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4 md:gap-6">
                             @php
                                 $infoFields = [
