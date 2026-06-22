@@ -164,8 +164,9 @@
                                 class="w-5 h-5 mt-0.5 text-blue-600 transition-all border-gray-200 rounded-lg focus:ring-blue-500">
                             <span
                                 class="text-[10px] md:text-xs font-bold leading-relaxed text-slate-600 group-hover:text-slate-800">
-                                Saya mengonfirmasi bahwa data fisik yang datang telah sesuai dengan spesifikasi teknis
-                                di atas.
+                                I confirm that the physical data that arrives is in accordance with the technical
+                                specifications
+                                above.
                             </span>
                         </label>
                     </div>

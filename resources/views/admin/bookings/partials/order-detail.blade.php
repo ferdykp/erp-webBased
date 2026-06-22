@@ -73,7 +73,8 @@
 
                 <div id="content_step1" class="space-y-8">
                     <div class="p-6 md:p-8 bg-blue-50/40 border border-blue-100 rounded-[2.5rem]">
-                        <h4 class="mb-6 text-sm font-black tracking-widest uppercase text-slate-800">Data Ringkasan</h4>
+                        <h4 class="mb-6 text-sm font-black tracking-widest uppercase text-slate-800">Data
+                        </h4>
                         <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Product</p>
@@ -137,21 +138,21 @@
                         class="flex items-center gap-4 p-6 transition-all border-2 border-dashed cursor-pointer border-slate-100 rounded-3xl hover:border-blue-400">
                         <input type="checkbox" id="confirm_verify"
                             class="w-6 h-6 text-blue-600 rounded-lg focus:ring-0">
-                        <span class="text-xs font-bold text-slate-500">Saya mengonfirmasi data fisik telah sesuai
-                            dengan spesifikasi di atas.</span>
+                        <span class="text-xs font-bold text-slate-500">I confirm the physical data is correct
+                            with the above specifications.</span>
                     </label>
 
                     <button type="button" onclick="toStep2()"
                         class="w-full py-4 font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-xl rounded-2xl hover:bg-blue-700 shadow-blue-100">
-                        Lanjut ke Pembayaran <i class="ml-2 fa-solid fa-arrow-right"></i>
+                        Next to Payment <i class="ml-2 fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
 
                 <div id="content_step2" class="hidden space-y-6">
                     <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm">
                         <div class="flex items-center justify-between px-8 py-4 border-b bg-slate-50 border-slate-100">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Rincian
-                                Biaya</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Detail
+                                Price</span>
                             <span class="text-[10px] font-bold py-1 px-3 bg-blue-100 text-blue-700 rounded-full">Rp 500
                                 / dose*kg</span>
                         </div>
@@ -159,7 +160,7 @@
                         <div class="p-8 space-y-4">
                             <div class="flex items-start justify-between text-slate-600">
                                 <div>
-                                    <p class="text-xs font-bold tracking-tighter uppercase">Harga Dasar (Subtotal)</p>
+                                    <p class="text-xs font-bold tracking-tighter uppercase">Base Price (Subtotal)</p>
                                     <p class="text-[10px] text-slate-400 italic">500 × <span id="calc_qty">0</span>
                                         qty × <span id="calc_nett">0</span> kg × <span id="calc_dmin">0</span> kGy</p>
                                 </div>
@@ -167,14 +168,14 @@
                             </div>
 
                             <div class="flex items-center justify-between text-slate-600">
-                                <p class="text-xs font-bold tracking-tighter uppercase text-slate-400">Pajak (PPN 11%)
+                                <p class="text-xs font-bold tracking-tighter uppercase text-slate-400">Tax (PPN 11%)
                                 </p>
                                 <span class="font-bold text-slate-400" id="display_tax">Rp 0</span>
                             </div>
 
                             <div
                                 class="flex items-center justify-between pt-4 border-t-2 border-dashed border-slate-100">
-                                <p class="text-sm font-black tracking-widest uppercase text-slate-800">Total Bayar</p>
+                                <p class="text-sm font-black tracking-widest uppercase text-slate-800">Total Price</p>
                                 <h4 class="text-3xl font-black text-blue-600" id="display_total_price">Rp 0</h4>
                             </div>
                         </div>
@@ -182,20 +183,20 @@
 
                     <div class="p-6 border bg-slate-50 rounded-3xl border-slate-100">
                         <label
-                            class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 block text-center">Gunakan
-                            PPN dalam perhitungan?</label>
+                            class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 block text-center">Use
+                            Tax (PPN11%) or not?</label>
                         <div class="flex gap-4">
                             <label
                                 class="flex-1 relative flex items-center justify-center p-3 border-2 bg-white rounded-2xl cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition-all shadow-sm">
                                 <input type="radio" name="use_ppn" value="0" checked
                                     onchange="calculatePrice()" class="absolute opacity-0">
-                                <span class="text-sm font-black text-slate-500">TANPA PPN</span>
+                                <span class="text-sm font-black text-slate-500">Without Tax</span>
                             </label>
                             <label
                                 class="flex-1 relative flex items-center justify-center p-3 border-2 bg-white rounded-2xl cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition-all shadow-sm">
                                 <input type="radio" name="use_ppn" value="0.11" onchange="calculatePrice()"
                                     class="absolute opacity-0">
-                                <span class="text-sm font-black text-slate-500">PPN 11%</span>
+                                <span class="text-sm font-black text-slate-500">Tax (PPN 11%)</span>
                             </label>
                         </div>
                     </div>
@@ -207,9 +208,9 @@
                                 <i class="fa-solid fa-wallet"></i>
                             </div>
                             <div>
-                                <h4 class="text-sm font-black tracking-tight uppercase text-slate-800">Status
-                                    Pembayaran</h4>
-                                <p class="text-[10px] text-slate-500">Tentukan status invoice pesanan ini.</p>
+                                <h4 class="text-sm font-black tracking-tight uppercase text-slate-800">
+                                    Payment Status</h4>
+                                <p class="text-[10px] text-slate-500">Specify the invoice status of this order.</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -219,7 +220,7 @@
                                     class="absolute opacity-0">
                                 <i class="fa-solid fa-clock text-slate-400"></i>
                                 <div class="flex flex-col">
-                                    <span class="font-black text-slate-800 uppercase text-[10px]">Bayar Nanti</span>
+                                    <span class="font-black text-slate-800 uppercase text-[10px]">Pay Later</span>
                                     <span
                                         class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Invoicing</span>
                                 </div>
@@ -230,9 +231,9 @@
                                     class="absolute opacity-0">
                                 <i class="fa-solid fa-check-double text-slate-400"></i>
                                 <div class="flex flex-col">
-                                    <span class="font-black text-slate-800 uppercase text-[10px]">Sudah Bayar</span>
-                                    <span
-                                        class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Lunas</span>
+                                    <span class="font-black text-slate-800 uppercase text-[10px]">Payment Done</span>
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Paid
+                                        Off</span>
                                 </div>
                             </label>
                         </div>
@@ -240,10 +241,10 @@
 
                     <div class="flex flex-col gap-4 pt-4 md:flex-row">
                         <button type="button" onclick="toStep1()"
-                            class="flex-1 py-4 font-bold tracking-widest uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">Kembali</button>
+                            class="flex-1 py-4 font-bold tracking-widest uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">Back</button>
                         <button type="submit"
-                            class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all">Simpan
-                            Order Sekarang</button>
+                            class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all">Submit
+                            Order</button>
                     </div>
                 </div>
             </div>
