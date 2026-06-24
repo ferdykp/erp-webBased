@@ -272,7 +272,7 @@
                         </div>
                         {{-- Info Status Alokasi Palet --}}
                         <div class="p-3 text-right border border-blue-100 bg-blue-50 rounded-2xl">
-                            <p class="text-[10px] font-black uppercase text-slate-400">Status Alokasi Palet</p>
+                            <p class="text-[10px] font-black uppercase text-slate-400">Alocation Placement Status</p>
                             <p class="text-xs font-black text-slate-700">
                                 <span id="allocated_pallets_display" class="text-blue-600">0</span> / <span
                                     id="total_pallets_needed_display">0</span> Palet
@@ -287,7 +287,7 @@
                     <div class="mt-4">
                         <button type="button" onclick="addPlacementRowGroup()"
                             class="px-4 py-2.5 text-xs font-black text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-all">
-                            <i class="mr-1 fa-solid fa-plus"></i> Tambah Lokasi Penempatan
+                            <i class="mr-1 fa-solid fa-plus"></i> Add Location Placement
                         </button>
                     </div>
                 </div>
