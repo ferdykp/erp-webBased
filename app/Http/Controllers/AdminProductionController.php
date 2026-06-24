@@ -12,7 +12,27 @@ use Illuminate\Support\Facades\DB;
 
 class AdminProductionController extends Controller
 {
+    public function index()
+    {
+        // 1. Hitung jumlah batch secara real-time berdasarkan status di model BookingBatch
+        $stats = [
+            'waiting'    => \App\Models\BookingBatch::where('status', 'waiting')->count(),
+            'processing' => \App\Models\BookingBatch::where('status', 'processing')->count(),
+            'done'       => \App\Models\BookingBatch::where('status', 'done')->count(),
+        ];
 
+        // 2. Ambil data booking yang aktif beserta relasinya (eager loading untuk mencegah N+1 query)
+        $bookings = Booking::with(['customer.contacts', 'products', 'batches.productionLine'])
+            ->whereIn('status', ['approved', 'processing'])
+            ->latest()
+            ->get();
+
+        // 3. Ambil data mesin untuk kebutuhan dropdown parameter di dalam loop batch
+        $productionLines = ProductionLine::orderBy('name')->get();
+
+        // 4. Kirim semua data ke view dashboard
+        return view('admin.production.index', compact('stats', 'bookings', 'productionLines'));
+    }
     public function parameterSetting()
     {
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])

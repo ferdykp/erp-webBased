@@ -4,7 +4,7 @@
 
 @section('content')
 
-    {{-- Data Source: Hidden data untuk referensi JavaScript --}}
+    {{-- Data Source: Hidden data for JavaScript reference --}}
     <div id="porterDataSource" class="hidden">
         @foreach ($porters as $p)
             <div data-name="{{ $p->name }}"></div>
@@ -15,12 +15,15 @@
 
         {{-- HEADER --}}
         <div class="flex flex-col gap-6 px-2 lg:flex-row lg:items-center lg:justify-between">
-            <div class="space-y-1">
+            <div>
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-semibold tracking-widest text-purple-600 uppercase border border-purple-100 rounded-full bg-purple-50">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                    Step 1 of 4
+                </div>
                 <h2 class="text-3xl font-black tracking-tighter md:text-4xl text-slate-800">Process Parameter</h2>
-                <p class="text-xs font-medium md:text-sm text-slate-500">Step 1: Process Set &amp; split batch sebelum masuk
-                    ke tahap
-                    <span class="font-semibold text-blue-600">In Irradiation</span>.
-                </p>
+                <p class="mt-1 text-xs font-medium md:text-sm text-slate-500">Configure baseline controls and system
+                    allocation parameters for pending batches.</p>
             </div>
             <button onclick="document.getElementById('createMachineModal').classList.replace('hidden','flex')"
                 class="flex items-center justify-center gap-2 px-6 py-4 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 shadow-blue-100 sm:w-max">
@@ -29,7 +32,7 @@
             </button>
         </div>
 
-        {{-- ═══ MASTER MESIN (Production Lines) ═══ --}}
+        {{-- ═══ MACHINE LIST (Production Lines) ═══ --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8">
             <h3 class="mb-5 text-base font-black md:text-lg text-slate-700">
                 <i class="mr-2 text-blue-600 fa-solid fa-gear"></i>Machine List
@@ -45,7 +48,7 @@
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                             <form action="{{ route('admin.production-lines.destroy', $line) }}" method="POST"
-                                onsubmit="return confirm('Hapus mesin {{ $line->name }}?')" class="inline-block m-0">
+                                onsubmit="return confirm('Delete machine {{ $line->name }}?')" class="inline-block m-0">
                                 @csrf @method('DELETE')
                                 <button type="submit"
                                     class="w-7 h-7 flex items-center justify-center text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-all text-[10px]">
@@ -55,7 +58,7 @@
                         </div>
                     </div>
                 @empty
-                    <p class="text-sm italic text-slate-400">Belum ada mesin terdaftar.</p>
+                    <p class="text-sm italic text-slate-400">No machines registered yet.</p>
                 @endforelse
             </div>
         </div>
@@ -68,7 +71,7 @@
 
             @if ($bookings->isEmpty())
                 <div class="py-12 text-center">
-                    <p class="text-sm font-medium text-slate-400">Belum ada booking dengan status Approved.</p>
+                    <p class="text-sm font-medium text-slate-400">No bookings found with Approved status.</p>
                 </div>
             @else
                 {{-- Mobile View: Cards --}}
@@ -197,7 +200,7 @@
 
     {{-- ═══ MODAL WRAPPER (COMMON) ═══ --}}
     {{-- Create & Edit Machine Modal --}}
-    @foreach (['create' => 'Add New Machine', 'edit' => 'Edit Mesin'] as $key => $title)
+    @foreach (['create' => 'Add New Machine', 'edit' => 'Edit Machine'] as $key => $title)
         <div id="{{ $key }}MachineModal"
             class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-6 md:p-10">
@@ -208,20 +211,20 @@
                         @method('PUT')
                     @endif
                     <div class="mb-6">
-                        <label class="block mb-2 text-[10px] font-black uppercase text-slate-400">Nama Mesin</label>
+                        <label class="block mb-2 text-[10px] font-black uppercase text-slate-400">Machine Name</label>
                         <input type="text" name="name" id="{{ $key }}MachineName" required
-                            placeholder='Contoh: "Mesin 1"'
+                            placeholder='e.g., "Machine 1"'
                             class="w-full px-6 py-4 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row">
                         <button type="button"
                             onclick="document.getElementById('{{ $key }}MachineModal').classList.replace('flex','hidden')"
                             class="flex-1 order-2 py-4 text-sm font-black uppercase transition-all sm:order-1 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit"
                             class="flex-1 order-1 py-4 text-sm font-black text-white uppercase transition-all bg-blue-600 shadow-lg sm:order-2 rounded-2xl hover:bg-blue-700 shadow-blue-100">
-                            {{ $key == 'create' ? 'Simpan' : 'Update' }}
+                            {{ $key == 'create' ? 'Save' : 'Update' }}
                         </button>
                     </div>
                 </form>
@@ -238,7 +241,8 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h3 class="text-xl font-black md:text-2xl text-slate-800">Update Process</h3>
-                        <p class="mt-1 text-xs md:text-sm text-slate-500">Set parameter produksi dan pembagian batch.</p>
+                        <p class="mt-1 text-xs md:text-sm text-slate-500">Set production parameters and batch distribution.
+                        </p>
                     </div>
                     <button type="button" onclick="closeUpdateProcessModal()"
                         class="flex items-center justify-center w-10 h-10 transition rounded-xl bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500">
@@ -277,7 +281,7 @@
                             <select name="production_line_id"
                                 class="w-full px-4 py-3.5 text-xs font-bold border-none bg-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500"
                                 required>
-                                <option value="">-- Pilih Mesin --</option>
+                                <option value="">-- Select Machine --</option>
                                 @foreach ($productionLines as $machine)
                                     <option value="{{ $machine->id }}">{{ $machine->name }}</option>
                                 @endforeach
@@ -302,7 +306,7 @@
                             <select name="loading_mode"
                                 class="w-full px-4 py-3.5 text-xs font-bold border-none bg-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500"
                                 required>
-                                <option value="" disabled selected>Pilih Mode Loading</option>
+                                <option value="" disabled selected>Select Loading Mode</option>
                                 <option value="single-side">Single Side</option>
                                 <option value="double-side">Double Side</option>
                             </select>
@@ -323,13 +327,17 @@
 
                     <div class="pt-6 space-y-4 border-t border-slate-100">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <h4 class="text-sm font-black text-slate-800">Pembagian Batch Produksi</h4>
-                            <div class="flex items-center gap-3">
+                            <h4 class="text-sm font-black text-slate-800">Production Batch Distribution</h4>
+                            <div class="flex flex-wrap items-center gap-2">
                                 <span id="cap_badge"
                                     class="px-3 py-1.5 text-[9px] font-black bg-slate-100 rounded-lg text-slate-600">
                                     Total: <span id="current_total_display">0</span> / <span
                                         id="total_qty_display">0</span>
                                 </span>
+                                <button type="button" onclick="addAllProductField()"
+                                    class="px-4 py-2 bg-blue-600 text-white text-[9px] font-black uppercase rounded-lg hover:bg-blue-700 transition-all">
+                                    Add All Product
+                                </button>
                                 <button type="button" onclick="addBatchField()"
                                     class="px-4 py-2 bg-slate-800 text-white text-[9px] font-black uppercase rounded-lg hover:bg-black transition-all">
                                     + Add Batch
@@ -342,7 +350,7 @@
                     <div class="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end">
                         <button type="button" onclick="closeUpdateProcessModal()"
                             class="px-8 py-4 text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit" id="submitProcessBtn"
                             class="px-8 py-4 text-[10px] font-black text-white uppercase transition-all bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -368,19 +376,25 @@
                 "batch-row p-4 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col sm:flex-row gap-4 items-end transition-all";
             div.innerHTML = `
                 <div class="flex-1 w-full">
-                    <label class="text-[9px] font-black text-slate-400 uppercase mb-1.5 block">Qty Batch</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase mb-1.5 block">Batch Qty</label>
                     <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required 
                         value="${qty}"
                         class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 batch-input rounded-xl focus:ring-2 focus:ring-blue-500">
                 </div>
                 <button type="button" onclick="this.closest('.batch-row').remove(); updateBatchTotal();" 
                     class="flex items-center justify-center w-full h-10 px-4 text-xs font-bold text-red-500 transition-all sm:w-auto bg-red-50 rounded-xl hover:bg-red-500 hover:text-white">
-                    <i class="mr-2 fa-solid fa-trash-can sm:mr-0"></i> <span class="sm:hidden">Hapus Batch</span>
+                    <i class="mr-2 fa-solid fa-trash-can sm:mr-0"></i> <span class="sm:hidden">Remove Batch</span>
                 </button>
                 <input type="hidden" name="batch_porters[]" value="-">
             `;
             container.appendChild(div);
             updateBatchTotal();
+        }
+
+        function addAllProductField() {
+            const container = document.getElementById('batchContainer');
+            container.innerHTML = ''; // Clear previous fields
+            addBatchField(maxQty); // Fill 1 single batch with the maximum available quantity
         }
 
         function updateBatchTotal() {
@@ -417,7 +431,7 @@
             modal.querySelector('#processBookingCode').textContent = `#${data.bookingCode}`;
             modal.querySelector('#processCustomerName').textContent = data.customerName;
             modal.querySelector('#processProductName').textContent = data.productName;
-            modal.querySelector('#processRemainingInfo').textContent = `${data.remaining} ${data.unit} siap diproses.`;
+            modal.querySelector('#processRemainingInfo').textContent = `${data.remaining} ${data.unit} ready to process.`;
             modal.querySelector('input[name="booking_id"]').value = data.bookingId;
 
             maxQty = parseFloat(data.remaining) || 0;

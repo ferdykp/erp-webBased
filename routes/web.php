@@ -130,6 +130,7 @@ Route::prefix('admin')
             Route::post('/production/process', [AdminProductionController::class, 'processBooking'])->name('admin.production.process');
 
             // Step 2 – Batch Queue & Start Irradiation
+            Route::get('/production/', [AdminProductionController::class, 'index'])->name('admin.production.index');
             Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])->name('admin.production.batch-queue');
             Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])->name('admin.production.batches.store');
             Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])->name('admin.production.batches.start');

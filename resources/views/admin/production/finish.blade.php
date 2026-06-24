@@ -10,9 +10,9 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <div
-                    class="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-semibold tracking-widest uppercase border rounded-full bg-emerald-50 text-emerald-600 border-emerald-100">
-                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Step 3 of 3
+                    class="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-semibold tracking-widest text-purple-600 uppercase border border-purple-100 rounded-full bg-purple-50">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                    Step 4 of 4
                 </div>
                 <h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">Product Finish</h1>
                 <p class="mt-1 text-sm text-gray-400">

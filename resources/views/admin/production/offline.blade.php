@@ -9,6 +9,11 @@
         {{-- HEADER --}}
         <div class="flex flex-col gap-4 px-2 md:flex-row md:items-center md:justify-between">
             <div>
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-semibold tracking-widest text-purple-600 uppercase border border-purple-100 rounded-full bg-purple-50">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                    Step 3 of 4
+                </div>
                 <h2 class="text-3xl font-black tracking-tighter md:text-4xl text-slate-800">Process Product Irradiation</h2>
                 <p class="mt-1 text-xs font-medium md:text-sm text-slate-500">
                     Step 2: monitor batch with status <span class="font-semibold text-blue-600">In Irradiation</span> and

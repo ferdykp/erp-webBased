@@ -10,8 +10,8 @@
         <div class="flex flex-col gap-6 px-2 md:flex-row md:items-center md:justify-between">
             <div>
                 <h2 class="text-4xl font-black tracking-tighter text-slate-800">Production Dashboard</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500">Kelola proses penyinaran, parameter mesin, dan status
-                    batch.</p>
+                <p class="mt-1 text-sm font-medium text-slate-500">Monitor order progress, track batch milestones, and
+                    oversee the execution flow.</p>
             </div>
             <div class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 shadow-sm rounded-2xl">
                 <i class="text-blue-600 fa-regular fa-calendar"></i>
@@ -19,18 +19,97 @@
             </div>
         </div>
 
+        {{-- ═══ E-WORKFLOW GUIDE SECTION ═══ --}}
+        <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] p-6 md:p-8 space-y-6">
+            <div>
+                <h3 class="text-base font-black tracking-wider uppercase text-slate-800">
+                    <i class="mr-2 text-indigo-500 fa-solid fa-route"></i>Standard Operating Procedure (SOP) Flow
+                </h3>
+                <p class="mt-1 text-xs text-slate-400">Follow these sequential steps in the sidebar navigation to process
+                    incoming consignments:</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div class="relative p-4 overflow-hidden border rounded-2xl bg-slate-50 border-slate-100 group">
+                    <div
+                        class="absolute text-4xl font-black transition-colors select-none right-3 top-2 text-slate-100 group-hover:text-slate-200/50">
+                        01</div>
+                    <span
+                        class="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase rounded-md bg-purple-100 text-purple-700">Step
+                        1</span>
+                    <h4 class="mt-2 text-xs font-black text-slate-800">1. Process Parameter</h4>
+                    <p class="mt-1 text-[11px] font-medium leading-relaxed text-slate-500">
+                        Configure baseline controls including production line allocation, target dose ($kGy$), beam speed
+                        ($m/s$), loading mode, and frequency ($Hz$).
+                    </p>
+                </div>
+
+                <div class="relative p-4 overflow-hidden border rounded-2xl bg-slate-50 border-slate-100 group">
+                    <div
+                        class="absolute text-4xl font-black transition-colors select-none right-3 top-2 text-slate-100 group-hover:text-slate-200/50">
+                        02</div>
+                    <span
+                        class="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase rounded-md bg-amber-100 text-amber-700">Step
+                        2</span>
+                    <h4 class="mt-2 text-xs font-black text-slate-800">2. Queue Task</h4>
+                    <p class="mt-1 text-[11px] font-medium leading-relaxed text-slate-500">
+                        The holding bay queue. Review pending jobs and click <strong class="text-blue-600">"Start
+                            Irradiation"</strong> once pallets are physically staged to dispatch them.
+                    </p>
+                </div>
+
+                <div class="relative p-4 overflow-hidden border rounded-2xl bg-slate-50 border-slate-100 group">
+                    <div
+                        class="absolute text-4xl font-black transition-colors select-none right-3 top-2 text-slate-100 group-hover:text-slate-200/50">
+                        03</div>
+                    <span
+                        class="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase rounded-md bg-blue-100 text-blue-700">Step
+                        3</span>
+                    <h4 class="mt-2 text-xs font-black text-slate-800">3. In Irradiation</h4>
+                    <p class="mt-1 text-[11px] font-medium leading-relaxed text-slate-500">
+                        Live monitoring console. Lists all active runs currently executing inside the Electron Beam machine
+                        room in real-time.
+                    </p>
+                </div>
+
+                <div class="relative p-4 overflow-hidden border rounded-2xl bg-slate-50 border-slate-100 group">
+                    <div
+                        class="absolute text-4xl font-black transition-colors select-none right-3 top-2 text-slate-100 group-hover:text-slate-200/50">
+                        04</div>
+                    <span
+                        class="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase rounded-md bg-emerald-100 text-emerald-700">Step
+                        4</span>
+                    <h4 class="mt-2 text-xs font-black text-slate-800">4. Finish Irradiation</h4>
+                    <p class="mt-1 text-[11px] font-medium leading-relaxed text-slate-500">
+                        Conclude the run by clicking <strong class="text-emerald-600">"Finish"</strong>. Complete the
+                        required Quality Assurance logs (actual dose metrics, indicator changes, and defects).
+                    </p>
+                </div>
+            </div>
+        </div>
+
         {{-- ═══ STATS CARDS ═══ --}}
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
             @php
                 $statCards = [
-                    ['label' => 'Waiting', 'count' => $stats['waiting'], 'color' => 'amber', 'icon' => 'fa-clock'],
                     [
-                        'label' => 'In Irradiation',
-                        'count' => $stats['processing'],
+                        'label' => 'Batches In Queue',
+                        'count' => $stats['waiting'] ?? 0,
+                        'color' => 'amber',
+                        'icon' => 'fa-clock',
+                    ],
+                    [
+                        'label' => 'Active Irradiations',
+                        'count' => $stats['processing'] ?? 0,
                         'color' => 'blue',
                         'icon' => 'fa-radiation',
                     ],
-                    ['label' => 'Done', 'count' => $stats['done'], 'color' => 'emerald', 'icon' => 'fa-circle-check'],
+                    [
+                        'label' => 'Completed (QA Passed)',
+                        'count' => $stats['done'] ?? 0,
+                        'color' => 'emerald',
+                        'icon' => 'fa-circle-check',
+                    ],
                 ];
             @endphp
             @foreach ($statCards as $stat)
@@ -46,15 +125,17 @@
             @endforeach
         </div>
 
-        {{-- ═══ BOOKING CARDS ═══ --}}
+        {{-- ═══ BOOKING CARDS (PURE ORDER STATUS TRACKING) ═══ --}}
         @forelse ($bookings as $booking)
-            @php $product = $booking->products->first(); @endphp
-            <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] overflow-hidden"
-                x-data="{ expanded: true }">
+            @php
+                $product = $booking->products->first();
+                $totalProductQty = $booking->products->sum('quantity') ?? 0;
+                $unit = $product->unit ?? '';
+            @endphp
+            <div class="bg-white border border-slate-100 shadow-sm rounded-[2.5rem] overflow-hidden">
 
-                {{-- Booking Header --}}
-                <div class="flex flex-col gap-4 p-8 cursor-pointer md:flex-row md:items-center md:justify-between hover:bg-slate-50/50"
-                    @click="expanded = !expanded">
+                {{-- Booking Card Main Info Row --}}
+                <div class="flex flex-col gap-4 p-8 md:flex-row md:items-center md:justify-between">
                     <div class="flex items-center gap-4">
                         <div
                             class="flex items-center justify-center w-12 h-12 font-black text-blue-700 bg-blue-50 rounded-2xl">
@@ -62,230 +143,80 @@
                         </div>
                         <div>
                             <p class="text-lg font-black text-slate-800">
-                                {{ $booking->customer->contacts->first()->name ?? 'Guest' }}</p>
+                                {{ $booking->customer->contacts->first()->name ?? 'Guest Client' }}
+                            </p>
                             <div class="flex items-center gap-3 mt-1">
                                 <span class="px-3 py-1 font-mono text-xs font-bold rounded-lg bg-slate-100 text-slate-600">
                                     #{{ $booking->booking_code }}
                                 </span>
                                 @php
                                     $statusColors = [
-                                        'approved' => 'bg-sky-100 text-sky-700',
-                                        'processing' => 'bg-purple-100 text-purple-700',
+                                        'approved' => 'bg-amber-100 text-amber-700',
+                                        'processing' => 'bg-blue-100 text-blue-700',
+                                        'completed' => 'bg-emerald-100 text-emerald-700',
                                     ];
                                 @endphp
                                 <span
                                     class="px-3 py-1 text-xs font-black uppercase rounded-lg {{ $statusColors[$booking->status] ?? 'bg-slate-100 text-slate-600' }}">
-                                    {{ $booking->status }}
+                                    @if ($booking->status === 'approved')
+                                        Batches In Queue
+                                    @elseif($booking->status === 'processing')
+                                        Active Irradiation
+                                    @elseif($booking->status === 'completed')
+                                        Completed
+                                    @else
+                                        {{ $booking->status }}
+                                    @endif
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-6">
-                        <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Produk</p>
+
+                    {{-- Product Metadata & Milestone Status Tracking --}}
+                    <div class="flex flex-wrap items-center gap-6 pr-2 md:gap-8">
+                        <div class="text-left md:text-right">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Product Description
+                            </p>
                             <p class="text-sm font-bold text-slate-700">{{ $product->product_name ?? '-' }}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Total Qty</p>
-                            <p class="text-sm font-bold text-slate-700">{{ $product->quantity ?? 0 }}
-                                {{ $product->unit ?? '' }}</p>
+                        <div class="text-left md:text-right">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Mass/Qty</p>
+                            <p class="text-sm font-bold text-slate-700">
+                                {{ $totalProductQty }} {{ $unit }}
+                            </p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Batch</p>
-                            <p class="text-sm font-bold text-slate-700">{{ $booking->batches->count() }}</p>
+                        <div class="text-left md:text-right">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Inward Date</p>
+                            <p class="text-sm font-bold text-slate-700">
+                                {{ $booking->created_at ? $booking->created_at->format('d/m/Y') : '-' }}
+                            </p>
                         </div>
-                        <i class="transition-transform duration-200 fa-solid fa-chevron-down text-slate-400"
-                            :class="expanded ? 'rotate-180' : ''"></i>
-                    </div>
-                </div>
 
-                {{-- Expanded Content --}}
-                <div x-show="expanded" x-cloak x-collapse>
-                    <div class="px-8 pb-8 space-y-6">
-
-                        {{-- ── Batch Progress Bar ── --}}
-                        @php
-                            $totalProductQty = $booking->products->sum('quantity');
-                            $totalBatchQty = $booking->batches->sum('quantity');
-                            $remaining = $totalProductQty - $totalBatchQty;
-                            $pct = $totalProductQty > 0 ? round(($totalBatchQty / $totalProductQty) * 100) : 0;
-                        @endphp
-                        <div class="p-4 border bg-slate-50 border-slate-100 rounded-2xl">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-black text-slate-500">Kapasitas Batch</span>
-                                <span class="text-xs font-bold text-slate-400">{{ $totalBatchQty }} /
-                                    {{ $totalProductQty }} {{ $product->unit ?? '' }} ({{ $pct }}%)</span>
-                            </div>
-                            <div class="w-full h-2 overflow-hidden rounded-full bg-slate-200">
-                                <div class="h-full transition-all bg-blue-500 rounded-full"
-                                    style="width: {{ $pct }}%"></div>
-                            </div>
-                            @if ($remaining > 0)
-                                <p class="mt-2 text-xs font-bold text-amber-600">
-                                    <i class="mr-1 fa-solid fa-circle-info"></i>
-                                    Sisa {{ $remaining }} {{ $product->unit ?? '' }} belum terbagi ke batch.
-                                </p>
+                        {{-- Visual Indicator Based on Status --}}
+                        <div class="flex items-center pl-2 border-l border-slate-100">
+                            @if ($booking->status === 'approved')
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black tracking-wider text-amber-600 uppercase bg-amber-50 rounded-xl">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    Batches In Queue
+                                </span>
+                            @elseif($booking->status === 'processing')
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black tracking-wider text-blue-600 uppercase bg-blue-50 rounded-xl">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                    Active Irradiation
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black tracking-wider text-emerald-600 uppercase bg-emerald-50 rounded-xl">
+                                    <i class="fa-solid fa-circle-check text-[10px]"></i>
+                                    Completed (QA Passed)
+                                </span>
                             @endif
                         </div>
-
-                        {{-- ── Existing Batches ── --}}
-                        @foreach ($booking->batches as $batch)
-                            <div
-                                class="p-6 bg-white border-2 rounded-[2rem] {{ $batch->status === 'done' ? 'border-emerald-100' : ($batch->status === 'processing' ? 'border-blue-100' : 'border-slate-100') }}">
-
-                                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                    {{-- Batch Info --}}
-                                    <div class="flex items-center gap-4">
-                                        @php
-                                            $batchStatusIcon = [
-                                                'waiting' => 'fa-clock text-amber-500',
-                                                'processing' => 'fa-radiation text-blue-500 animate-pulse',
-                                                'done' => 'fa-check-circle text-emerald-500',
-                                            ];
-                                            $batchStatusBg = [
-                                                'waiting' => 'bg-amber-50',
-                                                'processing' => 'bg-blue-50',
-                                                'done' => 'bg-emerald-50',
-                                            ];
-                                        @endphp
-                                        <div
-                                            class="flex items-center justify-center w-10 h-10 rounded-xl {{ $batchStatusBg[$batch->status] ?? 'bg-slate-50' }}">
-                                            <i
-                                                class="fa-solid {{ $batchStatusIcon[$batch->status] ?? 'fa-question text-slate-400' }}"></i>
-                                        </div>
-                                        <div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-sm font-black text-slate-800">Batch
-                                                    #{{ $batch->batch_number }}</span>
-                                                <span
-                                                    class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md
-                                                    {{ $batch->status === 'done' ? 'bg-emerald-100 text-emerald-700' : ($batch->status === 'processing' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700') }}">
-                                                    {{ $batch->status }}
-                                                </span>
-                                            </div>
-                                            <p class="text-xs font-bold text-slate-400">{{ $batch->quantity }}
-                                                {{ $batch->unit }}</p>
-                                        </div>
-                                    </div>
-
-                                    {{-- Status Actions --}}
-                                    <div class="flex items-center gap-2">
-                                        @if ($batch->status === 'waiting')
-                                            <form action="{{ route('admin.production.batches.status', $batch->id) }}"
-                                                method="POST">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="status" value="processing">
-                                                <button type="submit"
-                                                    class="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 transition-all">
-                                                    <i class="fa-solid fa-play"></i> Start Irradiation
-                                                </button>
-                                            </form>
-                                        @elseif ($batch->status === 'processing')
-                                            <form action="{{ route('admin.production.batches.status', $batch->id) }}"
-                                                method="POST">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="status" value="done">
-                                                <button type="submit"
-                                                    class="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-95 transition-all">
-                                                    <i class="fa-solid fa-check-double"></i> Finish
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span
-                                                class="px-4 py-2 text-[10px] font-black text-emerald-600 uppercase bg-emerald-50 rounded-xl">
-                                                <i class="mr-1 fa-solid fa-check"></i> Completed
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                {{-- Parameter Form --}}
-                                <div class="pt-4 mt-4 border-t border-slate-50">
-                                    <form action="{{ route('admin.production.batches.parameters', $batch->id) }}"
-                                        method="POST" class="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
-                                        @csrf
-                                        @method('PUT')
-
-                                        <div>
-                                            <label
-                                                class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Mesin</label>
-                                            <select name="production_line_id"
-                                                class="w-full px-3 py-2.5 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500">
-                                                <option value="">-- Pilih Mesin --</option>
-                                                @foreach ($productionLines as $machine)
-                                                    <option value="{{ $machine->id }}"
-                                                        {{ $batch->production_line_id == $machine->id ? 'selected' : '' }}>
-                                                        {{ $machine->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Target
-                                                Dose (kGy)</label>
-                                            <input type="number" step="0.0001" name="target_dose"
-                                                value="{{ $batch->target_dose }}" placeholder="0.0000"
-                                                class="w-full px-3 py-2.5 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500">
-                                        </div>
-
-                                        <div>
-                                            <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Beam
-                                                Speed (m/min)</label>
-                                            <input type="number" step="0.0001" name="beam_speed"
-                                                value="{{ $batch->beam_speed }}" placeholder="0.0000"
-                                                class="w-full px-3 py-2.5 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500">
-                                        </div>
-
-                                        <div>
-                                            <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">Loading
-                                                Mode</label>
-                                            <input type="text" name="loading_mode" value="{{ $batch->loading_mode }}"
-                                                placeholder="e.g. single-side"
-                                                class="w-full px-3 py-2.5 text-xs font-bold border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500">
-                                        </div>
-
-                                        <button type="submit"
-                                            class="px-4 py-2.5 text-[10px] font-black text-white uppercase bg-slate-700 rounded-xl hover:bg-slate-800 transition-all active:scale-95">
-                                            <i class="mr-1 fa-solid fa-floppy-disk"></i> Simpan
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        @endforeach
-
-                        {{-- ── Add New Batch ── --}}
-                        @if ($remaining > 0)
-                            <div class="p-6 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50/50">
-                                <h4 class="mb-4 text-sm font-black text-slate-700">
-                                    <i class="mr-2 text-blue-600 fa-solid fa-plus"></i>Tambah Batch Baru
-                                </h4>
-                                <form action="{{ route('admin.production.batches.store') }}" method="POST"
-                                    class="flex flex-col gap-4 md:flex-row md:items-end">
-                                    @csrf
-                                    <input type="hidden" name="booking_id" value="{{ $booking->id }}">
-
-                                    <div class="flex-1">
-                                        <label class="block mb-1 text-[9px] font-black text-slate-400 uppercase">
-                                            Quantity (maks. {{ $remaining }} {{ $product->unit ?? '' }})
-                                        </label>
-                                        <input type="number" name="quantity" required min="1"
-                                            max="{{ $remaining }}" step="any" placeholder="Masukkan qty..."
-                                            class="w-full px-4 py-3 text-sm font-bold bg-white border-none rounded-xl focus:ring-2 focus:ring-blue-500">
-                                    </div>
-
-                                    <button type="submit"
-                                        class="px-6 py-3 text-xs font-black text-white uppercase transition-all bg-blue-600 shadow-lg rounded-xl hover:bg-blue-700 active:scale-95 shadow-blue-100">
-                                        <i class="mr-1 fa-solid fa-plus"></i> Buat Batch
-                                    </button>
-                                </form>
-                            </div>
-                        @endif
-
                     </div>
                 </div>
+
             </div>
         @empty
             {{-- Empty State --}}
@@ -294,10 +225,10 @@
                     <div class="flex items-center justify-center w-20 h-20 rounded-full bg-slate-100">
                         <i class="text-3xl fa-solid fa-radiation text-slate-300"></i>
                     </div>
-                    <h3 class="text-xl font-black text-slate-600">Belum Ada Booking Aktif</h3>
+                    <h3 class="text-xl font-black text-slate-600">No Active Orders Found</h3>
                     <p class="max-w-md text-sm text-slate-400">
-                        Booking dengan status <strong>Approved</strong> atau <strong>Processing</strong> akan muncul di sini
-                        untuk dikelola proses penyinarannya.
+                        Consignments with an <strong>Approved</strong> or <strong>Processing</strong> lifecycle status will
+                        appear here for oversight.
                     </p>
                 </div>
             </div>
