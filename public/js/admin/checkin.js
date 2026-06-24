@@ -242,7 +242,7 @@ function addPlacementRowGroup() {
         </div>
         <div>
             <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Jumlah Palet</label>
-            <input type="number" name="pallet_qty[]" min="1" oninput="updateAllocatedPallets()" placeholder="Misal: 15" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+            <input type="number" name="pallet_qty[]" min="1" oninput="updateAllocatedPallets()" placeholder="Example: 15" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
         </div>
         <div class="flex items-center h-full pb-1">
             ${
@@ -582,8 +582,8 @@ function addPlacementRowGroup() {
             </select>
         </div>
         <div>
-            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Jumlah Palet</label>
-            <input type="number" name="pallet_qty[]" min="1" oninput="updateAllocatedPallets()" placeholder="Misal: 15" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Number of Palets</label>
+            <input type="number" name="pallet_qty[]" min="1" oninput="updateAllocatedPallets()" placeholder="Example: 15" class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
         </div>
         <div class="flex items-center h-full pb-1">
             ${
@@ -593,7 +593,7 @@ function addPlacementRowGroup() {
                     <i class="fa-solid fa-trash-can mr-1"></i> Hapus
                 </button>
             `
-                    : '<span class="text-[10px] text-slate-400 font-bold italic px-2">Lokasi Utama</span>'
+                    : '<span class="text-[10px] text-slate-400 font-bold italic px-2">Main Location</span>'
             }
         </div>
     `;
@@ -675,14 +675,14 @@ function validateStep3BeforeSubmit() {
 
     if (!allFilled) {
         alert(
-            "Mohon lengkapi semua pilihan Line, Petak, dan Jumlah Palet pada form!",
+            "Please complete all Line, Plot, and Number of Pallets options on the form!",
         );
         return false;
     }
 
     if (totalAllocated !== totalNeeded) {
         alert(
-            `Jumlah palet yang dialokasikan (${totalAllocated}) tidak sesuai dengan total palet yang dibutuhkan (${totalNeeded})!`,
+            `Number of pallets allocated (${totalAllocated}) does not match the total number of pallets required (${totalNeeded})!`,
         );
         return false;
     }

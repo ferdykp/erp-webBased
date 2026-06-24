@@ -206,20 +206,21 @@
                     <div
                         class="p-6 md:p-8 mb-8 border border-slate-100 bg-slate-50/50 rounded-[2rem] md:rounded-[2.5rem]">
                         <h4 class="mb-6 text-[10px] md:text-sm font-black tracking-widest uppercase text-slate-400">
-                            Pallet Planning</h4>
+                            Pallet Planning (Auto Calculation)</h4>
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
-                            <div class="space-y-1">
-                                <label class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Number
-                                    of Pallets</label>
-                                <input type="number" id="pallet_count" min="1"
-                                    class="w-full px-5 py-3.5 text-sm font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
-                            </div>
                             <div class="space-y-1">
                                 <label class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Qty
                                     per Palet</label>
                                 <input type="number" id="per_pallet" min="1"
                                     class="w-full px-5 py-3.5 text-sm font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
                             </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Number
+                                    of Pallets</label>
+                                <input type="number" id="pallet_count" min="1"
+                                    class="w-full px-5 py-3.5 text-sm font-bold bg-white border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-blue-500">
+                            </div>
+
                             <div class="space-y-1">
                                 <label
                                     class="text-[9px] md:text-[10px] font-black text-slate-500 uppercase ml-1">Remaining
@@ -266,8 +267,8 @@
                         <div>
                             <h4 class="text-xs font-black tracking-widest uppercase md:text-sm text-slate-800">Assign
                                 Location</h4>
-                            <p class="mt-1 text-[10px] md:text-xs font-bold text-slate-400">Kelompokkan penempatan
-                                palet berdasarkan Line dan Petak.</p>
+                            <p class="mt-1 text-[10px] md:text-xs font-bold text-slate-400">Group placements
+                                palettes based on Line and Grid.</p>
                         </div>
                         {{-- Info Status Alokasi Palet --}}
                         <div class="p-3 text-right border border-blue-100 bg-blue-50 rounded-2xl">
