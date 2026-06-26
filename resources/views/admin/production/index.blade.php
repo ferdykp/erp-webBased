@@ -99,7 +99,7 @@
                         'icon' => 'fa-clock',
                     ],
                     [
-                        'label' => 'Active Irradiations',
+                        'label' => 'On Progresss',
                         'count' => $stats['processing'] ?? 0,
                         'color' => 'blue',
                         'icon' => 'fa-radiation',
@@ -161,7 +161,7 @@
                                     @if ($booking->status === 'approved')
                                         Batches In Queue
                                     @elseif($booking->status === 'processing')
-                                        In Progress Irradiation
+                                        On Progress
                                     @elseif($booking->status === 'completed')
                                         Completed
                                     @else
@@ -204,7 +204,7 @@
                                 <span
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black tracking-wider text-blue-600 uppercase bg-blue-50 rounded-xl">
                                     <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                                    Active Irradiation
+                                    On Progress
                                 </span>
                             @else
                                 <span
