@@ -161,7 +161,7 @@
                                     @if ($booking->status === 'approved')
                                         Batches In Queue
                                     @elseif($booking->status === 'processing')
-                                        Active Irradiation
+                                        In Progress Irradiation
                                     @elseif($booking->status === 'completed')
                                         Completed
                                     @else
