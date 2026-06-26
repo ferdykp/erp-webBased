@@ -186,7 +186,7 @@
                                             data-pending-batches='@json($pendingBatches)'
                                             class="inline-flex items-center gap-2 px-4 py-2.5 text-[10px] font-black text-blue-600 uppercase border-2 border-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-95">
                                             <i class="fa-solid fa-sliders"></i>
-                                            Update Process
+                                            Input Parameter
                                         </button>
                                     </td>
                                 </tr>
