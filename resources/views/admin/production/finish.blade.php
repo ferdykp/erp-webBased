@@ -16,7 +16,7 @@
                 </div>
                 <h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">Product Finish</h1>
                 <p class="mt-1 text-sm text-gray-400">
-                    Batch berstatus <span class="font-medium text-emerald-600">Finish</span> yang telah melewati Quality
+                    Batches with <span class="font-medium text-emerald-600">Finish</span> status that have passed Quality
                     Control.
                 </p>
             </div>
@@ -51,8 +51,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-sm font-semibold text-gray-800">Daftar Batch Finish</h2>
-                        <p class="text-xs text-gray-400">{{ count($doneRows) }} batch tersedia</p>
+                        <h2 class="text-sm font-semibold text-gray-800">Completed Batch List</h2>
+                        <p class="text-xs text-gray-400">{{ count($doneRows) }} batch available</p>
                     </div>
                 </div>
             </div>
@@ -68,9 +68,9 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-600">Belum Ada Batch Finish</h3>
-                        <p class="max-w-xs mt-1 text-xs text-gray-400">Batch yang sudah melewati Quality Control akan
-                            otomatis muncul di sini.</p>
+                        <h3 class="text-sm font-semibold text-gray-600">No Batch Finished Yet</h3>
+                        <p class="max-w-xs mt-1 text-xs text-gray-400">Batches that have passed Quality Control will
+                            automatically appears here.</p>
                     </div>
                 </div>
             @else
@@ -90,13 +90,13 @@
                                     Batch</th>
                                 <th
                                     class="px-6 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                                    Target / Actual</th>
+                                    Target / Actual Dose</th>
                                 <th
                                     class="px-6 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                                     QA</th>
                                 <th
                                     class="px-6 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                                    Aksi</th>
+                                    Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -204,11 +204,8 @@
                                                 data-total-duration="{{ $batch->total_duration }}"
                                                 class="inline-flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-emerald-50 hover:text-emerald-600"
                                                 title="Lihat Detail">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                                </svg>
+                                                <i class="fa-solid fa-eye"></i>
+
                                             </button>
                                         </div>
                                     </td>
@@ -384,18 +381,18 @@
                             <div class="p-5 space-y-4 border border-emerald-100 bg-emerald-50/20 rounded-2xl">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <p class="text-xs font-bold tracking-wider uppercase text-emerald-800">Penyesuaian
-                                        Waktu & Durasi Kerja</p>
+                                    <p class="text-xs font-bold tracking-wider uppercase text-emerald-800">Adjustment of
+                                        Work Time and Duration</p>
                                 </div>
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div>
-                                        <label class="text-[11px] font-semibold text-gray-500 block mb-1">Waktu Masuk
+                                        <label class="text-[11px] font-semibold text-gray-500 block mb-1">Entry Time
                                             (Offline / Start)</label>
                                         <input type="datetime-local" id="editOfflineAt" name="offline_at" step="1"
                                             class="w-full px-3 py-2 text-xs transition-all bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400">
                                     </div>
                                     <div>
-                                        <label class="text-[11px] font-semibold text-gray-500 block mb-1">Waktu Selesai
+                                        <label class="text-[11px] font-semibold text-gray-500 block mb-1">Finish Time
                                             (Finished / End)</label>
                                         <input type="datetime-local" id="editFinishedAt" name="finished_at"
                                             step="1"
@@ -403,7 +400,7 @@
                                     </div>
                                     <div>
                                         <label class="text-[11px] font-bold text-emerald-700 block mb-1">Total Duration
-                                            (Menit)</label>
+                                            (Minute)</label>
                                         <input type="number" id="editTotalDuration" name="total_duration" readonly
                                             min="0" required
                                             class="w-full px-3 py-2 text-xs font-bold transition-all bg-white border-2 rounded-lg outline-none border-emerald-200 text-emerald-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
@@ -486,7 +483,7 @@
                                 <div id="damageDescWrapper"
                                     class="hidden p-3 mt-3 border border-red-100 rounded-lg bg-red-50">
                                     <p class="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1">Detail
-                                        Kerusakan</p>
+                                        Damage</p>
                                     <p id="finishDamageDesc" class="text-sm italic font-medium text-red-700">-</p>
                                 </div>
                             </div>
@@ -546,7 +543,7 @@
                                                 <option value="unpaid" class="font-semibold text-red-700 bg-white">
                                                     AWAITING PAYMENT (UNPAID)</option>
                                                 <option value="paid" class="font-semibold bg-white text-emerald-700">✨
-                                                    MARK AS PAID (LUNAS)</option>
+                                                    MARK AS PAID (Paid)</option>
                                             </select>
                                         </div>
                                     </div>
@@ -566,7 +563,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs font-semibold text-red-600">Certificate Locked</p>
-                                    <p class="text-[11px] text-red-400">Selesaikan pembayaran terlebih dahulu.</p>
+                                    <p class="text-[11px] text-red-400">Payment Unfinished.</p>
                                 </div>
                             </div>
                         </div>
@@ -576,17 +573,18 @@
                 {{-- Footer Modal Action --}}
                 <div
                     class="flex flex-col gap-3 px-6 py-5 border-t border-gray-100 sm:flex-row sm:items-center sm:justify-between bg-gray-50/60">
-                    <p class="text-xs text-gray-400">Perubahan data waktu akan langsung memperbarui database produksi.</p>
+                    <p class="text-xs text-gray-400">Changes to the time data will immediately update the production
+                        database.</p>
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="closeFinishDetailModal()"
                             class="px-5 text-xs font-medium text-gray-500 transition-colors rounded-lg h-9 hover:text-gray-800 hover:bg-gray-100">
-                            Batal
+                            Cancel
                         </button>
 
                         {{-- Button Simpan Perubahan Form --}}
                         <button type="submit"
                             class="h-9 px-5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors active:scale-[0.98]">
-                            Simpan Perubahan
+                            Save Changes
                         </button>
 
                         {{-- Link Cetak Sertifikat --}}
@@ -596,7 +594,7 @@
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
-                            </svg>Cetak Sertifikat
+                            </svg>Print Certificate
                         </a>
                     </div>
                 </div>
@@ -626,11 +624,11 @@
                 <div
                     class="flex flex-col w-full p-5 overflow-y-auto border-b border-gray-100 md:w-1/2 md:border-b-0 md:border-r bg-gray-50/50">
                     <div class="flex items-center justify-between mb-3 shrink-0">
-                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Pilih Pallet</p>
+                        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Choose Pallet</p>
                         {{-- Tombol Aksi Massal Baru --}}
                         <button type="button" id="btn_relocate_all"
                             class="text-[11px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider hidden">
-                            ⚡ Kosongkan Semua
+                            ⚡ Empty All
                         </button>
                     </div>
                     <div id="pallet_list_container" class="flex-1 space-y-2"></div>
@@ -648,7 +646,8 @@
                                     d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
                             </svg>
                         </div>
-                        <p class="text-xs text-gray-400">Pilih pallet dari kiri<br>atau gunakan fitur massal untuk memulai
+                        <p class="text-xs text-gray-400">Select a pallet from the left<br>or use the bulk feature to get
+                            started
                         </p>
                     </div>
 
@@ -662,36 +661,36 @@
                         <div id="selected_pallet_card" class="p-4 border bg-emerald-50 border-emerald-100 rounded-xl">
                             <p id="selected_card_label"
                                 class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2">Pallet
-                                Dipilih</p>
+                                Chosen</p>
                             <div class="flex items-end justify-between">
                                 <div>
                                     <p id="selected_pallet_loc" class="text-sm font-semibold text-gray-800">-</p>
-                                    <p id="selected_pallet_loc_sub" class="text-[11px] text-gray-400 mt-0.5">Lokasi saat
-                                        ini</p>
+                                    <p id="selected_pallet_loc_sub" class="text-[11px] text-gray-400 mt-0.5">Current
+                                        Location</p>
                                 </div>
                                 <div class="text-right">
                                     <p id="selected_pallet_qty" class="text-sm font-semibold text-emerald-700">-</p>
-                                    <p class="text-[11px] text-gray-400 mt-0.5">Jumlah</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">Total</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="space-y-1.5">
-                            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tujuan Baru /
-                                Slot Kosong</label>
+                            <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">New Place /
+                                Slot Empty</label>
                             <select name="new_pallet_id" required
                                 class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 outline-none transition-all">
-                                <option value="">-- Pilih Slot Target --</option>
+                                <option value="">-- Choose Target Slot --</option>
                                 @foreach ($allLocations ?? [] as $loc)
                                     <option value="{{ $loc->id }}">Line {{ $loc->line }} | Petak
-                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} kotak)</option>
+                                        {{ $loc->slot_section }} ({{ $loc->filled_boxes }} box)</option>
                                 @endforeach
                             </select>
                         </div>
 
                         <button type="submit" id="btn_submit_relocation"
                             class="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]">
-                            Pindahkan Pallet
+                            Move Pallet
                         </button>
                     </form>
                 </div>
