@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\DosimeterRecord;
 use App\Models\DosimeterDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DosimeterController extends Controller
 {
@@ -63,40 +64,70 @@ class DosimeterController extends Controller
         }
     }
 
-    // --- STEP 2 API: Simpan Nilai Absorbance & Hitung Dose untuk Database ---
+    // --- STEP 2 API: Simpan Nilai Absorbance, Hitung Dose & Upload Gambar ---
     public function storeAbsorbance(Request $request, $recordId)
     {
         $request->validate([
             'dosimeter_number' => 'required|array',
-            'dosimeter_number.*' => 'required|string', // Validasi input nomor dosimeter
+            'dosimeter_number.*' => 'required|string',
             'absorbance' => 'required|array',
-            'absorbance.*' => 'required|numeric|min:0',
+            'absorbance.*' => 'required|numeric|min:0|max:5',
+            'global_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $record = DosimeterRecord::findOrFail($recordId);
 
         DB::beginTransaction();
         try {
+            // 1. Proses upload file gambar global jika ada
+            $uploadedImagePath = null;
+            if ($request->hasFile('global_image')) {
+                if ($record->image && Storage::disk('public')->exists($record->image)) {
+                    Storage::disk('public')->delete($record->image);
+                }
+                $uploadedImagePath = $request->file('global_image')->store('dosimeter_images', 'public');
+            }
+
+            // 2. Loop simpan nilai absorbance & hitung dose per tablet ke detail table
             foreach ($request->absorbance as $tabletNumber => $value) {
                 $x = (float)$value;
 
-                // Rumus: y = 13.099x³ + 8.7891x² + 57.786x - 2.423
+                // Rumus Kalibrasi Cubic
                 $calibratedDose = (13.099 * pow($x, 3)) + (8.7891 * pow($x, 2)) + (57.786 * $x) - 2.423;
-
-                // Ambil nilai dosimeter_number berdasarkan index tablet_number-nya
                 $dosimeterNum = $request->dosimeter_number[$tabletNumber] ?? null;
+
+                $updateData = [
+                    'dosimeter_number' => $dosimeterNum,
+                    'absorbance' => $value,
+                    'dose_kgy' => $calibratedDose
+                ];
+
+                if ($uploadedImagePath !== null && (int)$tabletNumber === 1) {
+                    $oldDetail = DosimeterDetail::where('dosimeter_record_id', $record->id)
+                        ->where('tablet_number', 1)
+                        ->first();
+
+                    if ($oldDetail && $oldDetail->image && Storage::disk('public')->exists($oldDetail->image)) {
+                        Storage::disk('public')->delete($oldDetail->image);
+                    }
+
+                    $updateData['image'] = $uploadedImagePath;
+                }
 
                 DosimeterDetail::where('dosimeter_record_id', $record->id)
                     ->where('tablet_number', $tabletNumber)
-                    ->update([
-                        'dosimeter_number' => $dosimeterNum, // SIMPAN KE DB
-                        'absorbance' => $value,
-                        'dose_kgy' => $calibratedDose
-                    ]);
+                    ->update($updateData);
             }
 
             DB::commit();
-            return response()->json(['status' => 'success', 'message' => 'Data Dosimeter dan Absorbance berhasil disimpan ke database.']);
+
+            // Set notifikasi sukses bawaan Laravel ke session flash sebelum reload
+            session()->flash('success', 'Dosimeter data and image successfully saved.');
+
+            return response()->json([
+                'status' => 'success',
+                'redirect' => route('admin.dosimeter.show', $bookingId ?? $record->booking_id)
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);

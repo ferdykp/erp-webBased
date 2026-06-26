@@ -3,6 +3,7 @@
 @section('title', 'Input Absorbance - ' . $booking->booking_code)
 
 @section('content')
+
     <div class="max-w-5xl mx-auto space-y-6">
 
         {{-- Breadcrumb & Back Button --}}
@@ -40,11 +41,12 @@
 
             {{-- STEP 1: Tablet Quantity Configuration --}}
             @php
-                // Diperbarui: dianggap hasData jika salah satu dari absorbance ATAU dosimeter_number telah diisi sebelumnya
                 $hasData =
                     $record &&
                     ($record->details->whereNotNull('absorbance')->count() > 0 ||
                         $record->details->whereNotNull('dosimeter_number')->count() > 0);
+
+                $firstDetailImage = $record?->details->where('tablet_number', 1)->first()?->image;
             @endphp
 
             <div id="quantity-section" class="p-8 border-b border-gray-50 bg-gray-50/30 {{ $hasData ? 'hidden' : '' }}">
@@ -81,7 +83,6 @@
                         <p class="text-xs font-medium text-gray-400 mt-0.5">Precisely recorded spectrometer data, dosimeter
                             numbers, and automatic cubic spline calculations.</p>
 
-                        {{-- Keterangan Rumus --}}
                         <div
                             class="mt-2 text-[11px] bg-amber-50 border border-amber-100 text-amber-800 px-3 py-1.5 rounded-lg font-mono inline-block">
                             <span class="font-bold">Formula:</span> y = 13.099x³ + 8.7891x² + 57.786x - 2.423 <span
@@ -95,9 +96,24 @@
                     </button>
                 </div>
 
-                <form id="form-absorbance-values">
+                {{-- TAMPILAN GAMBAR LOG --}}
+                <div
+                    class="view-wrapper mb-6 p-5 bg-gray-50 border border-gray-100 rounded-2xl {{ $hasData && $firstDetailImage ? '' : 'hidden' }}">
+                    <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Attached Log Image
+                    </p>
+                    @if ($firstDetailImage)
+                        <a href="{{ asset('storage/' . $firstDetailImage) }}" target="_blank" class="inline-block">
+                            <img src="{{ asset('storage/' . $firstDetailImage) }}"
+                                class="transition-all border border-gray-200 shadow-sm max-h-48 rounded-xl hover:opacity-90">
+                        </a>
+                    @endif
+                </div>
+
+                <form id="form-absorbance-values" enctype="multipart/form-data">
                     @csrf
-                    <div id="dynamic-inputs-container" class="grid grid-cols-2 gap-5 mb-10 lg:grid-cols-3">
+
+                    {{-- Grid Input Tablet --}}
+                    <div id="dynamic-inputs-container" class="grid grid-cols-2 gap-5 mb-8 lg:grid-cols-3">
                         @if ($record)
                             @foreach ($record->details as $detail)
                                 <div
@@ -108,27 +124,24 @@
                                         <i class="text-sm text-blue-100 fa-solid fa-flask"></i>
                                     </div>
 
-                                    {{-- Wrapper Form Input --}}
                                     <div class="input-wrapper space-y-3 {{ $hasData ? 'hidden' : '' }}">
-                                        {{-- Input Dosimeter Number --}}
                                         <div>
                                             <label
                                                 class="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Dosimeter
                                                 No.</label>
                                             <input type="text" name="dosimeter_number[{{ $detail->tablet_number }}]"
-                                                value="{{ $detail->dosimeter_number }}" placeholder="e.g. D-01"
+                                                value="{{ $detail->dosimeter_number }}" placeholder="e.g. D-01" required
                                                 class="w-full px-3 py-2 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/30 focus:bg-white focus:ring-4 focus:ring-blue-50">
                                         </div>
 
-                                        {{-- Input Absorbance --}}
                                         <div>
                                             <label
                                                 class="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Absorbance
                                                 Value</label>
                                             <div class="relative">
-                                                <input type="number" step="0.0001"
+                                                <input type="number" step="0.0001" min="0" max="5"
                                                     name="absorbance[{{ $detail->tablet_number }}]"
-                                                    value="{{ $detail->absorbance }}" placeholder="0.0000"
+                                                    value="{{ $detail->absorbance }}" placeholder="0.0000" required
                                                     class="w-full py-2 pl-3 pr-12 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/30 focus:bg-white focus:ring-4 focus:ring-blue-50">
                                                 <div
                                                     class="absolute inset-y-0 right-0 flex items-center pr-3 text-[10px] font-bold text-gray-300">
@@ -137,7 +150,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- Tampilan Hasil Cetak Statis --}}
                                     <div class="view-wrapper space-y-2 py-1 px-1 {{ $hasData ? '' : 'hidden' }}">
                                         <div>
                                             <div
@@ -151,21 +163,18 @@
                                             <div
                                                 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
                                                 Absorbance</div>
-                                            <span class="text-lg font-black text-gray-800 display-value">
-                                                {{ $detail->absorbance ? (float) $detail->absorbance : '-' }}
-                                            </span>
+                                            <span
+                                                class="text-lg font-black text-gray-800 display-value">{{ $detail->absorbance ? (float) $detail->absorbance : '-' }}</span>
                                             <span class="text-xs font-bold text-gray-400 ml-0.5">ABS</span>
                                         </div>
 
-                                        {{-- Tampilan Hasil Dosis Langsung dari Kolom DB --}}
                                         @if ($detail->dose_kgy !== null)
                                             <div class="pt-3 mt-3 border-t border-gray-100 border-dashed">
                                                 <div
                                                     class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">
                                                     Absorbed Dose</div>
-                                                <span class="text-xl font-black text-emerald-600">
-                                                    {{ (float) number_format($detail->dose_kgy, 4) }}
-                                                </span>
+                                                <span
+                                                    class="text-xl font-black text-emerald-600">{{ (float) number_format($detail->dose_kgy, 4) }}</span>
                                                 <span class="text-xs font-bold text-emerald-400 ml-0.5">kGy</span>
                                             </div>
                                         @endif
@@ -173,6 +182,17 @@
                                 </div>
                             @endforeach
                         @endif
+                    </div>
+
+                    {{-- SINGLE INPUT GAMBAR --}}
+                    <div id="single-image-wrapper"
+                        class="input-wrapper mb-6 p-5 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50 {{ $hasData ? 'hidden' : '' }}">
+                        <label class="block mb-1.5 text-xs font-bold text-gray-700">Upload Attachment / Scan Image (Single
+                            File)</label>
+                        <input type="file" name="global_image" accept="image/*"
+                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all">
+                        <p class="mt-1.5 text-[10px] text-gray-400 font-medium">Format: JPEG, PNG, JPG (Max. 2MB). Gambar
+                            ini akan disimpan pada detail tablet pertama.</p>
                     </div>
 
                     {{-- Bagian Tombol Aksi Form --}}
@@ -205,10 +225,9 @@
 
                 let currentRecordId = "{{ $record ? $record->id : '' }}";
 
-                // ACTION 1: Handler Klik Generate Kuantitas Tablet
+                // ACTION 1: Generate Kuantitas Tablet
                 document.getElementById('form-tablet-quantity').addEventListener('submit', function(e) {
                     e.preventDefault();
-
                     const quantity = document.getElementById('tablet_quantity').value;
                     const bookingId = document.getElementById('booking_id').value;
 
@@ -223,7 +242,10 @@
                                 tablet_quantity: quantity
                             })
                         })
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) throw response;
+                            return response.json();
+                        })
                         .then(res => {
                             if (res.status === 'success') {
                                 currentRecordId = res.data.id;
@@ -232,117 +254,82 @@
                                 document.getElementById('btn-edit-mode').classList.add('hidden');
                                 document.getElementById('form-actions').classList.remove('hidden');
                                 document.getElementById('btn-cancel-edit').classList.add('hidden');
+                                document.getElementById('single-image-wrapper').classList.remove('hidden');
                             }
+                        })
+                        .catch(async (err) => {
+                            console.error(err);
+                            alert('Gagal generate baris tablet.');
                         });
                 });
 
-                // ACTION 2: Simpan Nilai Dosimeter & Absorbance ke DB (UPDATED LOGIC)
+                // ACTION 2: Simpan Data via FormData
                 document.getElementById('form-absorbance-values').addEventListener('submit', function(e) {
                     e.preventDefault();
 
-                    // Pengecekan awal jika ID record belum siap
-                    if (!currentRecordId) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'Record ID tidak ditemukan. Silakan generate ulang.'
-                        });
+                    if (!currentRecordId || String(currentRecordId).trim() === '') {
+                        alert('Record ID tidak ditemukan. Silakan isi Step 1 kembali.');
                         return;
                     }
 
                     const formData = new FormData(this);
-                    const payload = {
-                        dosimeter_number: {},
-                        absorbance: {}
-                    };
-
                     let hasEmptyField = false;
 
-                    formData.forEach((value, key) => {
-                        // Validasi: Cek jika ada input yang kosong/hanya spasi
-                        if (!value || value.trim() === '') {
+                    const inputs = document.querySelectorAll('#dynamic-inputs-container input');
+                    inputs.forEach(input => {
+                        if (input.hasAttribute('required') && (!input.value || input.value.trim() ===
+                                '')) {
                             hasEmptyField = true;
-                        }
-
-                        // Cocokkan field dosimeter_number[X]
-                        const matchDosimeter = key.match(/dosimeter_number\[(\d+)\]/);
-                        if (matchDosimeter) {
-                            payload.dosimeter_number[matchDosimeter[1]] = value;
-                        }
-
-                        // Cocokkan field absorbance[X]
-                        const matchAbsorbance = key.match(/absorbance\[(\d+)\]/);
-                        if (matchAbsorbance) {
-                            payload.absorbance[matchAbsorbance[1]] = value;
+                            input.classList.add('border-red-500');
+                        } else {
+                            input.classList.remove('border-red-500');
                         }
                     });
 
-                    // Jika ada field yang kosong, hentikan submit dan beri peringatan
                     if (hasEmptyField) {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Validation Error',
-                                text: 'Semua kolom Dosimeter No. dan Absorbance Value wajib diisi!'
-                            });
-                        } else {
-                            alert('Semua kolom Dosimeter No. dan Absorbance Value wajib diisi!');
-                        }
+                        alert('Semua kolom Dosimeter No. dan Absorbance Value wajib diisi!');
                         return;
                     }
 
-                    // Jalankan Fetch API jika semua aman
                     fetch(`/admin/dosimeter/store-absorbance/${currentRecordId}`, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
-                            body: JSON.stringify(payload)
+                            body: formData
                         })
-                        .then(response => response.json())
+                        .then(async (response) => {
+                            if (!response.ok) throw response;
+                            return response.json();
+                        })
                         .then(res => {
-                            if (res.status === 'success') {
-                                if (typeof Swal !== 'undefined') {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Saved!',
-                                        text: 'Dosimeter data and calculations successfully saved.',
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        window.location.href =
-                                            "{{ route('admin.dosimeter.show', $booking->id) }}";
-                                    });
-                                } else {
-                                    alert('Dosimeter data saved.');
-                                    window.location.href =
-                                        "{{ route('admin.dosimeter.show', $booking->id) }}";
-                                }
+                            if (res.status === 'success' && res.redirect) {
+                                window.location.href = res.redirect;
                             } else {
                                 alert('Error: ' + res.message);
                             }
                         })
-                        .catch(err => {
+                        .catch(async (err) => {
                             console.error(err);
                             alert('Terjadi kesalahan sistem saat menyimpan data.');
                         });
                 });
 
-                // ACTION 3: Fitur Tombol Edit Mode Toggle
+                // ACTION 3: Toggle Edit Mode
                 const btnEditMode = document.getElementById('btn-edit-mode');
                 const btnCancelEdit = document.getElementById('btn-cancel-edit');
                 const quantitySection = document.getElementById('quantity-section');
                 const formActions = document.getElementById('form-actions');
+                const singleImageWrapper = document.getElementById('single-image-wrapper');
 
                 if (btnEditMode) {
                     btnEditMode.addEventListener('click', function() {
                         document.querySelectorAll('.view-wrapper').forEach(el => el.classList.add('hidden'));
                         document.querySelectorAll('.input-wrapper').forEach(el => el.classList.remove(
                             'hidden'));
-
                         quantitySection.classList.remove('hidden');
                         formActions.classList.remove('hidden');
+                        if (singleImageWrapper) singleImageWrapper.classList.remove('hidden');
                         btnCancelEdit.classList.remove('hidden');
                         this.classList.add('hidden');
                     });
@@ -352,9 +339,9 @@
                     btnCancelEdit.addEventListener('click', function() {
                         document.querySelectorAll('.view-wrapper').forEach(el => el.classList.remove('hidden'));
                         document.querySelectorAll('.input-wrapper').forEach(el => el.classList.add('hidden'));
-
                         quantitySection.classList.add('hidden');
                         formActions.classList.add('hidden');
+                        if (singleImageWrapper) singleImageWrapper.classList.add('hidden');
                         btnEditMode.classList.remove('hidden');
                     });
                 }
@@ -367,37 +354,37 @@
                         const box = document.createElement('div');
                         box.className = 'p-5 bg-white border border-gray-100 rounded-2xl shadow-sm';
                         box.innerHTML = `
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tablet #${detail.tablet_number}</span>
-                        <i class="text-sm text-blue-100 fa-solid fa-flask"></i>
-                    </div>
-                    <div class="space-y-3 input-wrapper">
-                        <div>
-                            <label class="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Dosimeter No.</label>
-                            <input type="text" name="dosimeter_number[${detail.tablet_number}]" placeholder="e.g. D-01" required
-                                   class="w-full px-3 py-2 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-blue-50">
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Absorbance Value</label>
-                            <div class="relative">
-                                <input type="number" step="0.0001" name="absorbance[${detail.tablet_number}]" placeholder="0.0000" required
-                                       class="w-full py-2 pl-3 pr-12 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-blue-50">
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-[10px] font-bold text-gray-300 uppercase">Abs</div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tablet #${detail.tablet_number}</span>
+                                <i class="text-sm text-blue-100 fa-solid fa-flask"></i>
                             </div>
-                        </div>
-                    </div>
-                    <div class="hidden px-1 py-1 space-y-2 view-wrapper">
-                        <div>
-                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Dosimeter No.</div>
-                            <span class="text-sm font-bold text-gray-800 label-dosimeter-value">-</span>
-                        </div>
-                        <div class="pt-2">
-                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Absorbance</div>
-                            <span class="text-lg font-black text-gray-800 display-value">-</span>
-                            <span class="text-xs font-bold text-gray-400 ml-0.5">ABS</span>
-                        </div>
-                    </div>
-                `;
+                            <div class="space-y-3 input-wrapper">
+                                <div>
+                                    <label class="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Dosimeter No.</label>
+                                    <input type="text" name="dosimeter_number[${detail.tablet_number}]" placeholder="e.g. D-01" required
+                                           class="w-full px-3 py-2 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-blue-50">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Absorbance Value</label>
+                                    <div class="relative">
+                                        <input type="number" step="0.0001" min="0" max="5" name="absorbance[${detail.tablet_number}]" placeholder="0.0000" required
+                                               class="w-full py-2 pl-3 pr-12 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/50 focus:bg-white focus:ring-4 focus:ring-blue-50">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-[10px] font-bold text-gray-300 uppercase">Abs</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden px-1 py-1 space-y-2 view-wrapper">
+                                <div>
+                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Dosimeter No.</div>
+                                    <span class="text-sm font-bold text-gray-800 label-dosimeter-value">-</span>
+                                </div>
+                                <div class="pt-2">
+                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Absorbance</div>
+                                    <span class="text-lg font-black text-gray-800 display-value">-</span>
+                                    <span class="text-xs font-bold text-gray-400 ml-0.5">ABS</span>
+                                </div>
+                            </div>
+                        `;
                         container.appendChild(box);
                     });
 
