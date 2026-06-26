@@ -173,9 +173,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <h3 class="text-xl font-black text-slate-800">Konfirmasi Iradiasi</h3>
+                    <h3 class="text-xl font-black text-slate-800">Irradiation Confirmation</h3>
                     <p class="text-sm font-medium text-slate-500">
-                        Apakah Anda yakin ingin memulai proses iradiasi untuk <span class="font-black text-blue-600"
+                        Are you sure you want to start the irradiation process for <span class="font-black text-blue-600"
                             x-text="batchInfo"></span>?
                     </p>
                 </div>
@@ -183,14 +183,14 @@
                 <div class="flex flex-col gap-3 pt-4 sm:flex-row">
                     <button type="button" @click="confirmModal = false"
                         class="flex-1 py-4 text-xs font-black uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
-                        Batal
+                        Cancel
                     </button>
 
                     <form :action="batchAction" method="POST" class="flex-1">
                         @csrf @method('PUT')
                         <button type="submit"
                             class="w-full py-4 text-xs font-black text-white uppercase transition-all bg-blue-600 shadow-xl shadow-blue-100 rounded-2xl hover:bg-blue-700">
-                            Ya, Mulai Sekarang
+                            Yes, Start now
                         </button>
                     </form>
                 </div>
