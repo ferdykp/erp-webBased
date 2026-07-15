@@ -99,7 +99,7 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
         $sheet->mergeCells('A5:H5');
 
         // 5. Supervisor & Staff (Baris 6 & 7)
-        $sheet->setCellValue('A6', "Processing line supervisor: Irwinsyah");
+        $sheet->setCellValue('A6', "Processing line supervisor: Irwinsyah & Levana");
         $sheet->mergeCells('A6:D6');
         $sheet->setCellValue('E6', "staff: Rendi, Bagas, Rijag, Ferdy");
         $sheet->mergeCells('E6:H6');
