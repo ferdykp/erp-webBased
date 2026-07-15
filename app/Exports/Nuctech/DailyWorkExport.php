@@ -95,18 +95,18 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
         $sheet->mergeCells('F4:H4');
 
         // 4. Operator
-        $sheet->setCellValue('A5', "Operator: ((Fill By Yourself))");
+        $sheet->setCellValue('A5', "Operator: Bagaswara");
         $sheet->mergeCells('A5:H5');
 
         // 5. Supervisor & Staff (Baris 6 & 7)
-        $sheet->setCellValue('A6', "Processing line supervisor: ((Fill By Yourself))");
+        $sheet->setCellValue('A6', "Processing line supervisor: Irwinsyah");
         $sheet->mergeCells('A6:D6');
-        $sheet->setCellValue('E6', "staff: ((Fill By Yourself))");
+        $sheet->setCellValue('E6', "staff: Rendi, Bagas, Rijag");
         $sheet->mergeCells('E6:H6');
 
-        $sheet->setCellValue('A7', "Loading and unloading supervisor: Rusdi");
+        $sheet->setCellValue('A7', "Loading and unloading supervisor: Zeigy");
         $sheet->mergeCells('A7:D7');
-        $sheet->setCellValue('E7', "staff: ((Fill By Yourself))");
+        $sheet->setCellValue('E7', "staff: Rendi, Bagas, Rijag, Ferdy");
         $sheet->mergeCells('E7:H7');
 
         // 6. Status Peralatan

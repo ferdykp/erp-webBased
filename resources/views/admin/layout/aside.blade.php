@@ -176,9 +176,10 @@
                 </p>
 
                 {{-- Nuctech Reporting (Technical) --}}
-                <div x-data="{ open: {{ request()->is('admin/report/nuctech*') ? 'true' : 'false' }} }">
+                {{-- FIX: Mengubah request()->is() menjadi request()->routeIs() agar state otomatis terbuka di server --}}
+                <div x-data="{ open: {{ request()->routeIs('admin.report.nuctech*') ? 'true' : 'false' }} }">
                     <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->is('admin/report/nuctech*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.report.nuctech*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
                         <div class="flex items-center gap-3">
                             <i
                                 class="w-5 text-sm text-center text-indigo-400 transition-transform fas fa-file-contract group-hover:scale-110"></i>
@@ -215,9 +216,10 @@
                 </div>
 
                 {{-- JTS Reporting (Logistics) --}}
-                <div x-data="{ open: {{ request()->is('admin/report/jts*') ? 'true' : 'false' }} }">
+                {{-- FIX: Mengubah request()->is() menjadi request()->routeIs() agar state otomatis terbuka di server --}}
+                <div x-data="{ open: {{ request()->routeIs('admin.report.jts*') ? 'true' : 'false' }} }">
                     <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->is('admin/report/jts*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.report.jts*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
                         <div class="flex items-center gap-3">
                             <i
                                 class="w-5 text-sm text-center transition-transform fas fa-file-invoice text-emerald-400 group-hover:scale-110"></i>
@@ -250,6 +252,5 @@
                 </div>
             </div>
         @endif
-
     </nav>
 </aside>
