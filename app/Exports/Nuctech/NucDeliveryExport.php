@@ -147,11 +147,11 @@ class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithM
 
         // 7. Kolom Tanda Tangan / Persetujuan (Baris 12 & 13)
         $sheet->setCellValue('A12', 'Shift Leader');
-        $sheet->mergeCells('A12:B12');
+        $sheet->mergeCells('A12:B12', 'Bagaswara');
         $sheet->mergeCells('A13:B13'); // Kolom TTD kosong
 
         $sheet->setCellValue('C12', 'Production Manager');
-        $sheet->mergeCells('C12:E12');
+        $sheet->mergeCells('C12:E12', 'Irwinsyah');
         $sheet->mergeCells('C13:E13'); // Kolom TTD kosong
 
         $sheet->setCellValue('F12', 'Marketing Department');
