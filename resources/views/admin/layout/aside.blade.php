@@ -1,7 +1,7 @@
 <aside id="sidebar"
     :class="sidebarOpen ? 'w-72 opacity-100 translate-x-0 md:m-4' : 'w-0 -translate-x-full opacity-0 md:m-0'"
-    class="fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out 
-    text-slate-300 bg-gray-900 shadow-2xl 
+    class="fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out
+    text-slate-300 bg-gray-900 shadow-2xl
     rounded-none md:rounded-2xl border border-gray-800 overflow-y-auto
     md:sticky md:top-4 h-full md:h-[calc(100vh-2rem)]">
 
@@ -190,24 +190,25 @@
 
                     <div x-show="open" x-cloak x-collapse
                         class="pl-4 mt-1 ml-4 space-y-1 border-l border-indigo-900/40">
+
                         <a href="{{ route('admin.report.nuctech', 'daily-work') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-work')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'daily-work' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             1. Workshop Daily Work
                         </a>
                         <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'daily-schedule')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'daily-schedule' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             2. Daily Processing Schedule
                         </a>
                         <a href="{{ route('admin.report.nuctech', 'delivery-form') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'delivery-form')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'delivery-form' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             3. Processing & Delivery Form
                         </a>
                         <a href="{{ route('admin.report.nuctech', 'processing-record') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'processing-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'processing-record' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             4. Irradiation Process Log
                         </a>
                         <a href="{{ route('admin.report.nuctech', 'equipment-record') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.nuctech', 'equipment-record')) ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'equipment-record' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             5. Machine Operation Log
                         </a>
                     </div>
@@ -228,20 +229,21 @@
 
                     <div x-show="open" x-cloak x-collapse
                         class="pl-4 mt-1 ml-4 space-y-1 border-l border-emerald-900/40">
+
                         <a href="{{ route('admin.report.jts', 'unirradiated-card') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.jts', 'unirradiated-card')) ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'unirradiated-card' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             1. Unirradiated Material Card
                         </a>
                         <a href="{{ route('admin.report.jts', 'delivery-outbound') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.jts', 'delivery-outbound')) ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'delivery-outbound' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             2. Outbound Delivery Slip
                         </a>
                         <a href="{{ route('admin.report.jts', 'delivery-inbound') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.jts', 'delivery-inbound')) ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'delivery-inbound' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             3. Inbound Delivery Slip
                         </a>
                         <a href="{{ route('admin.report.jts', 'irradiated-card') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->fullUrlIs(route('admin.report.jts', 'irradiated-card')) ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
+                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'irradiated-card' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
                             4. Irradiated Material Card
                         </a>
                     </div>
