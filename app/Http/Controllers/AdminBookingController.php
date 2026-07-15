@@ -422,26 +422,83 @@ class AdminBookingController extends Controller
     /**
      * Memperbarui data booking di database.
      */
+    // public function update(Request $request, int $id)
+    // {
+    //     $booking = Booking::findOrFail($id);
+
+    //     // 1. HAPUS 'status' dari validasi karena memang tidak ada di form
+    //     $request->validate([
+    //         'customer_id'    => 'required|exists:customers,id',
+    //         'product_name'   => 'required|string',
+    //         'quantity'       => 'required|numeric',
+    //         'dimension_pack' => 'required|string',
+    //         'vol_total'      => 'required|numeric',
+    //     ]);
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // 2. Update data UTAMA tanpa menyentuh status
+    //         // Jangan masukkan 'status' => $request->status di sini
+    //         $booking->update([
+    //             'customer_id'    => $request->customer_id,
+    //             'total_price'    => $request->total_price ?? $booking->total_price,
+    //             'payment_status' => $request->payment_status ?? $booking->payment_status,
+    //         ]);
+
+    //         // 3. Update data PRODUK
+    //         BookingProduct::updateOrCreate(
+    //             ['booking_id' => $booking->id],
+    //             [
+    //                 'product_name'         => $request->product_name,
+    //                 'product_type'         => $request->product_type,
+    //                 'quantity'             => $request->quantity,
+    //                 'unit'                 => $request->unit,
+    //                 'dmin'                 => $request->dmin,
+    //                 'dmax'                 => $request->dmax,
+    //                 'dimension_pack'       => $request->dimension_pack,
+    //                 'vol_per_pcs'          => $request->vol_per_pcs,
+    //                 'vol_total'            => $request->vol_total,
+    //                 'net_weight_pcs'       => $request->net_weight_pcs,
+    //                 'total_net_weight'     => $request->total_net_weight,
+    //                 'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
+    //                 'total_gross_weight'   => $request->total_gross_weight,
+    //                 'expect_temp'          => $request->expect_temp,
+    //                 'density_gross'        => $request->density_gross,
+    //                 'density_nett'         => $request->density_nett,
+    //             ]
+    //         );
+
+    //         DB::commit();
+    //         return redirect()->route('admin.bookings')->with('success', 'Order #' . $booking->booking_code . ' berhasil diperbarui.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return back()->with('error', 'Gagal memperbarui: ' . $e->getMessage());
+    //     }
+    // }
+
     public function update(Request $request, int $id)
     {
         $booking = Booking::findOrFail($id);
 
-        // 1. HAPUS 'status' dari validasi karena memang tidak ada di form
         $request->validate([
             'customer_id'    => 'required|exists:customers,id',
             'product_name'   => 'required|string',
             'quantity'       => 'required|numeric',
             'dimension_pack' => 'required|string',
             'vol_total'      => 'required|numeric',
+            'created_at'     => 'required|date', // Validasi tanggal baru
+            'booking_code'   => 'required|string'  // Validasi booking code baru dari input hidden/readonly
         ]);
 
         try {
             DB::beginTransaction();
 
-            // 2. Update data UTAMA tanpa menyentuh status
-            // Jangan masukkan 'status' => $request->status di sini
+            // 2. Update data UTAMA termasuk tanggal input (created_at) dan booking_code baru
             $booking->update([
                 'customer_id'    => $request->customer_id,
+                'booking_code'   => $request->booking_code,
+                'created_at'     => $request->created_at,
                 'total_price'    => $request->total_price ?? $booking->total_price,
                 'payment_status' => $request->payment_status ?? $booking->payment_status,
             ]);
@@ -600,7 +657,7 @@ class AdminBookingController extends Controller
                         }
 
                         // Opsional A: Jika data barang keluar tetap mau disimpan di DB dengan status 'shipped'
-                        // $content->update(['pallet_id' => null, 'status' => 'shipped']); 
+                        // $content->update(['pallet_id' => null, 'status' => 'shipped']);
 
                         // Opsional B: Langsung hapus dari data antrean rak aktif karena sudah dikirim
                         $content->delete();
@@ -715,5 +772,23 @@ class AdminBookingController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
+    }
+
+    public function getBookingCodeByDate(Request $request)
+    {
+        $request->validate(['date' => 'required|date']);
+
+        $date = \Carbon\Carbon::parse($request->date);
+        $prefix = $date->format('ymd');
+
+        // Hitung berapa booking yang dibuat pada tanggal tersebut (abaikan booking saat ini jika dilewati id,
+        // namun karena ini pencarian kode baru murni untuk tanggal terpilih, kita ambil count global tanggal tersebut)
+        $countToday = Booking::whereDate('created_at', $date->toDateString())->count();
+
+        $sequence = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
+
+        return response()->json([
+            'code' => $prefix . $sequence
+        ]);
     }
 }

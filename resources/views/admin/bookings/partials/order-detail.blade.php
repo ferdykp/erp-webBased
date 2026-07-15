@@ -63,12 +63,17 @@
             <input type="hidden" name="total_net_weight" id="final_total_net_weight">
             <input type="hidden" name="density_gross" id="final_density_gross">
             <input type="hidden" name="density_nett" id="final_density_nett">
+            {{-- Letakkan kode ini di dalam <form> yang ada di order-detail.blade.php --}}
+            <input type="hidden" id="final_booking_code" name="booking_code" value="{{ $booking->booking_code }}">
+            <input type="hidden" id="final_created_at" name="created_at"
+                value="{{ $booking->created_at ? $booking->created_at->format('Y-m-d') : '' }}">
+
 
             <div id="modalScrollArea"
-                class="flex-1 px-6 md:px-12 py-8 overflow-y-auto 
-                [&::-webkit-scrollbar]:w-2 
-                [&::-webkit-scrollbar-track]:bg-transparent 
-                [&::-webkit-scrollbar-thumb]:bg-slate-200 
+                class="flex-1 px-6 md:px-12 py-8 overflow-y-auto
+                [&::-webkit-scrollbar]:w-2
+                [&::-webkit-scrollbar-track]:bg-transparent
+                [&::-webkit-scrollbar-thumb]:bg-slate-200
                 [&::-webkit-scrollbar-thumb]:rounded-full">
 
                 <div id="content_step1" class="space-y-8">
@@ -82,8 +87,8 @@
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Qty</p>
-                                <p class="font-bold text-slate-800"><span id="check_qty">0</span> <span id="check_unit"
-                                        class="text-xs uppercase"></span></p>
+                                <p class="font-bold text-slate-800"><span id="check_qty">0</span> <span
+                                        id="check_unit" class="text-xs uppercase"></span></p>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dose</p>
@@ -262,7 +267,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // generateBookingCode();
         const existingCode = "{{ $booking->booking_code ?? '' }}";
 
         if (existingCode !== "") {
@@ -270,7 +274,9 @@
             if (document.getElementById('display_booking_code_input')) {
                 document.getElementById('display_booking_code_input').value = existingCode;
             }
-            document.getElementById('display_booking_code').innerText = existingCode;
+            if (document.getElementById('display_booking_code')) {
+                document.getElementById('display_booking_code').innerText = existingCode;
+            }
         } else {
             // Jika mode CREATE: Jalankan generator
             generateBookingCode();
@@ -288,7 +294,9 @@
         if (document.getElementById('display_booking_code_input')) {
             document.getElementById('display_booking_code_input').value = code;
         }
-        document.getElementById('display_booking_code').innerText = code;
+        if (document.getElementById('display_booking_code')) {
+            document.getElementById('display_booking_code').innerText = code;
+        }
     }
 
     function openVerifyModal() {
@@ -343,7 +351,33 @@
         document.getElementById('mod_density_nett').value = formatNum(dNett, 6);
         document.getElementById('mod_density_gross').value = formatNum(dGross, 6);
 
-        // Sync ke Hidden Inputs (Data Database)
+        // =========================================================================
+        // FIX SINKRONISASI TANGGAL & BOOKING CODE KE DALAM HIDDEN INPUT FORM MODAL
+        // =========================================================================
+        const inputBookingCode = document.getElementById('in_booking_code');
+        if (inputBookingCode) {
+            // Ambil elemen hidden input modal baik menggunakan ID maupun Name untuk keandalan penuh
+            const targetCodeField = document.getElementById('final_booking_code') || document.querySelector(
+                '#finalForm input[name="booking_code"]');
+            if (targetCodeField) {
+                targetCodeField.value = inputBookingCode.value;
+            }
+            if (document.getElementById('display_booking_code')) {
+                document.getElementById('display_booking_code').innerText = inputBookingCode.value;
+            }
+        }
+
+        const inputCreatedAt = document.getElementById('in_created_at');
+        if (inputCreatedAt) {
+            // Targetkan hidden input created_at di form verifikasi modal
+            const targetDateField = document.getElementById('final_created_at') || document.querySelector(
+                '#finalForm input[name="created_at"]');
+            if (targetDateField) {
+                targetDateField.value = inputCreatedAt.value;
+            }
+        }
+        // =========================================================================
+        // Sync ke Hidden Inputs Bawaan Lainnya
         document.getElementById('final_customer_id').value = val.customer_id;
         document.getElementById('final_product_name').value = val.product;
         document.getElementById('final_product_type').value = val.type;

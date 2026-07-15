@@ -102,7 +102,7 @@ Route::prefix('admin')
         |------------------------------------------------------------------
         | A. AKSES BERSAMA (Semua Staff Admin Tanpa Terkecuali)
         |------------------------------------------------------------------
-        | Catatan: Route dengan parameter dinamis seperti {id} dipindah ke bawah 
+        | Catatan: Route dengan parameter dinamis seperti {id} dipindah ke bawah
         | agar tidak menabrak route statis (seperti /profile/create).
         */
         Route::get('/dashboard', [AdminBookingController::class, 'index'])->name('admin.dashboard');
@@ -221,7 +221,7 @@ Route::prefix('admin')
 
 
 
-            // Master Data Mesin Penyinaran 
+            // Master Data Mesin Penyinaran
             Route::resource('production-lines', AdminProductionLineController::class)
                 ->except(['show', 'create', 'edit'])
                 ->names('admin.production-lines');
@@ -249,6 +249,7 @@ Route::prefix('admin')
             Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus'])->name('admin.bookings.paymentStatus');
             Route::get('/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
             Route::put('/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
+            Route::get('/admin/bookings/get-code-by-date', [AdminBookingController::class, 'getBookingCodeByDate'])->name('admin.bookings.get-code-by-date');
 
 
 
@@ -266,7 +267,7 @@ Route::prefix('admin')
         |------------------------------------------------------------------
         | F. AMAN SINKRONISASI BERSAMA (Route Diletakkan Paling Bawah)
         |------------------------------------------------------------------
-        | Sengaja ditaruh di paling bawah agar tidak menabrak route statis 
+        | Sengaja ditaruh di paling bawah agar tidak menabrak route statis
         | seperti '/profile/create' atau '/profile/list'.
         */
         Route::get('/profile/{id}/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');

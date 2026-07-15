@@ -11,12 +11,46 @@ use Illuminate\Support\Facades\Storage;
 
 class DosimeterController extends Controller
 {
-    public function index()
+    /**
+     * Menampilkan daftar seluruh booking dengan fitur pencarian.
+     */
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['customer', 'products'])->latest()->paginate(10);
+        $search = $request->input('search');
+
+        $bookings = Booking::with(['customer', 'products'])
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($subQuery) use ($search) {
+                    // 1. Cari berdasarkan kode booking
+                    $subQuery->where('bookings.booking_code', 'LIKE', "%{$search}%")
+
+                        // 2. Cari berdasarkan data Customer
+                        // PERBAIKAN: Menghapus kolom 'name' yang memicu crash jika tidak ada di database
+                        ->orWhereHas('customer', function ($q) use ($search) {
+                            $q->where('company_name', 'LIKE', "%{$search}%");
+                        })
+
+                        // 3. Cari berdasarkan nama Produk
+                        ->orWhereHas('products', function ($q) use ($search) {
+                            $q->where('product_name', 'LIKE', "%{$search}%");
+                        });
+                });
+            })
+            ->orderBy('bookings.created_at', 'desc')
+            ->paginate(10);
+
+        // Respons untuk AJAX JavaScript
+        if ($request->ajax()) {
+            return response(view('admin.dosimeter.table', compact('bookings'))->render());
+        }
+
+        // Respons normal browser
         return view('admin.dosimeter.index', compact('bookings'));
     }
 
+    /**
+     * Menampilkan halaman detail input dosimeter berdasarkan ID Booking.
+     */
     public function show($bookingId)
     {
         $booking = Booking::findOrFail($bookingId);
@@ -25,7 +59,9 @@ class DosimeterController extends Controller
         return view('admin.dosimeter.show', compact('booking', 'record'));
     }
 
-    // --- STEP 1 API: Submit Jumlah Kuantitas Tablet ---
+    /**
+     * STEP 1 API: Membuat/Generate Kuantitas Baris Tablet Dosimeter
+     */
     public function storeQuantity(Request $request)
     {
         $request->validate([
@@ -64,7 +100,9 @@ class DosimeterController extends Controller
         }
     }
 
-    // --- STEP 2 API: Simpan Nilai Absorbance, Hitung Dose & Upload Gambar ---
+    /**
+     * STEP 2 API: Menyimpan Nilai Absorbance, Hitung Dose Otomatis, & Upload 1 Gambar Global
+     */
     public function storeAbsorbance(Request $request, $recordId)
     {
         $request->validate([
@@ -79,7 +117,6 @@ class DosimeterController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Proses upload file gambar global jika ada
             $uploadedImagePath = null;
             if ($request->hasFile('global_image')) {
                 if ($record->image && Storage::disk('public')->exists($record->image)) {
@@ -88,11 +125,9 @@ class DosimeterController extends Controller
                 $uploadedImagePath = $request->file('global_image')->store('dosimeter_images', 'public');
             }
 
-            // 2. Loop simpan nilai absorbance & hitung dose per tablet ke detail table
             foreach ($request->absorbance as $tabletNumber => $value) {
                 $x = (float)$value;
 
-                // Rumus Kalibrasi Cubic
                 $calibratedDose = (13.099 * pow($x, 3)) + (8.7891 * pow($x, 2)) + (57.786 * $x) - 2.423;
                 $dosimeterNum = $request->dosimeter_number[$tabletNumber] ?? null;
 
@@ -121,12 +156,11 @@ class DosimeterController extends Controller
 
             DB::commit();
 
-            // Set notifikasi sukses bawaan Laravel ke session flash sebelum reload
             session()->flash('success', 'Dosimeter data and image successfully saved.');
 
             return response()->json([
                 'status' => 'success',
-                'redirect' => route('admin.dosimeter.show', $bookingId ?? $record->booking_id)
+                'redirect' => route('admin.dosimeter.show', $record->booking_id)
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

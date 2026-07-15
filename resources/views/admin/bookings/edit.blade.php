@@ -43,14 +43,31 @@
                         </select>
                     </div>
 
-                    {{-- BOOKING CODE (READONLY) --}}
-                    <div class="px-2">
-                        <label class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                            Booking Code
-                        </label>
-                        <input type="text" id="display_booking_code_input"
-                            class="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-black text-blue-600 tracking-widest mt-1"
-                            readonly value="{{ $booking->booking_code }}">
+                    {{-- GRID TANGGAL & BOOKING CODE --}}
+                    <div class="grid grid-cols-1 gap-6 px-2 md:grid-cols-2 lg:gap-8">
+                        {{-- INPUT TANGGAL --}}
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">
+                                Tanggal Input (Created At)
+                            </label>
+                            <input type="date" id="in_created_at" name="created_at"
+                                value="{{ $booking->created_at ? $booking->created_at->format('Y-m-d') : date('Y-m-d') }}"
+                                class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white focus:border-blue-300 transition-all outline-none">
+                        </div>
+
+                        {{-- BOOKING CODE (READONLY DISPLAY) --}}
+                        <div class="space-y-2">
+                            <label
+                                class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Booking Code
+                            </label>
+                            <input type="text" id="display_booking_code_input"
+                                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-black text-blue-600 tracking-widest"
+                                readonly value="{{ $booking->booking_code }}">
+                            <input type="hidden" id="in_booking_code" name="booking_code"
+                                value="{{ $booking->booking_code }}">
+                        </div>
                     </div>
 
                     {{-- PRODUCT INFO GRID --}}
@@ -218,11 +235,32 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Pasang event listener
+            // Pasang event listener kalkulator
             ['in_qty', 'in_length', 'in_width', 'in_height', 'in_net_pcs', 'in_gross_pcs'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('input', calculateSummary);
             });
+
+            // --- LOGIC BARU: Event Listener Perubahan Tanggal ---
+            const dateInput = document.getElementById('in_created_at');
+            if (dateInput) {
+                dateInput.addEventListener('change', function() {
+                    const selectedDate = this.value;
+                    if (!selectedDate) return;
+
+                    // Panggil API internal untuk mengambil code berdasarkan tanggal
+                    fetch(`{{ route('admin.bookings.get-code-by-date') }}?date=${selectedDate}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.code) {
+                                // Update visual input dan value asli code
+                                document.getElementById('display_booking_code_input').value = data.code;
+                                document.getElementById('in_booking_code').value = data.code;
+                            }
+                        })
+                        .catch(err => console.error('Gagal mengambil Booking Code baru:', err));
+                });
+            }
 
             // Trigger kalkulasi awal untuk data yang sudah ada
             calculateSummary();
@@ -258,69 +296,6 @@
                 dNett,
                 dGross
             };
-        }
-
-        function openVerifyModal() {
-            const customer = document.getElementById('in_customer_id');
-            const prodName = document.getElementById('in_product_name');
-            const qtyVal = document.getElementById('in_qty').value;
-
-            if (!customer.value || !prodName.value || !qtyVal) {
-                alert("Harap isi Nama Customer, Nama Produk, dan Quantity.");
-                return;
-            }
-
-            const calc = calculateSummary();
-
-            try {
-                // UI Update
-                document.getElementById('check_product_name').innerText = prodName.value;
-                document.getElementById('check_qty').innerText = formatNum(qtyVal, 0);
-                document.getElementById('check_unit').innerText = document.getElementById('in_unit').value;
-                document.getElementById('check_dmin').innerText = formatNum(document.getElementById('in_dmin').value, 2);
-                document.getElementById('check_dmax').innerText = formatNum(document.getElementById('in_dmax').value, 2);
-                document.getElementById('check_dimension').innerText =
-                    `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value} cm`;
-
-                // Modal Readonly Inputs
-                document.getElementById('mod_vol_pcs').value = formatNum(calc.vol_pcs, 2);
-                document.getElementById('mod_vol_total').value = formatNum(calc.vol_total, 2);
-                document.getElementById('mod_net_pcs').value = formatNum(document.getElementById('in_net_pcs').value, 2);
-                document.getElementById('mod_net_total').value = formatNum(calc.net_total, 2);
-                document.getElementById('mod_density_nett').value = formatNum(calc.dNett, 6);
-                document.getElementById('mod_density_gross').value = formatNum(calc.dGross, 6);
-
-                // Hidden Inputs for POST/PUT
-                document.getElementById('final_customer_id').value = customer.value;
-                document.getElementById('final_product_name').value = prodName.value;
-                document.getElementById('final_product_type').value = document.getElementById('in_product_type').value;
-                document.getElementById('final_qty').value = qtyVal;
-                document.getElementById('final_unit').value = document.getElementById('in_unit').value;
-                document.getElementById('final_dmin').value = document.getElementById('in_dmin').value || 0;
-                document.getElementById('final_dmax').value = document.getElementById('in_dmax').value || 0;
-                document.getElementById('final_dim_pack').value =
-                    `${document.getElementById('in_length').value}x${document.getElementById('in_width').value}x${document.getElementById('in_height').value}`;
-                document.getElementById('final_temp').value = document.getElementById('in_temp').value;
-                document.getElementById('final_vol_per_pcs').value = calc.vol_pcs;
-                document.getElementById('final_vol_total').value = calc.vol_total;
-                document.getElementById('final_net_weight_pcs').value = document.getElementById('in_net_pcs').value;
-                document.getElementById('final_total_net_weight').value = calc.net_total;
-                document.getElementById('final_gross_pcs').value = document.getElementById('in_gross_pcs').value;
-                document.getElementById('final_gross_total').value = calc.gross_total;
-                document.getElementById('final_density_nett').value = calc.dNett;
-                document.getElementById('final_density_gross').value = calc.dGross;
-
-                if (typeof calculatePrice === "function") calculatePrice();
-
-                document.getElementById('display_booking_code').innerText = document.getElementById(
-                    'display_booking_code_input').value;
-                const modal = document.getElementById('orderDetailModal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-
-            } catch (error) {
-                console.error("Error modal:", error);
-            }
         }
     </script>
 @endsection
