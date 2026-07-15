@@ -101,7 +101,7 @@ class DailyWorkExport implements FromCollection, WithStyles, WithEvents, WithMap
         // 5. Supervisor & Staff (Baris 6 & 7)
         $sheet->setCellValue('A6', "Processing line supervisor: Irwinsyah");
         $sheet->mergeCells('A6:D6');
-        $sheet->setCellValue('E6', "staff: Rendi, Bagas, Rijag");
+        $sheet->setCellValue('E6', "staff: Rendi, Bagas, Rijag, Ferdy");
         $sheet->mergeCells('E6:H6');
 
         $sheet->setCellValue('A7', "Loading and unloading supervisor: Zeigy");
