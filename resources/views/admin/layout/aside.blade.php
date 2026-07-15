@@ -217,7 +217,7 @@
 
                 {{-- JTS Reporting (Logistics) --}}
                 {{-- FIX: Mengubah request()->is() menjadi request()->routeIs() agar state otomatis terbuka di server --}}
-                <div x-data="{ open: {{ request()->routeIs('admin.report.jts*') ? 'true' : 'false' }} }">
+                {{-- <div x-data="{ open: {{ request()->routeIs('admin.report.jts*') ? 'true' : 'false' }} }">
                     <button @click="open = !open"
                         class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.report.jts*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
                         <div class="flex items-center gap-3">
@@ -249,7 +249,7 @@
                             4. Irradiated Material Card
                         </a>
                     </div>
-                </div>
+                </div> --}}
             </div>
         @endif
     </nav>
