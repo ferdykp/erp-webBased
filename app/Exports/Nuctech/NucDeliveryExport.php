@@ -147,16 +147,22 @@ class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithM
 
         // 7. Kolom Tanda Tangan / Persetujuan (Baris 12 & 13)
         $sheet->setCellValue('A12', 'Shift Leader');
-        $sheet->mergeCells('A12:B12', 'Bagaswara');
-        $sheet->mergeCells('A13:B13'); // Kolom TTD kosong
+        $sheet->mergeCells('A12:B12');
+
+        // Tulis nilainya dulu di cell A13, baru di-merge A13 sampai B13
+        $sheet->setCellValue('A13', 'Bagaswara');
+        $sheet->mergeCells('A13:B13');
 
         $sheet->setCellValue('C12', 'Production Manager');
-        $sheet->mergeCells('C12:E12', 'Irwinsyah');
-        $sheet->mergeCells('C13:E13'); // Kolom TTD kosong
+        $sheet->mergeCells('C12:E12');
+
+        // Tulis nilainya dulu di cell C13, baru di-merge C13 sampai E13
+        $sheet->setCellValue('C13', 'Irwinsyah');
+        $sheet->mergeCells('C13:E13');
 
         $sheet->setCellValue('F12', 'Marketing Department');
         $sheet->mergeCells('F12:G12');
-        $sheet->mergeCells('F13:G13'); // Kolom TTD kosong
+        $sheet->mergeCells('F13:G13'); // Kolom TTD memang kosong
 
         // 8. Teks Vertikal Distribusi Dokumen (Kolom I disamping tabel)
         // Disimulasikan rapi di kolom sebelah kanan tabel utama
@@ -198,12 +204,19 @@ class NucDeliveryExport implements FromCollection, WithStyles, WithEvents, WithM
         // Style area TTD bawah
         $sheet->getStyle('A12:G12')->getFont()->setBold(true);
         $sheet->getStyle('A12:G12')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // =========================================================================
+        // FIX: MENEMPATKAN NAMA DI TENGAH BAWAH KOTAK TTD (BARIS 13)
+        // =========================================================================
+        $sheet->getStyle('A13:G13')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A13:G13')->getAlignment()->setVertical(Alignment::VERTICAL_BOTTOM);
+        // =========================================================================
+
         $sheet->getStyle('C7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('B7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         // $sheet->getStyle('F7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('F7')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getStyle('F7')->getAlignment()->setWrapText(true);
-
 
 
 
