@@ -280,11 +280,10 @@
             </div>
         </div>
     </div>
-
-    @include('admin.bookings.partials.preRad')
-    @include('admin.bookings.partials.checkin-modal')
-
     @foreach ($bookings as $booking)
+        @include('admin.bookings.partials.preRad')
+        @include('admin.bookings.partials.checkin-modal')
+
         @include('admin.bookings.partials.detail-modal', ['booking' => $booking])
     @endforeach
 

@@ -64,9 +64,13 @@
             <input type="hidden" name="density_gross" id="final_density_gross">
             <input type="hidden" name="density_nett" id="final_density_nett">
             {{-- Letakkan kode ini di dalam <form> yang ada di order-detail.blade.php --}}
-            <input type="hidden" id="final_booking_code" name="booking_code" value="{{ $booking->booking_code }}">
+            {{-- <input type="hidden" id="final_booking_code" name="booking_code" value="{{ $booking->booking_code }}"> --}}
+            <input type="hidden" id="final_booking_code" name="booking_code"
+                value="{{ $booking->booking_code ?? '' }}">
+            {{-- <input type="hidden" id="final_created_at" name="created_at"
+                value="{{ $booking->created_at ? $booking->created_at->format('Y-m-d') : '' }}"> --}}
             <input type="hidden" id="final_created_at" name="created_at"
-                value="{{ $booking->created_at ? $booking->created_at->format('Y-m-d') : '' }}">
+                value="{{ isset($booking) && $booking->created_at ? $booking->created_at->format('Y-m-d') : '' }}">
 
 
             <div id="modalScrollArea"
