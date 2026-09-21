@@ -298,18 +298,12 @@ function validateCurrentStep() {
             return false;
         }
 
-        const porters = document.querySelectorAll('[name="porters[]"]');
-        if (porters.length === 0) {
-            alert("Tambahkan minimal 1 porter");
-            return false;
-        }
+        const porter = document.querySelector(
+            '#porterContainer select[name="porters[]"]',
+        );
 
-        let porterFilled = true;
-        porters.forEach((p) => {
-            if (!p.value) porterFilled = false;
-        });
-        if (!porterFilled) {
-            alert("Semua porter harus dipilih!");
+        if (!porter || !porter.value.trim()) {
+            alert("Please choose a Porter Team!");
             return false;
         }
 
@@ -430,17 +424,17 @@ function addBatchField() {
     div.innerHTML = `
             <div>
                 <label class="text-[9px] font-black text-slate-400 uppercase mb-2 block">Qty Batch</label>
-                <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required 
+                <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required
                     class="w-full px-6 py-3 font-bold bg-white border-none batch-input rounded-xl focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
                 <label class="text-[9px] font-black text-slate-400 uppercase mb-2 block">Porter Penanggung Jawab</label>
-                <select name="batch_porters[]" required 
+                <select name="batch_porters[]" required
                     class="w-full px-6 py-3 font-bold bg-white border-none rounded-xl focus:ring-2 focus:ring-blue-500">
                     ${porterOptions}
                 </select>
             </div>
-            <button type="button" onclick="this.parentElement.remove(); updateBatchTotal();" 
+            <button type="button" onclick="this.parentElement.remove(); updateBatchTotal();"
                 class="pb-4 text-xs font-bold text-red-500 hover:text-red-700">
                 <i class="fa-solid fa-trash-can"></i> Hapus
             </button>
