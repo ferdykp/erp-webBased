@@ -38,6 +38,8 @@ return new class extends Migration {
                 'target_dose',
                 'beam_speed',
                 'loading_mode',
+                'freq',
+                'scan_gear',
             ]);
         });
     }

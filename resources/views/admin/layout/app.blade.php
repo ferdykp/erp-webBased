@@ -1,63 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light">
     <title>Beam Admin - @yield('title')</title>
-
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- Vite Assets (Tailwind included here) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- External Libraries -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
-
-    <!-- AlpineJS Plugins -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-
+    @stack('styles')
 </head>
-
-<body class="font-sans antialiased text-slate-900 bg-slate-50" x-data="{ sidebarOpen: true }">
-
-    <div class="flex h-screen overflow-hidden">
-
+<body class="min-h-[100dvh] overflow-x-hidden bg-slate-50 font-sans text-slate-900 antialiased lg:overflow-hidden" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+    <div class="flex min-h-[100dvh] w-full print:block print:h-auto print:min-h-0 lg:h-[100dvh] lg:overflow-hidden">
         @include('admin.layout.aside')
 
-        <div
-            class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
-
+        <div class="relative flex min-w-0 flex-1 flex-col bg-slate-50 print:block print:h-auto print:overflow-visible lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-contain">
             @include('admin.layout.navbar')
-
-            <main class="w-full p-4 transition-all duration-300 ease-in-out md:p-6 lg:p-8">
-                <div class="mx-auto max-w-7xl">
-
-                    <div class="mb-6">
-                        @include('admin.layout.notif')
-                    </div>
-
-                    <div class="min-h-[calc(100vh-160px)]">
-                        @yield('content')
-                    </div>
-
+            <main class="w-full flex-1 px-3 py-5 print:p-0 sm:px-5 sm:py-6 lg:px-8 lg:py-7">
+                <div class="mx-auto w-full max-w-[1540px] print:max-w-none">
+                    <div class="mb-4 print:hidden">@include('admin.layout.notif')</div>
+                    @yield('content')
                 </div>
             </main>
-
         </div>
 
-        <div x-show="sidebarOpen" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
-            class="fixed inset-0 z-40 bg-black/50 md:hidden" x-cloak>
-        </div>
+        <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"
+            class="fixed inset-0 z-40 bg-slate-950/55 backdrop-blur-[2px] print:hidden lg:hidden"></div>
     </div>
-
     @stack('scripts')
 </body>
-
 </html>

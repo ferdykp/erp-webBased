@@ -2,49 +2,55 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-// PENTING: Import model yang digunakan oleh guard admin kamu (misal: Admin atau User)
-use App\Models\Admin;
 
 class AdminAuthController extends Controller
 {
     public function showLogin()
     {
+        if (Auth::guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return view('admin.auth.login');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        // 1. Check if the email exists in the admin database
-        $adminExists = Admin::where('email', $credentials['email'])->exists();
-
-        if (!$adminExists) {
-            // Error jika akun belum terdaftar
+        if (!Admin::where('email', $credentials['email'])->exists()) {
             return back()->withErrors([
                 'email' => 'Account not registered. Please contact the System Admin.',
-            ])->withInput($request->only('email'));
+            ])->onlyInput('email');
         }
 
-        // 2. If email exists, attempt to authenticate (verify password)
-        if (Auth::guard('admin')->attempt($credentials)) {
-            return redirect()->route('admin.dashboard');
+        if (!Auth::guard('admin')->attempt($credentials)) {
+            return back()->withErrors([
+                'password' => 'Invalid password. Please try again.',
+            ])->onlyInput('email');
         }
 
-        // 3. If attempt fails, it means the password is incorrect
-        return back()->withErrors([
-            'password' => 'Invalid password. Please try again.',
-        ])->withInput($request->only('email'));
+        // Keep staff and customer identities mutually exclusive in one browser.
+        Auth::guard('customer')->logout();
+        Auth::guard('web')->logout();
+        $request->session()->forget('url.intended');
+        $request->session()->regenerate();
+
+        return redirect()->route('admin.dashboard');
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('admin.login');
     }
 }

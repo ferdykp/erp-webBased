@@ -29,7 +29,7 @@
                     {{-- Background Line --}}
                     <div class="absolute top-5 left-0 w-full h-[2px] bg-slate-100 -z-0">
                         <div class="h-full transition-all duration-700 bg-blue-500"
-                            :style="`width: ${step === 1 ? '0%' : '100%'}`"></div>
+                            :class="step === 1 ? 'w-0' : 'w-full'"></div>
                     </div>
 
                     {{-- Step 1 Indicator --}}

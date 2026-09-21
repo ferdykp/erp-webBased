@@ -80,7 +80,7 @@
                     </div>
 
                     {{-- Expanded Content --}}
-                    <div x-show="expanded" x-cloak x-collapse>
+                    <div x-show="expanded" x-transition.opacity.duration.150ms>
                         <div class="px-6 pb-6 space-y-4 md:px-8 md:pb-8">
 
                             <div class="p-5 border bg-slate-50/50 border-slate-100 rounded-[1.5rem] md:rounded-2xl">
@@ -93,10 +93,8 @@
                                         ({{ $pct }}%)
                                     </span>
                                 </div>
-                                <div class="w-full h-2.5 overflow-hidden rounded-full bg-slate-200">
-                                    <div class="h-full transition-all duration-700 bg-blue-500 rounded-full shadow-sm"
-                                        style="width: {{ $pct }}%"></div>
-                                </div>
+                                <progress value="{{ $pct }}" max="100"
+                                    class="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 accent-blue-500"></progress>
                             </div>
 
                             <div class="grid grid-cols-1 gap-3">
@@ -164,7 +162,7 @@
             x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-90"
-            class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+            class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
 
             <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-8 text-center space-y-6"
                 @click.away="confirmModal = false">

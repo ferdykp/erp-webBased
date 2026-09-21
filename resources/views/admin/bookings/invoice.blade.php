@@ -1,174 +1,94 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en" class="bg-white">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoice Receipt - {{ $booking->booking_code }}</title>
-    <style>
-        @media print {
-            @page {
-                margin: 0;
-                /* Menghilangkan margin default browser yang berisi header/footer */
-            }
-
-            body {
-                margin: 1.6cm;
-                /* Memberikan margin kembali ke konten agar tidak terpotong ke pinggir kertas */
-            }
-        }
-
-        body {
-            font-family: 'Helvetica', sans-serif;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .header {
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin: 0;
-        }
-
-        .info-table {
-            width: 100%;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .product-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .product-table th {
-            background: #f3f4f6;
-            padding: 10px;
-            font-size: 12px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .product-table td {
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            font-size: 12px;
-        }
-
-        .status-badge {
-            background: #dcfce7;
-            color: #166534;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        .footer {
-            margin-top: 50px;
-            font-size: 11px;
-            color: #6b7280;
-            text-align: center;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-        }
-    </style>
+    @vite(['resources/css/app.css'])
 </head>
-{{-- <div style="margin-bottom:20px; text-align:right;">
-    <button onclick="window.print()"
-        style="padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
-        🖨️ Print Invoice
-    </button>
-</div> --}}
-<script>
-    window.onload = function() {
-        window.print();
-    }
-</script>
+<body class="bg-white font-sans text-slate-700 print:m-0 print:p-0">
+    <main class="mx-auto max-w-5xl p-6 print:max-w-none print:p-8 sm:p-10">
+        <header class="mb-6 flex items-end justify-between gap-6 border-b-2 border-blue-600 pb-4">
+            <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-blue-600">Warehouse Receipt</p>
+                <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-blue-600">GOODS RECEIPT INVOICE</h1>
+            </div>
+            <p class="text-sm font-bold text-slate-800">#{{ $booking->booking_code }}</p>
+        </header>
 
-<body>
+        <section class="mb-6 grid grid-cols-1 gap-5 text-sm sm:grid-cols-2">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 print:bg-white">
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Customer Info</p>
+                <p class="mt-2 font-semibold text-slate-800">{{ $booking->customer->contacts->first()->name }}</p>
+                <p class="mt-1 text-xs text-slate-500">Booking Date: {{ $booking->created_at->format('d/m/Y') }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left print:bg-white sm:text-right">
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Warehouse Acceptance</p>
+                <p class="mt-2 text-xs text-slate-500">Arrival: {{ \Carbon\Carbon::parse($booking->arrival_time)->format('d M Y H:i') }}</p>
+                <p class="mt-1 text-xs text-slate-500">PIC Warehouse: {{ $booking->pic_warehouse ?? '-' }}</p>
+                <span class="mt-2 inline-flex rounded-md bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-700">ACCEPTED</span>
+            </div>
+        </section>
 
-    <div class="header">
-        <table width="100%">
-            <tr>
-                <td>
-                    <h1 class="title">GOODS RECEIPT INVOICE</h1>
-                </td>
-                <td align="right"><strong>#{{ $booking->booking_code }}</strong></td>
-            </tr>
-        </table>
-    </div>
+        <section>
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="w-full border-collapse text-left text-xs">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="border-b border-slate-200 px-4 py-3 font-extrabold uppercase tracking-wider text-slate-500">Product Name</th>
+                            <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Type</th>
+                            <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Dimensions</th>
+                            <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Quantity</th>
+                            <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Dose Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($booking->products as $product)
+                            <tr>
+                                <td class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-800">{{ $product->product_name }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ $product->product_type }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ $product->dimension_pack }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ $product->quantity }} {{ $product->unit }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ (int) $product->dmin }} - {{ (int) $product->dmax }} kGy</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    <table class="info-table">
-        <tr>
-            <td width="50%">
-                <strong>Customer Info:</strong><br>
-                {{ $booking->customer->contacts->first()->name }}<br>
-                Booking Date: {{ $booking->created_at->format('d/m/Y') }}
-            </td>
-            <td width="50%" align="right">
-                <strong>Warehouse Acceptance:</strong><br>
-                Arrival: {{ \Carbon\Carbon::parse($booking->arrival_time)->format('d M Y H:i') }}<br>
-                PIC Warehouse: {{ $booking->pic_warehouse ?? '-' }}<br>
-                Status: <span class="status-badge">ACCEPTED</span>
-            </td>
-        </tr>
-    </table>
+        <section class="mt-8">
+            <h2 class="mb-3 text-sm font-bold text-slate-800">Reception Details (Batches)</h2>
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="w-full border-collapse text-left text-xs">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Batch #</th>
+                            <th class="border-b border-slate-200 px-4 py-3 font-extrabold uppercase tracking-wider text-slate-500">Porter</th>
+                            <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Received Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($booking->batches as $batch)
+                            <tr>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center font-semibold">{{ $batch->batch_number }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3">{{ $batch->porter_name }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ (int) $batch->quantity }} {{ $batch->unit }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    <table class="product-table">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Type</th>
-                <th>Dimensions</th>
-                <th>Quantity</th>
-                <th>Dose Target</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($booking->products as $product)
-                <tr>
-                    <td align="center">{{ $product->product_name }}</td>
-                    <td align="center">{{ $product->product_type }}</td>
-                    <td align="center">{{ $product->dimension_pack }}</td>
-                    <td align="center">{{ $product->quantity }} {{ $product->unit }}</td>
-                    <td align="center">{{ (int) $product->dmin }} - {{ (int) $product->dmax }} kGy</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <footer class="mt-12 border-t border-slate-200 pt-4 text-center text-[11px] leading-5 text-slate-500">
+            <p>This is an automated receipt based on warehouse check-in system.</p>
+            <p>Processing will start shortly according to the queue. Thank you for your business.</p>
+        </footer>
+    </main>
 
-    <div style="margin-top: 30px;">
-        <h4 style="margin-bottom: 5px; font-size: 14px;">Reception Details (Batches)</h4>
-        <table class="product-table">
-            <thead>
-                <tr>
-                    <th>Batch #</th>
-                    <th>Porter</th>
-                    <th>Received Qty</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($booking->batches as $batch)
-                    <tr>
-                        <td align="center">{{ $batch->batch_number }}</td>
-                        <td>{{ $batch->porter_name }}</td>
-                        <td align="center">{{ (int) $batch->quantity }} {{ $batch->unit }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <div class="footer">
-        <p>This is an automated receipt based on warehouse check-in system.</p>
-        <p>Processing will start shortly according to the queue. Thank you for your business.</p>
-    </div>
+    <script>
+        window.onload = function() { window.print(); }
+    </script>
 </body>
-
 </html>

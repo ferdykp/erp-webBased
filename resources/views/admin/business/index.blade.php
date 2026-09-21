@@ -81,7 +81,7 @@
         <div x-show="openModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
-            x-cloak>
+           >
 
             <div @click.away="openModal = false" x-show="openModal"
                 x-transition:enter="transition ease-out duration-300 transform"

@@ -1,78 +1,49 @@
-{{-- Sidebar Customer --}}
-<aside id="sidebar" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-    class="fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block
-           w-72 h-[calc(100vh-2rem)] my-4 ml-4">
-    {{-- Margin & Height calculation --}}
+<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    class="fixed inset-y-0 left-0 z-50 flex w-[min(270px,calc(100vw-24px))] flex-col border-r border-slate-200 bg-white shadow-2xl shadow-slate-900/10 transition-transform duration-300 print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[270px] lg:shrink-0 lg:shadow-none">
+    <div class="flex h-[76px] items-center justify-between border-b border-slate-200 px-5">
+        <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white"><i class="fa-solid fa-bolt"></i></div>
+            <div><p class="text-[15px] font-extrabold tracking-tight text-slate-900">BeamApp</p><p class="mt-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">Customer Portal</p></div>
+        </a>
+        <button @click="sidebarOpen = false"
+            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm text-slate-600 transition-colors hover:bg-slate-50 lg:hidden">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
 
-    <div class="flex flex-col h-full px-6 py-8 bg-white border border-gray-100 shadow-sm rounded-[2.5rem]">
-
-        {{-- LOGO SECTION --}}
-        <div class="flex items-center px-2 mb-10">
-            <a href="{{ route('customer.dashboard') }}" class="flex items-center space-x-3 group">
-                <div
-                    class="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform duration-300">
-                    <i class="text-lg text-white fa-solid fa-leaf"></i>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-xl font-black leading-none tracking-tight text-gray-800">Beam<span
-                            class="text-blue-600">App</span></span>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Customer
-                        Portal</span>
-                </div>
+    <nav class="flex-1 overflow-y-auto p-3 pt-5">
+        <p class="mb-2 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Services</p>
+        <div class="space-y-1">
+            <a href="{{ route('customer.dashboard') }}"
+                class="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors {{ request()->routeIs('customer.dashboard') ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' }}">
+                <i class="fa-solid fa-house w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('customer.dashboard') ? 'text-blue-600' : 'text-slate-400' }}"></i><span>Dashboard</span>
+            </a>
+            <a href="{{ route('customer.booking.create') }}"
+                class="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors {{ request()->routeIs('customer.booking.create') ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' }}">
+                <i class="fa-solid fa-plus w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('customer.booking.create') ? 'text-blue-600' : 'text-slate-400' }}"></i><span>New Sterilization Order</span>
+            </a>
+            <a href="{{ route('customer.history') }}"
+                class="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors {{ request()->routeIs('customer.history') ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' }}">
+                <i class="fa-solid fa-clock-rotate-left w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('customer.history') ? 'text-blue-600' : 'text-slate-400' }}"></i><span>Order History</span>
             </a>
         </div>
 
-        {{-- NAVIGATION --}}
-        <div class="flex-1 pr-2 space-y-8 overflow-y-auto custom-scrollbar">
-            {{-- Services Group --}}
-            <div>
-                <p class="px-4 mb-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Services</p>
-                <nav class="space-y-2">
-                    <a href="{{ route('customer.dashboard') }}"
-                        class="group flex items-center gap-3 px-4 py-3.5 text-sm font-bold transition-all rounded-2xl
-                        {{ request()->routeIs('customer.dashboard') ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600' }}">
-                        <i class="w-5 text-lg text-center fa-solid fa-house-chimney"></i>
-                        <span>Home</span>
-                    </a>
-
-                    <a href="{{ route('customer.booking.create') }}"
-                        class="group flex items-center gap-3 px-4 py-3.5 text-sm font-bold transition-all rounded-2xl
-                        {{ request()->routeIs('customer.booking.create') ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600' }}">
-                        <i class="w-5 text-lg text-center fa-solid fa-calendar-plus"></i>
-                        <span>New Booking</span>
-                    </a>
-                </nav>
-            </div>
-
-            {{-- Personal Group --}}
-            <div>
-                <p class="px-4 mb-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em]">Personal</p>
-                <nav class="space-y-2">
-                    <a href="{{ route('customer.profile') }}"
-                        class="group flex items-center gap-3 px-4 py-3.5 text-sm font-bold transition-all rounded-2xl
-                        {{ request()->routeIs('customer.profile*') ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600' }}">
-                        <i class="w-5 text-lg text-center fa-solid fa-circle-user"></i>
-                        <span>My Profile</span>
-                    </a>
-                    <a href="{{ route('customer.history') }}" {{-- Hubungkan ke route history nanti --}}
-                        class="group flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all rounded-2xl">
-                        <i class="w-5 text-lg text-center fa-solid fa-receipt"></i>
-                        <span>History</span>
-                    </a>
-                </nav>
-            </div>
+        <p class="mb-2 mt-7 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Account</p>
+        <div class="space-y-1">
+            <a href="{{ route('customer.profile') }}"
+                class="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors {{ request()->routeIs('customer.profile*') ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' }}">
+                <i class="fa-solid fa-user w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('customer.profile*') ? 'text-blue-600' : 'text-slate-400' }}"></i><span>My Profile</span>
+            </a>
         </div>
+    </nav>
 
-        {{-- USER INFO & LOGOUT --}}
-        <div class="pt-6 mt-auto border-t border-gray-50">
-            <form action="{{ route('customer.logout') }}" method="POST">
+    <div class="border-t border-slate-200 p-3">
+        <div class="rounded-xl bg-slate-50 p-3">
+            <p class="truncate text-xs font-semibold text-slate-700">{{ auth('customer')->user()->name ?? 'Customer' }}</p>
+            <p class="mt-1 truncate text-[10px] text-slate-400">{{ auth('customer')->user()->email ?? '' }}</p>
+            <form action="{{ route('customer.logout') }}" method="POST" class="mt-3">
                 @csrf
-                <button
-                    class="flex items-center w-full gap-3 px-4 py-3.5 text-sm font-bold text-gray-400 transition-all rounded-2xl hover:bg-red-50 hover:text-red-500 group">
-                    <i
-                        class="w-5 text-center transition-transform fa-solid fa-right-from-bracket group-hover:translate-x-1"></i>
-                    <span>Logout</span>
-                </button>
+                <button class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
             </form>
         </div>
     </div>

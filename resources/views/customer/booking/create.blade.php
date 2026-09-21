@@ -33,7 +33,7 @@
             {{-- BODY --}}
             <div class="p-8">
                 {{-- Penampung ID Customer agar script tidak error --}}
-                <input type="hidden" id="in_customer_id" value="{{ auth()->user()->id }}">
+                <input type="hidden" id="in_customer_id" value="{{ auth('customer')->user()->id }}">
 
                 {{-- Hidden input untuk booking code (digunakan script detail) --}}
                 <input type="hidden" id="display_booking_code_input">

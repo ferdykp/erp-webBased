@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\NoCache;
 use App\Http\Middleware\CheckAdminRole;
+use App\Http\Middleware\EnsureCustomerAccount;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'nocache' => NoCache::class,
             'role' => CheckAdminRole::class,
+            'customer.only' => EnsureCustomerAccount::class,
         ]);
 
         // Proteksi Redirect jika user mencoba masuk url secure tanpa login

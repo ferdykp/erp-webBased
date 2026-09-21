@@ -1,81 +1,50 @@
-<nav
-    class="sticky z-30 flex items-center justify-between px-6 py-4 mx-4 border shadow-lg top-4 bg-white/80 backdrop-blur-md border-white/20 md:ml-0 rounded-2xl">
-    <button @click="sidebarOpen = !sidebarOpen"
-        class="p-2 bg-white border text-slate-600 border-slate-200 rounded-xl hover:bg-slate-50 focus:outline-none">
-        <i class="text-lg fas fa-bars"></i>
-    </button>
-
-    <div class="flex items-center gap-4">
-        {{-- Burger Menu for Mobile (Ensure sidebarOpen variable exists in your Alpine store/data) --}}
-        {{-- <button @click="sidebarOpen = true" class="p-2 text-gray-600 rounded-lg md:hidden hover:bg-gray-100">
-            <i class="text-xl fa-solid fa-bars-staggered"></i>
-        </button> --}}
-
-        <div class="hidden sm:block">
-            {{-- <h1 class="text-sm font-medium text-gray-400">Pages /</h1> --}}
-            <p class="text-base font-bold tracking-tight text-gray-800">
-                @yield('title', 'Dashboard')
-            </p>
+<nav class="sticky top-0 z-30 flex h-[76px] items-center justify-between gap-4 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl print:hidden sm:px-6 lg:px-8">
+    <div class="flex min-w-0 items-center gap-3">
+        <button @click="sidebarOpen = true"
+            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm text-slate-600 transition-colors hover:bg-slate-50 lg:hidden"
+            aria-label="Open navigation">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="min-w-0">
+            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">E-Beam Operations</p>
+            <h1 class="mt-0.5 truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg">@yield('title', 'Dashboard')</h1>
         </div>
     </div>
 
-    <div class="flex items-center gap-4">
-
-        {{-- <button class="relative p-2 text-gray-400 transition-colors hover:text-blue-600">
-            <i class="text-lg fa-solid fa-bell"></i>
-            <span class="absolute w-2 h-2 bg-red-500 border-2 border-white rounded-full top-2 right-2"></span>
-        </button> --}}
-
-        <div class="h-6 w-[1px] bg-gray-200 mx-1"></div>
+    <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div class="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-500 md:flex">
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+            System Online
+        </div>
 
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" @click.outside="open = false"
-                class="flex items-center gap-3 p-1 pr-3 transition-all rounded-full hover:bg-gray-50 group">
-
-                {{-- User Avatar (Initial or Image) --}}
-                <div
-                    class="flex items-center justify-center font-bold text-white rounded-full shadow-md w-9 h-9 bg-gradient-to-tr from-blue-600 to-blue-400 shadow-blue-200">
+                class="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-slate-100">
+                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm">
                     {{ strtoupper(substr(auth('admin')->user()->name, 0, 1)) }}
                 </div>
-
-                <div class="hidden text-left sm:block">
-                    <p class="text-xs font-semibold leading-none text-gray-800">
-                        {{ auth('admin')->user()->name }}
-                    </p>
-                    <p class="text-[10px] font-medium text-gray-400 mt-1">Administrator</p>
+                <div class="hidden max-w-36 text-left sm:block">
+                    <p class="truncate text-xs font-semibold text-slate-800">{{ auth('admin')->user()->name }}</p>
+                    <p class="mt-0.5 truncate text-[10px] capitalize text-slate-400">{{ str_replace('_', ' ', auth('admin')->user()->role ?? 'administrator') }}</p>
                 </div>
-
-                <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 transition-transform duration-300"
-                    :class="open ? 'rotate-180' : ''"></i>
+                <i class="fa-solid fa-chevron-down hidden text-[9px] text-slate-400 transition-transform sm:block" :class="open ? 'rotate-180' : ''"></i>
             </button>
 
-            {{-- DROPDOWN MENU --}}
-            <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
-                class="absolute right-0 z-50 mt-3 overflow-hidden bg-white border border-gray-100 shadow-2xl w-52 rounded-2xl">
-
-                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                    <p class="text-xs text-gray-400">Signed in as</p>
-                    <p class="text-sm font-bold text-gray-800 truncate">{{ auth('admin')->user()->email }}</p>
+            <div x-show="open" x-transition.origin.top.right
+                class="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-200/60">
+                <div class="border-b border-slate-100 px-3 py-2.5">
+                    <p class="text-[10px] uppercase tracking-wider text-slate-400">Signed in as</p>
+                    <p class="mt-1 truncate text-xs font-semibold text-slate-700">{{ auth('admin')->user()->email }}</p>
                 </div>
-
-                <div class="p-2">
+                <div class="py-1">
                     <a href="{{ route('admin.profile') }}"
-                        class="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 transition-colors rounded-xl hover:bg-blue-50 hover:text-blue-600">
-                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100/50">
-                            <i class="fa-solid fa-user-gear"></i>
-                        </div>
-                        Account Settings
+                        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600">
+                        <i class="fa-solid fa-user-gear w-4 text-center"></i> Account Settings
                     </a>
-
-                    <form action="{{ route('admin.logout') }}" method="POST" class="block">
+                    <form action="{{ route('admin.logout') }}" method="POST">
                         @csrf
-                        <button type="submit"
-                            class="flex items-center w-full gap-3 px-3 py-2 text-sm text-red-500 transition-colors rounded-xl hover:bg-red-50">
-                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100/50">
-                                <i class="fa-solid fa-right-from-bracket"></i>
-                            </div>
-                            Sign Out
+                        <button class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700">
+                            <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Sign Out
                         </button>
                     </form>
                 </div>

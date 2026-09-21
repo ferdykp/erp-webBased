@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DosimeterRecord extends Model
 {
-    protected $fillable = ['booking_id', 'tablet_quantity', 'image'];
+    protected $fillable = ['booking_id', 'tablet_quantity'];
 
     public function booking(): BelongsTo
     {

@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('booking_batches', function (Blueprint $table) {
-            //
+            $table->dropColumn(['offline_at', 'finished_at']);
         });
     }
 };

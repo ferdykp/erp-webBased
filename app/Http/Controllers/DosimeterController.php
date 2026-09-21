@@ -64,38 +64,43 @@ class DosimeterController extends Controller
      */
     public function storeQuantity(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'booking_id' => 'required|exists:bookings,id',
             'tablet_quantity' => 'required|integer|min:1|max:50',
         ]);
 
-        DB::beginTransaction();
         try {
-            $record = DosimeterRecord::updateOrCreate(
-                ['booking_id' => $request->booking_id],
-                ['tablet_quantity' => $request->tablet_quantity]
-            );
+            $record = DB::transaction(function () use ($validated) {
+                $record = DosimeterRecord::updateOrCreate(
+                    ['booking_id' => $validated['booking_id']],
+                    ['tablet_quantity' => $validated['tablet_quantity']]
+                );
 
-            $record->details()->delete();
+                // Clean up images owned by details before regenerating rows.
+                $record->load('details');
+                foreach ($record->details as $detail) {
+                    if ($detail->image && Storage::disk('public')->exists($detail->image)) {
+                        Storage::disk('public')->delete($detail->image);
+                    }
+                }
+                $record->details()->delete();
 
-            for ($i = 1; $i <= $request->tablet_quantity; $i++) {
-                DosimeterDetail::create([
-                    'dosimeter_record_id' => $record->id,
-                    'tablet_number' => $i,
-                    'absorbance' => null,
-                    'dose_kgy' => null
-                ]);
-            }
+                for ($i = 1; $i <= $validated['tablet_quantity']; $i++) {
+                    DosimeterDetail::create([
+                        'dosimeter_record_id' => $record->id,
+                        'tablet_number' => $i,
+                    ]);
+                }
 
-            DB::commit();
+                return $record->load('details');
+            });
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Kolom input absorbance berhasil dibuat.',
-                'data' => $record->load('details')
+                'data' => $record,
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (\Throwable $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
@@ -105,65 +110,65 @@ class DosimeterController extends Controller
      */
     public function storeAbsorbance(Request $request, $recordId)
     {
-        $request->validate([
+        $validated = $request->validate([
             'dosimeter_number' => 'required|array',
-            'dosimeter_number.*' => 'required|string',
+            'dosimeter_number.*' => 'required|string|max:100',
             'absorbance' => 'required|array',
             'absorbance.*' => 'required|numeric|min:0|max:5',
             'global_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $record = DosimeterRecord::findOrFail($recordId);
+        $record = DosimeterRecord::with('details')->findOrFail($recordId);
+        $expectedNumbers = $record->details->pluck('tablet_number')->map(fn ($n) => (string) $n)->sort()->values();
+        $submittedNumbers = collect(array_keys($validated['absorbance']))->map(fn ($n) => (string) $n)->sort()->values();
 
-        DB::beginTransaction();
+        if ($expectedNumbers->all() !== $submittedNumbers->all()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Daftar tablet tidak sesuai dengan record dosimeter. Reload halaman dan coba lagi.',
+            ], 422);
+        }
+
+        if (count($validated['dosimeter_number']) !== count($validated['absorbance'])) {
+            return response()->json(['status' => 'error', 'message' => 'Nomor dosimeter dan absorbance tidak lengkap.'], 422);
+        }
+
         try {
-            $uploadedImagePath = null;
-            if ($request->hasFile('global_image')) {
-                if ($record->image && Storage::disk('public')->exists($record->image)) {
-                    Storage::disk('public')->delete($record->image);
-                }
-                $uploadedImagePath = $request->file('global_image')->store('dosimeter_images', 'public');
-            }
+            DB::transaction(function () use ($request, $validated, $record) {
+                $uploadedImagePath = $request->hasFile('global_image')
+                    ? $request->file('global_image')->store('dosimeter_images', 'public')
+                    : null;
 
-            foreach ($request->absorbance as $tabletNumber => $value) {
-                $x = (float)$value;
+                foreach ($validated['absorbance'] as $tabletNumber => $value) {
+                    $detail = DosimeterDetail::where('dosimeter_record_id', $record->id)
+                        ->where('tablet_number', $tabletNumber)
+                        ->lockForUpdate()
+                        ->firstOrFail();
 
-                $calibratedDose = (13.099 * pow($x, 3)) + (8.7891 * pow($x, 2)) + (57.786 * $x) - 2.423;
-                $dosimeterNum = $request->dosimeter_number[$tabletNumber] ?? null;
+                    $x = (float) $value;
+                    $updateData = [
+                        'dosimeter_number' => $validated['dosimeter_number'][$tabletNumber] ?? null,
+                        'absorbance' => $x,
+                        'dose_kgy' => (13.099 * pow($x, 3)) + (8.7891 * pow($x, 2)) + (57.786 * $x) - 2.423,
+                    ];
 
-                $updateData = [
-                    'dosimeter_number' => $dosimeterNum,
-                    'absorbance' => $value,
-                    'dose_kgy' => $calibratedDose
-                ];
-
-                if ($uploadedImagePath !== null && (int)$tabletNumber === 1) {
-                    $oldDetail = DosimeterDetail::where('dosimeter_record_id', $record->id)
-                        ->where('tablet_number', 1)
-                        ->first();
-
-                    if ($oldDetail && $oldDetail->image && Storage::disk('public')->exists($oldDetail->image)) {
-                        Storage::disk('public')->delete($oldDetail->image);
+                    if ($uploadedImagePath !== null && (int) $tabletNumber === 1) {
+                        if ($detail->image && Storage::disk('public')->exists($detail->image)) {
+                            Storage::disk('public')->delete($detail->image);
+                        }
+                        $updateData['image'] = $uploadedImagePath;
                     }
 
-                    $updateData['image'] = $uploadedImagePath;
+                    $detail->update($updateData);
                 }
-
-                DosimeterDetail::where('dosimeter_record_id', $record->id)
-                    ->where('tablet_number', $tabletNumber)
-                    ->update($updateData);
-            }
-
-            DB::commit();
+            });
 
             session()->flash('success', 'Dosimeter data and image successfully saved.');
-
             return response()->json([
                 'status' => 'success',
-                'redirect' => route('admin.dosimeter.show', $record->booking_id)
+                'redirect' => route('admin.dosimeter.show', $record->booking_id),
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (\Throwable $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }

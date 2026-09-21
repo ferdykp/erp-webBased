@@ -1,256 +1,188 @@
+@php
+    $adminUser = auth('admin')->user();
+    $role = $adminUser?->role;
+    $pendingOrders = \App\Models\Booking::where('booking_type', 'regular')->where('status', 'pending')->count();
+    $pendingTests = \Illuminate\Support\Facades\Schema::hasTable('product_tests')
+        ? \App\Models\ProductTest::where('status', 'parameter_pending')->count()
+        : 0;
+
+    $navBase = 'flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold transition-colors duration-200';
+    $navIdle = 'text-slate-400 hover:bg-slate-900 hover:text-slate-100';
+    $navActive = 'bg-blue-600 text-white shadow-lg shadow-blue-950/20';
+    $navParent = 'bg-slate-900 text-slate-100';
+    $subBase = 'block rounded-lg px-3 py-2 text-[11px] font-medium transition-colors duration-200';
+    $subIdle = 'text-slate-500 hover:bg-slate-900 hover:text-slate-200';
+    $subActive = 'bg-slate-900 text-blue-400';
+@endphp
+
 <aside id="sidebar"
-    :class="sidebarOpen ? 'w-72 opacity-100 translate-x-0 md:m-4' : 'w-0 -translate-x-full opacity-0 md:m-0'"
-    class="fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out
-    text-slate-300 bg-gray-900 shadow-2xl
-    rounded-none md:rounded-2xl border border-gray-800 overflow-y-auto
-    md:sticky md:top-4 h-full md:h-[calc(100vh-2rem)]">
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    class="fixed inset-y-0 left-0 z-50 flex w-[min(278px,calc(100vw-24px))] flex-col border-r border-slate-800/80 bg-slate-950 text-slate-300 shadow-2xl shadow-slate-950/20 transition-transform duration-300 ease-out print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[278px] lg:shrink-0 lg:shadow-none">
 
-    {{-- SIDEBAR HEADER --}}
-    <div
-        class="sticky top-0 z-10 flex items-center justify-between px-6 py-6 bg-gray-900 border-b border-gray-800/60 rounded-t-2xl">
-        <div class="flex items-center gap-3">
-            <div class="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
-                <i class="text-lg text-white fas fa-bolt animate-pulse"></i>
+    <div class="flex h-[76px] shrink-0 items-center justify-between border-b border-slate-800/80 px-5">
+        <a href="{{ route('admin.dashboard') }}" class="flex min-w-0 items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-950/30">
+                <i class="fa-solid fa-bolt"></i>
             </div>
-            <div>
-                <h2 class="text-base font-black leading-none tracking-wider text-white uppercase">
-                    Beam <span class="text-blue-500">Admin</span>
-                </h2>
-                <p class="text-[10px] text-slate-500 font-medium mt-1 tracking-tight">E-Beam Control Console</p>
+            <div class="min-w-0">
+                <p class="truncate text-[15px] font-extrabold tracking-tight text-white">Beam Admin</p>
+                <p class="mt-0.5 truncate text-[10px] font-medium tracking-wide text-slate-500">E-BEAM OPERATIONS</p>
             </div>
-        </div>
-
+        </a>
         <button @click="sidebarOpen = false"
-            class="p-2 text-gray-400 transition-colors rounded-xl hover:bg-gray-800 hover:text-white md:hidden">
-            <i class="text-base fas fa-bars"></i>
+            class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200 lg:hidden"
+            aria-label="Close navigation">
+            <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    {{-- NAVIGATION MENU --}}
-    <nav class="px-4 py-6 space-y-6 whitespace-nowrap">
+    <nav class="flex-1 overflow-y-auto px-3 py-5 [scrollbar-width:thin]">
+        <div class="mb-6 space-y-1">
+            <p class="mb-2 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-600">Workspace</p>
 
-        {{-- SECTION 1: CORE OPERATIONS --}}
-        <div class="space-y-1.5">
-            <p class="px-4 mb-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Core Operations</p>
-
-            {{-- Dashboard --}}
             <a href="{{ route('admin.dashboard') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold' : 'hover:bg-gray-800 hover:text-white group text-slate-400' }}">
-                <i class="w-5 text-sm text-center transition-transform fas fa-chart-pie group-hover:scale-110"></i>
-                <span class="text-sm font-medium">Main Dashboard</span>
+                class="{{ $navBase }} {{ request()->routeIs('admin.dashboard') ? $navActive : $navIdle }}">
+                <i class="fa-solid fa-table-cells-large w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-500' }}"></i>
+                <span>Dashboard</span>
             </a>
 
-            {{-- Customer Management --}}
-            <a href="{{ route('admin.customerList.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.customerList.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold' : 'hover:bg-gray-800 hover:text-white group text-slate-400' }}">
-                <i class="w-5 text-sm text-center transition-transform fas fa-users group-hover:scale-110"></i>
-                <span class="text-sm font-medium">Customer Directory</span>
-            </a>
-
-            {{-- Order Management Dropdown --}}
             <div x-data="{ open: {{ request()->routeIs('admin.bookings*') ? 'true' : 'false' }} }">
                 <button @click="open = !open"
-                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.bookings*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
-                    <div class="flex items-center gap-3">
-                        <i
-                            class="w-5 text-sm text-center text-blue-400 transition-transform fas fa-book-bookmark group-hover:scale-110"></i>
-                        <span class="text-sm font-medium">Order Management</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        @php $pendingCount = \App\Models\Booking::where('status', 'pending')->count(); @endphp
-                        @if ($pendingCount > 0)
-                            <span
-                                class="bg-rose-500/20 text-rose-400 text-[10px] font-black px-2 py-0.5 rounded-md border border-rose-500/30">{{ $pendingCount }}</span>
-                        @endif
-                        <i class="fas fa-chevron-down text-[9px] text-slate-500 transition-transform duration-300"
-                            :class="open ? 'rotate-180 text-white' : ''"></i>
-                    </div>
+                    class="{{ $navBase }} {{ request()->routeIs('admin.bookings*') ? $navParent : $navIdle }}">
+                    <i class="fa-solid fa-clipboard-list w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.bookings*') ? 'text-blue-400' : 'text-slate-500' }}"></i>
+                    <span>Order Management</span>
+                    @if($pendingOrders > 0)
+                        <span class="ml-auto rounded-md bg-blue-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-blue-300">{{ $pendingOrders }}</span>
+                    @endif
+                    <i class="fa-solid fa-chevron-down ml-1 text-[8px] text-slate-600 transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                 </button>
-
-                <div x-show="open" x-cloak x-collapse class="pl-4 mt-1 ml-4 space-y-1 border-l border-gray-800">
-                    <a href="{{ route('admin.bookings') }}"
-                        class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.bookings') && !request()->route('status') ? 'text-blue-400 font-bold bg-blue-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                        All Orders
-                    </a>
-                    <a href="{{ route('admin.bookings.status', 'pending') }}"
-                        class="flex items-center justify-between px-4 py-2 text-xs rounded-lg transition-all {{ request()->route('status') == 'pending' ? 'text-amber-400 font-bold bg-amber-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                        <span>Incoming Request</span>
-                        @if ($pendingCount > 0)
-                            <span class="w-1.5 h-1.5 mr-1 rounded-full bg-amber-400 animate-pulse"></span>
-                        @endif
-                    </a>
-                    <a href="{{ route('admin.bookings.status', 'processing') }}"
-                        class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->route('status') == 'processing' ? 'text-blue-400 font-bold bg-blue-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                        On Progress
-                    </a>
-                    <a href="{{ route('admin.bookings.status', 'completed') }}"
-                        class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->route('status') == 'completed' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                        Completed
-                    </a>
+                <div x-show="open" x-transition.opacity.duration.150ms class="ml-5 mt-1 space-y-0.5 border-l border-slate-800 pl-3">
+                    <a href="{{ route('admin.bookings') }}" class="{{ $subBase }} {{ request()->routeIs('admin.bookings') ? $subActive : $subIdle }}">All Orders</a>
+                    <a href="{{ route('admin.bookings.status', 'pending') }}" class="{{ $subBase }} {{ request()->route('status') === 'pending' ? $subActive : $subIdle }}">Incoming Request</a>
+                    <a href="{{ route('admin.bookings.status', 'processing') }}" class="{{ $subBase }} {{ request()->route('status') === 'processing' ? $subActive : $subIdle }}">On Progress</a>
+                    <a href="{{ route('admin.bookings.status', 'completed') }}" class="{{ $subBase }} {{ request()->route('status') === 'completed' ? $subActive : $subIdle }}">Completed</a>
                 </div>
             </div>
 
-            {{-- Production Management Dropdown --}}
-            @if (in_array(auth()->user()->role, ['superadmin', 'production']))
+            <a href="{{ route('admin.testing.index') }}"
+                class="{{ $navBase }} {{ request()->routeIs('admin.testing.*') ? $navActive : $navIdle }}">
+                <i class="fa-solid fa-flask-vial w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.testing.*') ? 'text-white' : 'text-slate-500' }}"></i>
+                <span>Product Testing</span>
+                @if($pendingTests > 0)
+                    <span class="ml-auto rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-300">{{ $pendingTests }}</span>
+                @endif
+            </a>
+
+            @if(in_array($role, ['superadmin', 'production']))
                 <div x-data="{ open: {{ request()->routeIs('admin.production*') ? 'true' : 'false' }} }">
                     <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.production*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
-                        <div class="flex items-center gap-3">
-                            <i
-                                class="w-5 text-sm text-center text-purple-400 transition-transform fas fa-industry group-hover:scale-110"></i>
-                            <span class="text-sm font-medium">Production Management</span>
-                        </div>
-                        <i class="fas fa-chevron-down text-[9px] text-slate-500 transition-transform duration-300"
-                            :class="open ? 'rotate-180 text-white' : ''"></i>
+                        class="{{ $navBase }} {{ request()->routeIs('admin.production*') ? $navParent : $navIdle }}">
+                        <i class="fa-solid fa-industry w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.production*') ? 'text-blue-400' : 'text-slate-500' }}"></i>
+                        <span>Production</span>
+                        <i class="fa-solid fa-chevron-down ml-auto text-[8px] text-slate-600 transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                     </button>
-
-                    <div x-show="open" x-cloak x-collapse class="pl-4 mt-1 ml-4 space-y-1 border-l border-gray-800">
-                        <a href="{{ route('admin.production.index') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.production.index') ? 'text-purple-400 font-bold bg-purple-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            Overview Board
-                        </a>
-                        <a href="{{ route('admin.production.parameter') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.production.parameter') ? 'text-purple-400 font-bold bg-purple-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            1. Process Parameter
-                        </a>
-                        <a href="{{ route('admin.production.batch-queue') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.production.batch-queue') ? 'text-purple-400 font-bold bg-purple-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            2. Queue Task
-                        </a>
-                        <a href="{{ route('admin.production.offline') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.production.offline') ? 'text-purple-400 font-bold bg-purple-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            3. In Irradiation
-                        </a>
-                        <a href="{{ route('admin.production.finish') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.production.finish') ? 'text-purple-400 font-bold bg-purple-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            4. Finish Irradiation
-                        </a>
+                    <div x-show="open" x-transition.opacity.duration.150ms class="ml-5 mt-1 space-y-0.5 border-l border-slate-800 pl-3">
+                        <a href="{{ route('admin.production.index') }}" class="{{ $subBase }} {{ request()->routeIs('admin.production.index') ? $subActive : $subIdle }}">Overview</a>
+                        <a href="{{ route('admin.production.parameter') }}" class="{{ $subBase }} {{ request()->routeIs('admin.production.parameter') ? $subActive : $subIdle }}">Process Parameter</a>
+                        <a href="{{ route('admin.production.batch-queue') }}" class="{{ $subBase }} {{ request()->routeIs('admin.production.batch-queue') ? $subActive : $subIdle }}">Queue Task</a>
+                        <a href="{{ route('admin.production.offline') }}" class="{{ $subBase }} {{ request()->routeIs('admin.production.offline') ? $subActive : $subIdle }}">In Irradiation</a>
+                        <a href="{{ route('admin.production.finish') }}" class="{{ $subBase }} {{ request()->routeIs('admin.production.finish') ? $subActive : $subIdle }}">Finish & QA</a>
                     </div>
                 </div>
-            @endif
 
-            {{-- Dosimeter Management --}}
-            @if (in_array(auth()->user()->role, ['superadmin', 'production']))
                 <a href="{{ route('admin.dosimeter.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dosimeter.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold' : 'hover:bg-gray-800 hover:text-white group text-slate-400' }}">
-                    <i
-                        class="w-5 text-sm text-center transition-transform fa-solid fa-flask text-sky-400 group-hover:scale-110"></i>
-                    <span class="text-sm font-medium">Dosimeter Analytics</span>
+                    class="{{ $navBase }} {{ request()->routeIs('admin.dosimeter.*') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-wave-square w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.dosimeter.*') ? 'text-white' : 'text-slate-500' }}"></i>
+                    <span>Dosimeter</span>
                 </a>
             @endif
         </div>
 
-        {{-- SECTION 2: LOGISTICS & INVENTORY --}}
-        @if (in_array(auth()->user()->role, ['superadmin', 'cargo_admin']))
-            <div class="space-y-1.5 pt-2 border-t border-gray-800/40">
-                <p class="px-4 mb-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Logistics &
-                    Inventory</p>
+        <div class="mb-6 space-y-1">
+            <p class="mb-2 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-600">Data & Logistics</p>
+            <a href="{{ route('admin.customerList.index') }}"
+                class="{{ $navBase }} {{ request()->routeIs('admin.customerList.*') ? $navActive : $navIdle }}">
+                <i class="fa-solid fa-building-user w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.customerList.*') ? 'text-white' : 'text-slate-500' }}"></i>
+                <span>Customer Directory</span>
+            </a>
 
-                <a href="{{ route('admin.pallets.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.pallets.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold' : 'hover:bg-gray-800 hover:text-white group text-slate-400' }}">
-                    <i
-                        class="w-5 text-sm text-center transition-transform fas fa-boxes-stacked group-hover:scale-110"></i>
-                    <span class="text-sm font-medium">Pallet Control</span>
+            @if(in_array($role, ['superadmin', 'cargo_admin']))
+                <a href="{{ route('admin.pallets.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.pallets.*') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-boxes-stacked w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.pallets.*') ? 'text-white' : 'text-slate-500' }}"></i><span>Pallet Control</span>
                 </a>
+                <a href="{{ route('admin.porter.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.porter.*') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-people-carry-box w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.porter.*') ? 'text-white' : 'text-slate-500' }}"></i><span>Porter</span>
+                </a>
+                <a href="{{ route('admin.warehouse-pics.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.warehouse-pics.*') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-user-shield w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.warehouse-pics.*') ? 'text-white' : 'text-slate-500' }}"></i><span>Warehouse PIC</span>
+                </a>
+            @endif
+        </div>
 
-                <a href="{{ route('admin.porter.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.porter.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold' : 'hover:bg-gray-800 hover:text-white group text-slate-400' }}">
-                    <i
-                        class="w-5 text-sm text-center transition-transform fas fa-people-carry-box group-hover:scale-110"></i>
-                    <span class="text-sm font-medium">Porter Assignment</span>
-                </a>
+        @if(in_array($role, ['superadmin', 'manager', 'production', 'cargo_admin']))
+            <div class="mb-6 space-y-1">
+                <p class="mb-2 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-600">Operational Reports</p>
 
-                <a href="{{ route('admin.warehouse-pics.index') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.warehouse-pics.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold' : 'hover:bg-gray-800 hover:text-white group text-slate-400' }}">
-                    <i
-                        class="w-5 text-sm text-center transition-transform fas fa-user-shield group-hover:scale-110"></i>
-                    <span class="text-sm font-medium">Warehouse PIC</span>
-                </a>
+                <div x-data="{ open: {{ request()->routeIs('admin.report.*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                        class="{{ $navBase }} {{ request()->routeIs('admin.report.*') ? $navParent : $navIdle }}">
+                        <i class="fa-solid fa-file-chart-column w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.report.*') ? 'text-blue-400' : 'text-slate-500' }}"></i>
+                        <span>Reports</span>
+                        <i class="fa-solid fa-chevron-down ml-auto text-[8px] text-slate-600 transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+
+                    <div x-show="open" x-transition.opacity.duration.150ms class="ml-5 mt-1 space-y-0.5 border-l border-slate-800 pl-3">
+                        <a href="{{ route('admin.report.index') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.index') ? $subActive : $subIdle }}">Report Center</a>
+
+                        @if(in_array($role, ['superadmin', 'manager', 'production']))
+                            <p class="px-3 pb-1 pt-3 text-[9px] font-extrabold uppercase tracking-[0.14em] text-slate-600">Technical · Nuctech</p>
+                            <a href="{{ route('admin.report.nuctech', 'daily-work') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'daily-work' ? $subActive : $subIdle }}">Workshop Daily Work</a>
+                            <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'daily-schedule' ? $subActive : $subIdle }}">Daily Processing Schedule</a>
+                            <a href="{{ route('admin.report.nuctech', 'delivery-form') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'delivery-form' ? $subActive : $subIdle }}">Processing & Delivery</a>
+                            <a href="{{ route('admin.report.nuctech', 'processing-record') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'processing-record' ? $subActive : $subIdle }}">Irradiation Process Log</a>
+                            <a href="{{ route('admin.report.nuctech', 'equipment-record') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'equipment-record' ? $subActive : $subIdle }}">Machine Operation Log</a>
+                        @endif
+
+                        @if(in_array($role, ['superadmin', 'manager', 'cargo_admin']))
+                            <p class="px-3 pb-1 pt-3 text-[9px] font-extrabold uppercase tracking-[0.14em] text-slate-600">Logistics · JTS</p>
+                            <a href="{{ route('admin.report.jts', 'unirradiated-card') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'unirradiated-card' ? $subActive : $subIdle }}">Unirradiated Material Card</a>
+                            <a href="{{ route('admin.report.jts', 'delivery-outbound') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'delivery-outbound' ? $subActive : $subIdle }}">Outbound Delivery Slip</a>
+                            <a href="{{ route('admin.report.jts', 'delivery-inbound') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'delivery-inbound' ? $subActive : $subIdle }}">Inbound Delivery Slip</a>
+                            <a href="{{ route('admin.report.jts', 'irradiated-card') }}" class="{{ $subBase }} {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'irradiated-card' ? $subActive : $subIdle }}">Irradiated Material Card</a>
+                        @endif
+                    </div>
+                </div>
             </div>
         @endif
 
-        {{-- SECTION 3: OPERATIONAL REPORTS --}}
-        @if (in_array(auth()->user()->role, ['superadmin', 'manager', 'production']))
-            <div class="space-y-1.5 pt-2 border-t border-gray-800/40">
-                <p class="px-4 mb-2 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Operational Reports
-                </p>
-
-                {{-- Nuctech Reporting (Technical) --}}
-                {{-- FIX: Mengubah request()->is() menjadi request()->routeIs() agar state otomatis terbuka di server --}}
-                <div x-data="{ open: {{ request()->routeIs('admin.report.nuctech*') ? 'true' : 'false' }} }">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.report.nuctech*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
-                        <div class="flex items-center gap-3">
-                            <i
-                                class="w-5 text-sm text-center text-indigo-400 transition-transform fas fa-file-contract group-hover:scale-110"></i>
-                            <span class="text-sm font-medium">Technical (Nuctech)</span>
-                        </div>
-                        <i class="fas fa-chevron-down text-[9px] text-slate-500 transition-transform duration-200"
-                            :class="open ? 'rotate-180 text-white' : ''"></i>
-                    </button>
-
-                    <div x-show="open" x-cloak x-collapse
-                        class="pl-4 mt-1 ml-4 space-y-1 border-l border-indigo-900/40">
-
-                        <a href="{{ route('admin.report.nuctech', 'daily-work') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'daily-work' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            1. Workshop Daily Work
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'daily-schedule') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'daily-schedule' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            2. Daily Processing Schedule
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'delivery-form') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'delivery-form' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            3. Processing & Delivery Form
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'processing-record') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'processing-record' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            4. Irradiation Process Log
-                        </a>
-                        <a href="{{ route('admin.report.nuctech', 'equipment-record') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.nuctech') && request()->route('type') === 'equipment-record' ? 'text-indigo-400 font-bold bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            5. Machine Operation Log
-                        </a>
-                    </div>
-                </div>
-
-                {{-- JTS Reporting (Logistics) --}}
-                {{-- FIX: Mengubah request()->is() menjadi request()->routeIs() agar state otomatis terbuka di server --}}
-                {{-- <div x-data="{ open: {{ request()->routeIs('admin.report.jts*') ? 'true' : 'false' }} }">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('admin.report.jts*') ? 'bg-gray-800/70 text-white' : 'hover:bg-gray-800/50 hover:text-white text-slate-400 group' }}">
-                        <div class="flex items-center gap-3">
-                            <i
-                                class="w-5 text-sm text-center transition-transform fas fa-file-invoice text-emerald-400 group-hover:scale-110"></i>
-                            <span class="text-sm font-medium">Logistics (JTS)</span>
-                        </div>
-                        <i class="fas fa-chevron-down text-[9px] text-slate-500 transition-transform duration-200"
-                            :class="open ? 'rotate-180 text-white' : ''"></i>
-                    </button>
-
-                    <div x-show="open" x-cloak x-collapse
-                        class="pl-4 mt-1 ml-4 space-y-1 border-l border-emerald-900/40">
-
-                        <a href="{{ route('admin.report.jts', 'unirradiated-card') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'unirradiated-card' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            1. Unirradiated Material Card
-                        </a>
-                        <a href="{{ route('admin.report.jts', 'delivery-outbound') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'delivery-outbound' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            2. Outbound Delivery Slip
-                        </a>
-                        <a href="{{ route('admin.report.jts', 'delivery-inbound') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'delivery-inbound' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            3. Inbound Delivery Slip
-                        </a>
-                        <a href="{{ route('admin.report.jts', 'irradiated-card') }}"
-                            class="block px-4 py-2 text-xs rounded-lg transition-all {{ request()->routeIs('admin.report.jts') && request()->route('type') === 'irradiated-card' ? 'text-emerald-400 font-bold bg-emerald-500/5' : 'text-slate-500 hover:text-slate-200 hover:bg-gray-800/30' }}">
-                            4. Irradiated Material Card
-                        </a>
-                    </div>
-                </div> --}}
+        @if(in_array($role, ['superadmin', 'manager']))
+            <div class="mb-0 space-y-1">
+                <p class="mb-2 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-600">Management</p>
+                <a href="{{ route('admin.business.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.business.*') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-chart-line w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.business.*') ? 'text-white' : 'text-slate-500' }}"></i><span>Business Monitoring</span>
+                </a>
+                <a href="{{ route('admin.production-lines.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.production-lines.*') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-microchip w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.production-lines.*') ? 'text-white' : 'text-slate-500' }}"></i><span>Production Units</span>
+                </a>
+                <a href="{{ route('admin.profile.profileList') }}" class="{{ $navBase }} {{ request()->routeIs('admin.profile.profileList') || request()->routeIs('admin.profile.edit') ? $navActive : $navIdle }}">
+                    <i class="fa-solid fa-user-gear w-5 shrink-0 text-center text-[13px] {{ request()->routeIs('admin.profile.profileList') || request()->routeIs('admin.profile.edit') ? 'text-white' : 'text-slate-500' }}"></i><span>Staff Accounts</span>
+                </a>
             </div>
         @endif
     </nav>
+
+    <div class="shrink-0 border-t border-slate-800/80 p-3">
+        <div class="flex items-center gap-3 rounded-xl bg-slate-900 px-3 py-3">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-xs font-bold text-white">{{ strtoupper(substr($adminUser?->name ?? 'A', 0, 1)) }}</div>
+            <div class="min-w-0 flex-1">
+                <p class="truncate text-xs font-semibold text-slate-200">{{ $adminUser?->name }}</p>
+                <p class="mt-0.5 truncate text-[10px] capitalize text-slate-500">{{ str_replace('_', ' ', $role ?? 'admin') }}</p>
+            </div>
+            <a href="{{ route('admin.profile') }}"
+                class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200"
+                title="Account settings">
+                <i class="fa-solid fa-gear"></i>
+            </a>
+        </div>
+    </div>
 </aside>

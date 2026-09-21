@@ -38,7 +38,7 @@ class CustomerDashboardController extends Controller
     public function index(Request $request)
     {
         // 1. Ambil User yang sedang login (Guard default)
-        $user = Auth::user();
+        $user = Auth::guard('customer')->user();
 
         // 2. Ambil profil customernya
         $customer = $user->customer;
