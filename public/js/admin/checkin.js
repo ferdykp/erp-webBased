@@ -293,8 +293,9 @@ function validateCurrentStep() {
         const pic = document
             .querySelector('[name="pic_warehouse"]')
             .value.trim();
+
         if (!pic) {
-            alert("Mohon isi nama PIC Warehouse");
+            alert("Please choose PIC Warehouse");
             return false;
         }
 
@@ -307,13 +308,14 @@ function validateCurrentStep() {
             return false;
         }
 
-        // ✅ Validasi pallet count & per pallet sudah diisi
         const palletCount =
             parseInt(document.getElementById("pallet_count").value) || 0;
+
         const perPallet =
             parseInt(document.getElementById("per_pallet").value) || 0;
+
         if (palletCount <= 0 || perPallet <= 0) {
-            alert("Mohon isi Jumlah Palet dan Qty per Palet!");
+            alert("Please fill Number of Pallets and Qty per Pallet!");
             return false;
         }
     }
