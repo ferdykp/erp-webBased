@@ -6,12 +6,16 @@ use App\Models\Booking;
 use App\Models\BookingProduct;
 use App\Models\Customer;
 use App\Models\Pallet;
+use App\Models\PalletContent;
+use App\Models\PlacementDetail;
 use App\Models\Porter;
 use App\Models\WarehousePic;
 // use Illuminate\Support\Str;
 // use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 
 class AdminBookingController extends Controller
@@ -19,99 +23,75 @@ class AdminBookingController extends Controller
     public function index()
     {
         $bookings = Booking::with(['customer.contacts', 'products', 'batches'])
+            ->where('booking_type', 'regular')
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        $porters = Porter::where('is_active', true)->get();
-
-        // $pallets = Pallet::where('status', 'empty')
-        //     ->orderBy('line')
-        //     ->orderBy('slot_section')
-        //     ->get();
-        $pallets = Pallet::orderBy('line')
-            ->orderBy('slot_section')
-            ->get();
-        $warehousePics = WarehousePic::where('is_active', true)->get();
-
+        $porters = Porter::where('is_active', true)->orderBy('name')->get();
+        $pallets = Pallet::orderBy('line')->orderBy('slot_section')->get();
+        $warehousePics = WarehousePic::where('is_active', true)->orderBy('name')->get();
 
         return view('admin.dashboard.index', compact('bookings', 'porters', 'pallets', 'warehousePics'));
     }
 
     public function allOrder()
     {
-        // Fungsi khusus tabel daftar semua booking
         $bookings = Booking::with(['customer', 'products', 'batches', 'pallets'])
+            ->where('booking_type', 'regular')
             ->latest()
-            ->paginate(10); // Gunakan paginate agar tidak berat
+            ->paginate(10);
 
-        $pageTitle = "All Order History";
+        $pageTitle = 'All Order History';
+        $porters = Porter::where('is_active', true)->orderBy('name')->get();
+        $pallets = Pallet::orderBy('line')->orderBy('slot_section')->get();
+        $warehousePics = WarehousePic::where('is_active', true)->orderBy('name')->get();
 
-        // Kirim data tambahan agar modal detail di halaman index tidak error
-        $porters = Porter::where('is_active', true)->get();
-        // $pallets = Pallet::where('status', 'empty')->get();
-        $pallets = Pallet::orderBy('line')
-            ->orderBy('slot_section')
-            ->get();
-
-        $warehousePics = WarehousePic::where('is_active', true)->get();
-
-        // Diarahkan ke view table (index.blade.php di folder bookings)
         return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters', 'pallets', 'warehousePics'));
-        // return view('admin.bookings.index', compact('bookings', 'pageTitle', 'porters'));
     }
 
     public function updateStatus(Request $request, int $id)
     {
-        // dd($request->all()); // Ini akan menghentikan proses dan menampilkan isi data yang dikirim
-        $request->validate([
-            'status' => 'required|string|in:pending,approved,completed,cancelled'
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,approved,processing,completed,cancelled',
         ]);
+
         $booking = Booking::findOrFail($id);
-        $newStatus = $request->status;
 
-        $booking->update(['status' => $newStatus]);
+        DB::transaction(function () use ($booking, $validated) {
+            $booking->update(['status' => $validated['status']]);
 
-        // if ($newStatus === 'completed') {
-        //     Pallet::where('current_booking_id', $booking->id)->update([
-        //         'status' => 'empty',
-        //         'current_booking_id' => null,
-        //         'filled_boxes' => 0
-        //     ]);
-        // }
-        if ($newStatus === 'completed') {
-
-            $palletContents = \App\Models\PalletContent::where('booking_id', $booking->id)->get();
-
-            foreach ($palletContents as $content) {
-                $pallet = Pallet::find($content->pallet_id);
-
-                if ($pallet) {
-                    $pallet->decrement('filled_boxes', $content->quantity);
-                }
+            // Completed means irradiation/QA is finished, not necessarily that goods
+            // have left the warehouse. Inventory is released on cancellation or shipping.
+            if ($validated['status'] === 'cancelled') {
+                $this->releaseBookingInventory($booking->id);
             }
+        });
 
-            // hapus isi pallet khusus booking ini
-            \App\Models\PalletContent::where('booking_id', $booking->id)->delete();
-        }
-
-        return back()->with('success', "Status berhasil diperbarui ke " . strtoupper($newStatus));
+        return back()->with('success', 'Status berhasil diperbarui ke ' . strtoupper($validated['status']));
     }
 
     public function businessIndex(Request $request)
     {
-        $search = $request->query('search');
+        $search = trim((string) $request->query('search', ''));
 
         $customers = Customer::with(['contacts', 'bookings.products', 'bookings.batches'])
-            ->when($search, function ($query) use ($search) {
-                $query->where('company_name', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhere('pic_name', 'like', "%{$search}%");
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('company_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('contacts', function ($contact) use ($search) {
+                            $contact->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
+                });
             })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        $pageTitle = "Customer Business Monitoring";
+        $pageTitle = 'Customer Business Monitoring';
         return view('admin.business.index', compact('customers', 'pageTitle', 'search'));
     }
 
@@ -153,88 +133,27 @@ class AdminBookingController extends Controller
 
     public function checkIn(Request $request)
     {
-        // 1. Validasi
-        $request->validate([
-            'booking_code' => 'required',
-            'pic_warehouse' => 'required|string',
-            'lines' => 'required|array',
-            'petaks' => 'required|array',
-            'pallet_qty' => 'required|array',
-        ]);
-
-        $booking = Booking::where('booking_code', $request->booking_code)->first();
-
-        if (!$booking || $booking->status !== 'pending') {
-            return back()->with('error', 'Booking tidak ditemukan atau sudah diproses.');
-        }
-
-        try {
-            DB::transaction(function () use ($booking, $request) {
-
-                // 2. UPDATE STATUS & DATA UTAMA
-                $booking->update([
-                    'arrival_time' => now(),
-                    'pic_warehouse' => $request->pic_warehouse,
-                    // 'total_price'  => $request->finance_total, // Diambil dari hidden input finance_total_hidden
-                    'status'       => 'approved',
-                ]);
-
-                // 3. Reset data palet lama milik booking ini (jika ada)
-                Pallet::where('current_booking_id', $booking->id)->update([
-                    'status' => 'empty',
-                    'current_booking_id' => null,
-                    'filled_boxes' => 0
-                ]);
-
-                // 4. Update status fisik palet di gudang
-                foreach ($request->lines as $index => $line) {
-                    $petak = $request->petaks[$index];
-                    $qty = $request->pallet_qty[$index];
-
-                    $pallet = Pallet::where('line', $line)
-                        ->where('slot_section', $petak)
-                        ->first();
-
-                    if ($pallet) {
-                        $pallet->update([
-                            // 'status' => 'filled',
-                            'current_booking_id' => $booking->id,
-                            // 'filled_boxes' => $qty
-                            'filled_boxes' => $pallet->filled_boxes + $qty
-
-                        ]);
-                    }
-                }
-            });
-
-            return back()->with('success', 'Check-in Berhasil! Status telah diperbarui ke Approved.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal: ' . $e->getMessage());
-        }
+        $booking = Booking::where('booking_code', $request->booking_code)->firstOrFail();
+        return $this->storePlacement($request, $booking->id);
     }
 
 
     public function statusPage(string $status)
     {
+        abort_unless(in_array($status, ['pending', 'approved', 'processing', 'completed', 'cancelled'], true), 404);
+
         $bookings = Booking::with(['customer', 'products', 'batches', 'pallets'])
+            ->where('booking_type', 'regular')
             ->where('status', $status)
             ->latest()
             ->paginate(10);
 
-        $pageTitle = ucfirst($status) . " Bookings";
-
-        // Variabel pendukung untuk view
-        $porters = \App\Models\Porter::where('is_active', true)->get();
-        // $pallets = Pallet::where('status', 'empty')->get();
-        $pallets = Pallet::orderBy('line')
-            ->orderBy('slot_section')
-            ->get();
-
-        $warehousePics = WarehousePic::where('is_active', true)->get();
-
+        $pageTitle = ucfirst($status) . ' Bookings';
+        $porters = Porter::where('is_active', true)->orderBy('name')->get();
+        $pallets = Pallet::orderBy('line')->orderBy('slot_section')->get();
+        $warehousePics = WarehousePic::where('is_active', true)->orderBy('name')->get();
 
         return view('admin.bookings.index', compact('bookings', 'pageTitle', 'status', 'porters', 'pallets', 'warehousePics'));
-        // return view('admin.bookings.index', compact('bookings', 'pageTitle', 'status', 'porters'));
     }
 
     // public function palletIndex()
@@ -255,45 +174,43 @@ class AdminBookingController extends Controller
 
     public function palletStore(Request $request)
     {
-        $request->validate([
-            'pallet_number' => 'required|unique:pallets,pallet_number',
-            'line' => 'required',
-            'slot_section' => 'required|integer'
+        $validated = $request->validate([
+            'line' => 'required|string|max:50',
+            'slot_section' => 'required|integer|min:1',
         ]);
 
-        Pallet::create([
-            'pallet_number' => strtoupper($request->pallet_number),
-            'line' => strtoupper($request->line),
-            'slot_section' => $request->slot_section,
-            // 'status' => 'empty',
-            'filled_boxes' => 0
-        ]);
+        Pallet::firstOrCreate(
+            ['line' => strtoupper(trim($validated['line'])), 'slot_section' => $validated['slot_section']],
+            ['status' => 'empty', 'filled_boxes' => 0]
+        );
 
-        return back()->with('success', 'Pallet created successfully');
+        return back()->with('success', 'Pallet location created successfully.');
     }
 
     public function palletGenerate(Request $request)
     {
-        $maxLines = $request->input('lines', 2);
-        $maxSlots = $request->input('slots', 5);
+        $validated = $request->validate([
+            'lines' => 'nullable|integer|min:1|max:100',
+            'slots' => 'nullable|integer|min:1|max:100',
+        ]);
 
-        try {
-            DB::transaction(function () use ($maxLines, $maxSlots) {
-                for ($lineNum = 1; $lineNum <= $maxLines; $lineNum++) {
-                    for ($slot = 1; $slot <= $maxSlots; $slot++) {
-                        // Cukup gunakan kombinasi line & slot
-                        \App\Models\Pallet::updateOrCreate(
-                            ['line' => $lineNum, 'slot_section' => $slot],
-                            // ['status' => 'empty', 'filled_boxes' => 0]
-                            ['filled_boxes' => 0]
-                        );
-                    }
+        $maxLines = $validated['lines'] ?? 2;
+        $maxSlots = $validated['slots'] ?? 5;
+
+        DB::transaction(function () use ($maxLines, $maxSlots) {
+            for ($lineNum = 1; $lineNum <= $maxLines; $lineNum++) {
+                for ($slot = 1; $slot <= $maxSlots; $slot++) {
+                    // firstOrCreate is intentional: generating layout must never reset
+                    // stock already stored in an existing location.
+                    Pallet::firstOrCreate(
+                        ['line' => (string) $lineNum, 'slot_section' => $slot],
+                        ['status' => 'empty', 'filled_boxes' => 0]
+                    );
                 }
-            });
-            return back()->with('success', 'Petak gudang berhasil di-generate.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal: ' . $e->getMessage());
-        }
+            }
+        });
+
+        return back()->with('success', 'Petak gudang berhasil di-generate tanpa mereset stok yang sudah ada.');
     }
 
     public function palletDestroy(int $id)
@@ -317,68 +234,68 @@ class AdminBookingController extends Controller
 
     public function store(Request $request)
     {
-        $today = now();
-        $prefix = $today->format('ymd');
-
-        // $countThisMonth = Booking::whereYear('created_at', $today->year)
-        //     ->whereMonth('created_at', $today->month)
-        //     ->count();
-        $countToday = Booking::whereDate('created_at', $today->toDateString())
-            ->count();
-
-        $sequence = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
-
-        $bookingCode = $prefix . $sequence;
-        $request->validate([
-            'customer_id'    => 'required|exists:customers,id',
-            'product_name'   => 'required|string',
-            'quantity'       => 'required|numeric',
-            'dimension_pack' => 'required|string',
-            'vol_total'      => 'required|numeric',
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'product_name' => 'required|string|max:255',
+            'product_type' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'unit' => 'required|string|max:50',
+            'dmin' => 'required|numeric|min:0',
+            'dmax' => 'nullable|numeric|gte:dmin',
+            'dimension_pack' => 'required|string|max:255',
+            'vol_per_pcs' => 'nullable|numeric|min:0',
+            'net_weight_pcs' => 'nullable|numeric|min:0',
+            'gross_weight_per_pcs' => 'required|numeric|min:0',
+            'expect_temp' => 'nullable|string|max:100',
             'payment_status' => 'required|in:paid,unpaid',
-            'product_type'   => 'required|string',
+            'total_price' => 'nullable|numeric|min:0',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $customer = Customer::findOrFail($validated['customer_id']);
+        $quantity = (int) $validated['quantity'];
+        $volPerPcs = (float) ($validated['vol_per_pcs'] ?? 0);
+        $netPerPcs = (float) ($validated['net_weight_pcs'] ?? 0);
+        $grossPerPcs = (float) $validated['gross_weight_per_pcs'];
+        $volTotal = $volPerPcs * $quantity;
+        $totalNet = $netPerPcs * $quantity;
+        $totalGross = $grossPerPcs * $quantity;
 
+        $booking = DB::transaction(function () use ($validated, $customer, $quantity, $volPerPcs, $netPerPcs, $grossPerPcs, $volTotal, $totalNet, $totalGross) {
             $booking = Booking::create([
-                'user_id'        => auth()->id(),
-                'customer_id'  => $request->customer_id,
-                'booking_code'   => $bookingCode,
-                'status'       => 'pending',
-                'payment_status' => $request->payment_status,
-                'qr_token' => \Str::uuid(),
-                'total_price'    => $request->total_price ?? 0,
+                'user_id' => $customer->user_id,
+                'customer_id' => $customer->id,
+                'booking_code' => $this->nextBookingCodeForDate(now()),
+                'booking_type' => 'regular',
+                'status' => 'pending',
+                'payment_status' => $validated['payment_status'],
+                'qr_token' => Str::uuid(),
+                'total_price' => $validated['total_price'] ?? 0,
             ]);
 
-            // 3. Create Booking Product (Data Aktual)
             BookingProduct::create([
-                'booking_id'           => $booking->id,
-                'product_name'         => $request->product_name,
-                'product_type'         => $request->product_type,
-                'quantity'             => $request->quantity,
-                'unit'                 => $request->unit,
-                'dmin'                 => $request->dmin,
-                'dmax'                 => $request->dmax,
-                'dimension_pack'       => $request->dimension_pack,
-                'vol_per_pcs'          => $request->vol_per_pcs,
-                'vol_total'            => $request->vol_total,
-                'net_weight_pcs'       => $request->net_weight_pcs,
-                'total_net_weight'     => $request->total_net_weight,
-                'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
-                'total_gross_weight'   => $request->total_gross_weight,
-                'expect_temp'          => $request->expect_temp,
-                'density_gross'        => $request->density_gross,
-                'density_nett'         => $request->density_nett,
+                'booking_id' => $booking->id,
+                'product_name' => $validated['product_name'],
+                'product_type' => $validated['product_type'],
+                'quantity' => $quantity,
+                'unit' => $validated['unit'],
+                'dmin' => $validated['dmin'],
+                'dmax' => $validated['dmax'] ?? null,
+                'dimension_pack' => $validated['dimension_pack'],
+                'vol_per_pcs' => $volPerPcs,
+                'vol_total' => $volTotal,
+                'net_weight_pcs' => $netPerPcs,
+                'total_net_weight' => $totalNet,
+                'gross_weight_per_pcs' => $grossPerPcs,
+                'total_gross_weight' => $totalGross,
+                'expect_temp' => $validated['expect_temp'] ?? null,
+                'density_gross' => $volTotal > 0 ? $totalGross / $volTotal : 0,
+                'density_nett' => $volTotal > 0 ? $totalNet / $volTotal : 0,
             ]);
 
-            DB::commit();
-            return redirect()->route('admin.bookings')->with('success', 'Order #' . $booking->booking_code . ' berhasil dibuat.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+            return $booking;
+        });
+
+        return redirect()->route('admin.bookings')->with('success', 'Order #' . $booking->booking_code . ' berhasil dibuat.');
     }
 
     /**
@@ -479,133 +396,197 @@ class AdminBookingController extends Controller
 
     public function update(Request $request, int $id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with('products')->where('booking_type', 'regular')->findOrFail($id);
+        if ($booking->arrival_time || in_array($booking->status, ['processing', 'completed'], true)) {
+            return back()->with('error', 'Order yang sudah check-in/masuk produksi tidak dapat mengubah quantity atau data produk.');
+        }
 
-        $request->validate([
-            'customer_id'    => 'required|exists:customers,id',
-            'product_name'   => 'required|string',
-            'quantity'       => 'required|numeric',
-            'dimension_pack' => 'required|string',
-            'vol_total'      => 'required|numeric',
-            'created_at'     => 'required|date', // Validasi tanggal baru
-            'booking_code'   => 'required|string'  // Validasi booking code baru dari input hidden/readonly
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'product_name' => 'required|string|max:255',
+            'product_type' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'unit' => 'required|string|max:50',
+            'dmin' => 'required|numeric|min:0',
+            'dmax' => 'nullable|numeric|gte:dmin',
+            'dimension_pack' => 'required|string|max:255',
+            'vol_per_pcs' => 'nullable|numeric|min:0',
+            'net_weight_pcs' => 'nullable|numeric|min:0',
+            'gross_weight_per_pcs' => 'required|numeric|min:0',
+            'expect_temp' => 'nullable|string|max:100',
+            'created_at' => 'required|date',
+            'payment_status' => 'nullable|in:paid,unpaid',
+            'total_price' => 'nullable|numeric|min:0',
         ]);
 
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($booking, $validated) {
+                $customer = Customer::findOrFail($validated['customer_id']);
+                $newDate = Carbon::parse($validated['created_at']);
+                $oldPrefix = $booking->created_at?->format('ymd');
+                $newPrefix = $newDate->format('ymd');
+                $code = $oldPrefix === $newPrefix ? $booking->booking_code : $this->nextBookingCodeForDate($newDate);
 
-            // 2. Update data UTAMA termasuk tanggal input (created_at) dan booking_code baru
-            $booking->update([
-                'customer_id'    => $request->customer_id,
-                'booking_code'   => $request->booking_code,
-                'created_at'     => $request->created_at,
-                'total_price'    => $request->total_price ?? $booking->total_price,
-                'payment_status' => $request->payment_status ?? $booking->payment_status,
-            ]);
+                $quantity = (int) $validated['quantity'];
+                $volPerPcs = (float) ($validated['vol_per_pcs'] ?? 0);
+                $netPerPcs = (float) ($validated['net_weight_pcs'] ?? 0);
+                $grossPerPcs = (float) $validated['gross_weight_per_pcs'];
+                $volTotal = $volPerPcs * $quantity;
+                $totalNet = $netPerPcs * $quantity;
+                $totalGross = $grossPerPcs * $quantity;
 
-            // 3. Update data PRODUK
-            BookingProduct::updateOrCreate(
-                ['booking_id' => $booking->id],
-                [
-                    'product_name'         => $request->product_name,
-                    'product_type'         => $request->product_type,
-                    'quantity'             => $request->quantity,
-                    'unit'                 => $request->unit,
-                    'dmin'                 => $request->dmin,
-                    'dmax'                 => $request->dmax,
-                    'dimension_pack'       => $request->dimension_pack,
-                    'vol_per_pcs'          => $request->vol_per_pcs,
-                    'vol_total'            => $request->vol_total,
-                    'net_weight_pcs'       => $request->net_weight_pcs,
-                    'total_net_weight'     => $request->total_net_weight,
-                    'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
-                    'total_gross_weight'   => $request->total_gross_weight,
-                    'expect_temp'          => $request->expect_temp,
-                    'density_gross'        => $request->density_gross,
-                    'density_nett'         => $request->density_nett,
-                ]
-            );
+                $booking->update([
+                    'customer_id' => $customer->id,
+                    'user_id' => $customer->user_id,
+                    'booking_code' => $code,
+                    'created_at' => $newDate,
+                    'total_price' => $validated['total_price'] ?? $booking->total_price,
+                    'payment_status' => $validated['payment_status'] ?? $booking->payment_status,
+                ]);
 
-            DB::commit();
-            return redirect()->route('admin.bookings')->with('success', 'Order #' . $booking->booking_code . ' berhasil diperbarui.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal memperbarui: ' . $e->getMessage());
+                BookingProduct::updateOrCreate(['booking_id' => $booking->id], [
+                    'product_name' => $validated['product_name'],
+                    'product_type' => $validated['product_type'],
+                    'quantity' => $quantity,
+                    'unit' => $validated['unit'],
+                    'dmin' => $validated['dmin'],
+                    'dmax' => $validated['dmax'] ?? null,
+                    'dimension_pack' => $validated['dimension_pack'],
+                    'vol_per_pcs' => $volPerPcs,
+                    'vol_total' => $volTotal,
+                    'net_weight_pcs' => $netPerPcs,
+                    'total_net_weight' => $totalNet,
+                    'gross_weight_per_pcs' => $grossPerPcs,
+                    'total_gross_weight' => $totalGross,
+                    'expect_temp' => $validated['expect_temp'] ?? null,
+                    'density_gross' => $volTotal > 0 ? $totalGross / $volTotal : 0,
+                    'density_nett' => $volTotal > 0 ? $totalNet / $volTotal : 0,
+                ]);
+            });
+
+            return redirect()->route('admin.bookings')->with('success', 'Order berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal memperbarui: ' . $e->getMessage())->withInput();
         }
     }
 
     public function generateCode()
     {
-        $today = now();
-        $prefix = $today->format('ymd');
-
-        $countToday = Booking::whereDate('created_at', $today->toDateString())
-            ->count();
-
-
-        $sequence = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
-
-        return response()->json([
-            'code' => $prefix . $sequence
-        ]);
+        return response()->json(['code' => $this->nextBookingCodeForDate(now())]);
     }
     public function storePlacement(Request $request, int $bookingId)
     {
-        $request->validate([
-            'product_names' => 'required|array',
-            'lines' => 'required|array',
-            'petaks' => 'required|array',
-            'pallet_qty' => 'required|array',
+        $validated = $request->validate([
+            'pic_warehouse' => 'required|string|max:255',
+            'porter_name' => 'required|string|max:255',
+            'total_qty' => 'required|integer|min:1',
+            'per_pallet' => 'required|integer|min:1',
+            'lines' => 'required|array|min:1',
+            'lines.*' => 'required|string|max:50',
+            'petaks' => 'required|array|min:1',
+            'petaks.*' => 'required|integer|min:1',
+            'pallet_qty' => 'required|array|min:1',
+            'pallet_qty.*' => 'required|integer|min:1',
+            'product_names' => 'required|array|min:1',
+            'product_names.*' => 'required|string|max:255',
         ]);
 
+        $count = count($validated['lines']);
+        if ($count !== count($validated['petaks']) || $count !== count($validated['pallet_qty']) || $count !== count($validated['product_names'])) {
+            return back()->with('error', 'Data placement tidak lengkap. Silakan ulangi check-in.');
+        }
+
+        $locations = [];
+        foreach ($validated['lines'] as $i => $line) {
+            $key = trim((string) $line) . ':' . (int) $validated['petaks'][$i];
+            if (isset($locations[$key])) {
+                return back()->with('error', "Lokasi {$key} dipilih lebih dari sekali.");
+            }
+            $locations[$key] = true;
+        }
+
+        $booking = Booking::with('products')->findOrFail($bookingId);
+        $actualTotal = (int) $booking->products->sum('quantity');
+        if ($actualTotal <= 0 || (int) $validated['total_qty'] !== $actualTotal) {
+            return back()->with('error', 'Quantity booking berubah/tidak sesuai. Muat ulang halaman lalu ulangi check-in.');
+        }
+
+        $neededPallets = (int) ceil($actualTotal / (int) $validated['per_pallet']);
+        if (array_sum(array_map('intval', $validated['pallet_qty'])) !== $neededPallets) {
+            return back()->with('error', "Total alokasi pallet harus {$neededPallets} pallet.");
+        }
+
         try {
-            DB::transaction(function () use ($request, $bookingId) {
+            DB::transaction(function () use ($booking, $validated, $count, $actualTotal) {
+                $this->releaseBookingInventory($booking->id);
+                PlacementDetail::where('booking_id', $booking->id)->delete();
 
-                $booking = Booking::findOrFail($bookingId);
-                $booking->update([
-                    'status'       => 'approved',
-                    'arrival_time' => now(),
-                    'pic_warehouse' => $request->pic_warehouse ?? null,
-                ]);
+                $remainingQty = $actualTotal;
+                $perPallet = (int) $validated['per_pallet'];
 
-                // Hapus data lama
-                \App\Models\PalletContent::where('booking_id', $bookingId)->delete();
+                for ($i = 0; $i < $count; $i++) {
+                    $line = trim((string) $validated['lines'][$i]);
+                    $petak = (int) $validated['petaks'][$i];
+                    $palletCount = (int) $validated['pallet_qty'][$i];
 
-                foreach ($request->lines as $index => $line) {
-                    $petak = $request->petaks[$index];
-                    $qty = $request->pallet_qty[$index];
-                    $productName = $request->product_names[$index];
-
-                    $slot = \App\Models\Pallet::where('line', (string)$line)
-                        ->where('slot_section', (int)$petak)
+                    $slot = Pallet::where('line', $line)
+                        ->where('slot_section', $petak)
+                        ->lockForUpdate()
                         ->first();
 
                     if (!$slot) {
-                        throw new \Exception("Slot Line {$line} Petak {$petak} tidak terdaftar di sistem!");
+                        throw new \RuntimeException("Slot Line {$line} Petak {$petak} tidak terdaftar.");
                     }
 
-                    // $slot->update([
-                    //     'status'             => 'filled',
-                    //     'current_booking_id' => $bookingId,
-                    //     'filled_boxes'       => $qty,
-                    // ]);
+                    if ($slot->current_booking_id && (int) $slot->current_booking_id !== (int) $booking->id) {
+                        throw new \RuntimeException("Line {$line} Petak {$petak} sedang dipakai booking lain.");
+                    }
+
+                    $itemQty = min($remainingQty, $palletCount * $perPallet);
+                    if ($itemQty <= 0) {
+                        throw new \RuntimeException('Alokasi pallet melebihi quantity booking.');
+                    }
+
                     $slot->update([
-                        'current_booking_id' => $bookingId,
-                        'filled_boxes' => $slot->filled_boxes + $qty,
+                        'status' => 'filled',
+                        'current_booking_id' => $booking->id,
+                        'filled_boxes' => $itemQty,
                     ]);
 
-                    \App\Models\PalletContent::create([
-                        'pallet_id'    => $slot->id,
-                        'booking_id'   => $bookingId,
-                        'product_name' => $productName,
-                        'quantity'     => $qty,
+                    PalletContent::create([
+                        'pallet_id' => $slot->id,
+                        'booking_id' => $booking->id,
+                        'product_name' => $validated['product_names'][$i],
+                        'quantity' => $itemQty,
                     ]);
+
+                    PlacementDetail::create([
+                        'booking_id' => $booking->id,
+                        'sequence' => $i + 1,
+                        'quantity' => $itemQty,
+                        'line' => $line,
+                        'slot_section' => $petak,
+                        'status' => 'placed',
+                    ]);
+
+                    $remainingQty -= $itemQty;
                 }
+
+                if ($remainingQty !== 0) {
+                    throw new \RuntimeException("Masih ada {$remainingQty} item yang belum dialokasikan.");
+                }
+
+                $booking->update([
+                    'status' => 'approved',
+                    'arrival_time' => now(),
+                    'pic_warehouse' => $validated['pic_warehouse'],
+                    'porter_name' => $validated['porter_name'],
+                ]);
             });
 
-            return back()->with('success', 'Check-in berhasil! Status booking telah diperbarui.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal: ' . $e->getMessage());
+            return back()->with('success', 'Check-in berhasil. Placement dan inventory warehouse sudah tersinkron.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal check-in: ' . $e->getMessage());
         }
     }
     public function show(int $id)
@@ -630,65 +611,69 @@ class AdminBookingController extends Controller
 
     public function relocatePallet(Request $request)
     {
-        // new_pallet_id dibikin nullable karena kalau langsung dikirim tidak butuh slot baru
-        $request->validate([
+        $validated = $request->validate([
             'pallet_content_id' => 'required|string',
-            'new_pallet_id'     => 'nullable|exists:pallets,id',
+            'new_pallet_id' => 'nullable|exists:pallets,id',
+            'is_bulk' => 'nullable|boolean',
         ]);
 
+        $contentIds = array_values(array_filter(array_map('intval', explode(',', $validated['pallet_content_id']))));
+        if (!$contentIds) {
+            return back()->with('error', 'Pallet content tidak valid.');
+        }
+
         try {
-            DB::transaction(function () use ($request) {
-                $isBulk = $request->input('is_bulk') == "1";
-                $contentIds = explode(',', $request->pallet_content_id);
-                $contents = \App\Models\PalletContent::whereIn('id', $contentIds)->get();
+            DB::transaction(function () use ($validated, $contentIds) {
+                $contents = PalletContent::whereIn('id', $contentIds)->lockForUpdate()->get();
+                if ($contents->count() !== count($contentIds)) {
+                    throw new \RuntimeException('Sebagian pallet content tidak ditemukan.');
+                }
 
-                if ($isBulk) {
-                    // ====== SKENARIO KOSONGKAN SEMUA (BARANG DIKIRIM) ======
-                    foreach ($contents as $content) {
-                        $oldPallet = Pallet::find($content->pallet_id);
-                        if ($oldPallet) {
-                            // Kurangi box di rak asal
-                            $oldPallet->decrement('filled_boxes', $content->quantity);
-
-                            // Jika rak kosong, hapus booking_id pengikatnya
-                            if ($oldPallet->filled_boxes <= 0) {
-                                $oldPallet->update(['current_booking_id' => null]);
-                            }
-                        }
-
-                        // Opsional A: Jika data barang keluar tetap mau disimpan di DB dengan status 'shipped'
-                        // $content->update(['pallet_id' => null, 'status' => 'shipped']);
-
-                        // Opsional B: Langsung hapus dari data antrean rak aktif karena sudah dikirim
-                        $content->delete();
+                $isBulk = (bool) ($validated['is_bulk'] ?? false);
+                $newPallet = null;
+                if (!$isBulk) {
+                    if (empty($validated['new_pallet_id'])) {
+                        throw new \RuntimeException('Pilih lokasi pallet tujuan.');
                     }
-                } else {
-                    // ====== SKENARIO PINDAH SLOT PER PALLET (SEPERTI BIASA) ======
-                    $newPallet = Pallet::findOrFail($request->new_pallet_id);
+                    $newPallet = Pallet::whereKey($validated['new_pallet_id'])->lockForUpdate()->firstOrFail();
+                    $bookingIds = $contents->pluck('booking_id')->unique();
+                    if ($bookingIds->count() !== 1) {
+                        throw new \RuntimeException('Relokasi hanya dapat dilakukan untuk satu booking dalam satu transaksi.');
+                    }
+                    $bookingId = (int) $bookingIds->first();
+                    if ($newPallet->current_booking_id && (int) $newPallet->current_booking_id !== $bookingId) {
+                        throw new \RuntimeException('Lokasi tujuan sedang digunakan booking lain.');
+                    }
+                }
 
-                    foreach ($contents as $content) {
-                        $oldPallet = Pallet::find($content->pallet_id);
-                        if ($oldPallet) {
-                            $oldPallet->decrement('filled_boxes', $content->quantity);
-                            if ($oldPallet->filled_boxes <= 0) {
-                                $oldPallet->update(['current_booking_id' => null]);
-                            }
-                        }
+                foreach ($contents as $content) {
+                    $oldPallet = Pallet::whereKey($content->pallet_id)->lockForUpdate()->first();
+                    if ($oldPallet) {
+                        $remaining = max(0, (int) $oldPallet->filled_boxes - (int) $content->quantity);
+                        $oldPallet->update([
+                            'filled_boxes' => $remaining,
+                            'current_booking_id' => $remaining === 0 ? null : $oldPallet->current_booking_id,
+                            'status' => $remaining === 0 ? 'empty' : 'filled',
+                        ]);
+                    }
 
-                        // Tambah ke pallet baru dan ikat datanya
-                        $newPallet->increment('filled_boxes', $content->quantity);
+                    if ($isBulk) {
+                        $content->delete();
+                    } else {
+                        $newPallet->update([
+                            'filled_boxes' => (int) $newPallet->filled_boxes + (int) $content->quantity,
+                            'current_booking_id' => $content->booking_id,
+                            'status' => 'filled',
+                        ]);
                         $content->update(['pallet_id' => $newPallet->id]);
-                        $newPallet->update(['current_booking_id' => $content->booking_id]);
                     }
                 }
             });
 
-            $message = $request->input('is_bulk') == "1"
-                ? 'Seluruh rak pallet berhasil dikosongkan (Barang Terkirim).'
-                : 'Pallet berhasil dipindahkan ke area Post-Irradiation.';
-
-            return back()->with('success', $message);
-        } catch (\Exception $e) {
+            return back()->with('success', !empty($validated['is_bulk'])
+                ? 'Barang sudah ditandai keluar dan lokasi warehouse dikosongkan.'
+                : 'Pallet berhasil direlokasi.');
+        } catch (\Throwable $e) {
             return back()->with('error', 'Gagal memproses tindakan: ' . $e->getMessage());
         }
     }
@@ -755,40 +740,56 @@ class AdminBookingController extends Controller
     public function destroy(int $id)
     {
         try {
-            $booking = \App\Models\Booking::findOrFail($id);
+            DB::transaction(function () use ($id) {
+                $booking = Booking::findOrFail($id);
+                $this->releaseBookingInventory($booking->id);
+                $booking->delete();
+            });
 
-            // 1. Hapus isi palet yang terkait dengan booking ini
-            // Pastikan model PalletContent sudah ada
-            \DB::table('pallet_contents')->where('booking_id', $id)->delete();
-
-            // 2. Hapus produk terkait (jika ada relasi)
-            $booking->products()->delete();
-
-            // 3. Baru hapus booking-nya
-            $booking->delete();
-
-            return redirect()->route('admin.bookings')
-                ->with('success', 'Booking and associated pallet contents deleted successfully');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->route('admin.bookings')->with('success', 'Booking dan data terkait berhasil dihapus.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
     public function getBookingCodeByDate(Request $request)
     {
-        $request->validate(['date' => 'required|date']);
+        $validated = $request->validate(['date' => 'required|date']);
+        return response()->json(['code' => $this->nextBookingCodeForDate(Carbon::parse($validated['date']))]);
+    }
 
-        $date = \Carbon\Carbon::parse($request->date);
+    private function nextBookingCodeForDate($date): string
+    {
+        $date = $date instanceof Carbon ? $date : Carbon::parse($date);
         $prefix = $date->format('ymd');
 
-        // Hitung berapa booking yang dibuat pada tanggal tersebut (abaikan booking saat ini jika dilewati id,
-        // namun karena ini pencarian kode baru murni untuk tanggal terpilih, kita ambil count global tanggal tersebut)
-        $countToday = Booking::whereDate('created_at', $date->toDateString())->count();
+        $lastCode = Booking::where('booking_code', 'like', $prefix . '%')
+            ->orderByDesc('booking_code')
+            ->value('booking_code');
 
-        $sequence = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
-
-        return response()->json([
-            'code' => $prefix . $sequence
-        ]);
+        $lastSequence = $lastCode ? (int) substr($lastCode, strlen($prefix)) : 0;
+        return $prefix . str_pad($lastSequence + 1, 3, '0', STR_PAD_LEFT);
     }
+
+    private function releaseBookingInventory(int $bookingId): void
+    {
+        $contents = PalletContent::where('booking_id', $bookingId)->lockForUpdate()->get();
+
+        foreach ($contents as $content) {
+            $pallet = Pallet::whereKey($content->pallet_id)->lockForUpdate()->first();
+            if (!$pallet) {
+                continue;
+            }
+
+            $remaining = max(0, (int) $pallet->filled_boxes - (int) $content->quantity);
+            $pallet->update([
+                'filled_boxes' => $remaining,
+                'current_booking_id' => $remaining === 0 ? null : $pallet->current_booking_id,
+                'status' => $remaining === 0 ? 'empty' : 'filled',
+            ]);
+        }
+
+        PalletContent::where('booking_id', $bookingId)->delete();
+    }
+
 }

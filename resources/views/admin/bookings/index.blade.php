@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                @if (in_array(auth()->user()->role, ['superadmin']))
+                @if (in_array(auth('admin')->user()->role, ['superadmin']))
                     <a href="{{ route('admin.bookings.create') }}"
                         class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-xl shadow-blue-100 active:scale-95">
                         <i class="fa-solid fa-plus"></i>
@@ -140,7 +140,7 @@
                                             class="p-2 text-blue-600 transition-colors rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white">
                                             <i class="text-xs fa-solid fa-eye"></i>
                                         </button>
-                                        @if (in_array(auth()->user()->role, ['superadmin', 'production']))
+                                        @if (in_array(auth('admin')->user()->role, ['superadmin', 'production']))
                                             <a href="{{ route('admin.bookings.edit', $booking->id) }}"
                                                 class="p-2 transition-colors rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-500 hover:text-white">
                                                 <i class="text-xs fa-solid fa-pen-to-square"></i>
@@ -216,7 +216,7 @@
                                     class="p-2.5 text-blue-600 bg-blue-50 rounded-xl">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                @if (in_array(auth()->user()->role, ['superadmin', 'production']))
+                                @if (in_array(auth('admin')->user()->role, ['superadmin', 'production']))
                                     <a href="{{ route('admin.bookings.edit', $booking->id) }}"
                                         class="p-2.5 text-amber-600 bg-amber-50 rounded-xl">
                                         <i class="fa-solid fa-pen-to-square"></i>
@@ -397,6 +397,6 @@
             if (e.target === this || e.target.classList.contains('absolute')) closeDeleteModal();
         });
     </script>
-    <script src="{{ asset('js/admin/prerad.js') }}"></script>
+    <script src="{{ asset('js/admin/preRad.js') }}"></script>
     <script src="{{ asset('js/admin/checkin.js') }}"></script>
 @endpush

@@ -15,12 +15,12 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminProductionController;
 use App\Http\Controllers\AdminProductionLineController;
-use App\Http\Controllers\AdminSlotController;
 use App\Http\Controllers\UserAdminController;
 use App\Http\Controllers\DosimeterController;
 use App\Http\Controllers\PorterController;
 use App\Http\Controllers\WarehousePicController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProductTestingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,12 +29,16 @@ use App\Http\Controllers\ReportController;
 */
 
 Route::get('/', function () {
-    if (Auth::check()) {
-        if (Auth::user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
+    // Keep the two authentication contexts strictly separated.
+    // Customer accounts live on the `customer` guard; staff live on `admin`.
+    if (Auth::guard('customer')->check()) {
         return redirect()->route('customer.dashboard');
     }
+
+    if (Auth::guard('admin')->check()) {
+        return redirect()->route('admin.dashboard');
+    }
+
     return view('landing');
 })->name('landing');
 
@@ -49,11 +53,11 @@ Route::prefix('customer')->middleware('nocache')->group(function () {
     Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
     Route::post('/register', [CustomerAuthController::class, 'register']);
     Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
-    Route::post('/login', [CustomerAuthController::class, 'login']);
-    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
+    Route::post('/login', [CustomerAuthController::class, 'login'])->middleware('throttle:5,1');
 
-    // Authenticated Customer Routes (Guard: Web)
-    Route::middleware(['auth'])->group(function () {
+    // Authenticated Customer Routes (Guard: customer)
+    Route::middleware(['auth:customer', 'customer.only'])->group(function () {
+        Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
         // Dashboard
         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
 
@@ -84,8 +88,7 @@ Route::prefix('customer')->middleware('nocache')->group(function () {
 */
 Route::prefix('admin')->middleware('nocache')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-    Route::post('/login', [AdminAuthController::class, 'login']);
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    Route::post('/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1');
 });
 
 
@@ -97,6 +100,7 @@ Route::prefix('admin')->middleware('nocache')->group(function () {
 Route::prefix('admin')
     ->middleware(['auth:admin', 'nocache'])
     ->group(function () {
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
         /*
         |------------------------------------------------------------------
@@ -122,7 +126,6 @@ Route::prefix('admin')
             Route::get('/dosimeter/show/{booking_id}', [DosimeterController::class, 'show'])->name('admin.dosimeter.show');
             Route::post('/dosimeter/store-quantity', [DosimeterController::class, 'storeQuantity'])->name('admin.dosimeter.store-quantity');
             Route::post('/dosimeter/store-absorbance/{record_id}', [DosimeterController::class, 'storeAbsorbance'])->name('admin.dosimeter.store-absorbance');
-            Route::get('/report/export-word/{id}', [ReportController::class, 'exportWord'])->name('admin.report.export-word');
 
             // Step 1 – Process Parameter Setting
             Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])->name('admin.production.parameter');
@@ -164,9 +167,23 @@ Route::prefix('admin')
             // Route::get('/bookings/create', [AdminBookingController::class, 'create'])->name('admin.bookings.create');
             // Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
             Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
+
+            // Product Testing is a dedicated technical workflow. It does not use customer booking/check-in.
+            Route::get('/product-testing', [ProductTestingController::class, 'index'])->name('admin.testing.index');
+            Route::get('/product-testing/create', [ProductTestingController::class, 'create'])->name('admin.testing.create');
+            Route::post('/product-testing', [ProductTestingController::class, 'store'])->name('admin.testing.store');
+            Route::get('/product-testing/{test}/edit', [ProductTestingController::class, 'edit'])->name('admin.testing.edit');
+            Route::put('/product-testing/{test}', [ProductTestingController::class, 'update'])->name('admin.testing.update');
+            Route::get('/product-testing/{test}/parameters', [ProductTestingController::class, 'parameters'])->name('admin.testing.parameters');
+            Route::put('/product-testing/{test}/parameters', [ProductTestingController::class, 'storeParameters'])->name('admin.testing.parameters.update');
+            Route::get('/product-testing/{test}/report', [ProductTestingController::class, 'report'])->name('admin.testing.report');
+            Route::put('/product-testing/{test}/dosimeters', [ProductTestingController::class, 'storeDosimeters'])->name('admin.testing.dosimeters.update');
+
+            // Warehouse check-in is an operational action and is available to cargo/production staff.
+            Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
+            Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
             // Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
             // Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
-            // Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
             // Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update-status');
             // Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.invoice');
             // Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus'])->name('admin.bookings.paymentStatus');
@@ -175,12 +192,6 @@ Route::prefix('admin')
 
             // Relokasi Produksi
             Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->name('admin.production.relocate-pallet');
-
-            // Slot Gudang Management
-            Route::get('/slots', [AdminSlotController::class, 'index'])->name('admin.slots.index');
-            Route::post('/slots', [AdminSlotController::class, 'store'])->name('admin.slots.store');
-            Route::post('/slots/generate', [AdminSlotController::class, 'generate'])->name('admin.slots.generate');
-            Route::put('/slots/{slot}', [AdminSlotController::class, 'update'])->name('admin.slots.update');
 
             // Pallet Gudang Management
             Route::get('/pallets', [AdminBookingController::class, 'palletIndex'])->name('admin.pallets.index');
@@ -200,6 +211,26 @@ Route::prefix('admin')
 
         /*
         |------------------------------------------------------------------
+        | REPORT CENTER
+        |------------------------------------------------------------------
+        | Report Center + download can be opened by operational roles.
+        | Individual report families remain role-specific.
+        */
+        Route::middleware(['role:superadmin|manager|production|cargo_admin'])->group(function () {
+            Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
+            Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->name('admin.report.export-excel');
+        });
+
+        Route::middleware(['role:superadmin|manager|production'])->group(function () {
+            Route::get('/report/nuctech/{type}', [ReportController::class, 'nuctechView'])->name('admin.report.nuctech');
+        });
+
+        Route::middleware(['role:superadmin|manager|cargo_admin'])->group(function () {
+            Route::get('/report/jts/{type}', [ReportController::class, 'jtsView'])->name('admin.report.jts');
+        });
+
+        /*
+        |------------------------------------------------------------------
         | D. ROLE: MANAGER & SUPERADMIN (Manajemen User & Approval Bisnis)
         |------------------------------------------------------------------
         */
@@ -213,13 +244,6 @@ Route::prefix('admin')
             Route::get('/profile/list', [UserAdminController::class, 'profileList'])->name('admin.profile.profileList');
             // Route::get('/profile/create', [UserAdminController::class, 'create'])->name('admin.profile.create');
             // Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
-
-            Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
-            Route::get('/report/jts/{type}', [ReportController::class, 'jtsView'])->name('admin.report.jts');
-            Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->name('admin.report.export-excel');
-            Route::get('/report/nuctech/{type}', [ReportController::class, 'nuctechView'])->name('admin.report.nuctech');
-
-
 
             // Master Data Mesin Penyinaran
             Route::resource('production-lines', AdminProductionLineController::class)
@@ -242,14 +266,12 @@ Route::prefix('admin')
             Route::get('/bookings/generate-code', [AdminBookingController::class, 'generateCode']);
             // Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
             Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
-            Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
-            Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
             Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update-status');
             Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.invoice');
             Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus'])->name('admin.bookings.paymentStatus');
             Route::get('/bookings/{id}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
             Route::put('/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
-            Route::get('/admin/bookings/get-code-by-date', [AdminBookingController::class, 'getBookingCodeByDate'])->name('admin.bookings.get-code-by-date');
+            Route::get('/bookings/get-code-by-date', [AdminBookingController::class, 'getBookingCodeByDate'])->name('admin.bookings.get-code-by-date');
 
 
 
@@ -259,7 +281,7 @@ Route::prefix('admin')
             Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
 
             Route::delete('/bookings/{id}', [AdminBookingController::class, 'destroy'])->name('admin.bookings.destroy');
-            Route::delete('/slots/{slot}', [AdminSlotController::class, 'destroy'])->name('admin.slots.destroy');
+            Route::delete('/product-testing/{test}', [ProductTestingController::class, 'destroy'])->middleware('role:superadmin')->name('admin.testing.destroy');
             Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
         });
 

@@ -4,13 +4,19 @@
 
 @section('content')
 
-    {{-- Hidden Data Sources --}}
+    {{-- Shared data sources for dashboard QR/manual check-in. --}}
     <div id="bookingDataSource" class="hidden">
-        @foreach (\App\Models\Booking::where('status', 'pending')->with('products')->get() as $b)
+        @foreach ($bookings as $b)
             @php $product = $b->products->first(); @endphp
-            <div data-code="{{ $b->booking_code }}" data-name="{{ $product->product_name ?? '-' }}"
-                data-type="{{ $product->product_type ?? '-' }}" data-qty="{{ $product->quantity ?? 0 }}"
-                data-unit="{{ $product->unit ?? '' }}" data-dose="{{ $product->target_dose ?? '-' }}">
+            <div data-code="{{ $b->booking_code }}" data-id="{{ $b->id }}"
+                data-name="{{ $product->product_name ?? '-' }}" data-type="{{ $product->product_type ?? '-' }}"
+                data-qty="{{ $product->quantity ?? 0 }}" data-unit="{{ $product->unit ?? '' }}"
+                data-temp="{{ $product->expect_temp ?? '-' }}" data-dmin="{{ $product->dmin ?? 0 }}"
+                data-dmax="{{ $product->dmax ?? 0 }}" data-dimension="{{ $product->dimension_pack ?? '-' }}"
+                data-vol-pcs="{{ $product->vol_per_pcs ?? 0 }}" data-vol-total="{{ $product->vol_total ?? 0 }}"
+                data-net-pcs="{{ $product->net_weight_pcs ?? 0 }}" data-net-total="{{ $product->total_net_weight ?? 0 }}"
+                data-gross-pcs="{{ $product->gross_weight_per_pcs ?? 0 }}"
+                data-gross-total="{{ $product->total_gross_weight ?? 0 }}">
             </div>
         @endforeach
     </div>
@@ -18,6 +24,12 @@
     <div id="porterDataSource" class="hidden">
         @foreach ($porters as $p)
             <div data-name="{{ $p->name }}"></div>
+        @endforeach
+    </div>
+
+    <div id="palletInventoryData" class="hidden">
+        @foreach ($pallets as $p)
+            <div data-line="{{ $p->line }}" data-petak="{{ $p->slot_section }}" data-status="{{ $p->status }}"></div>
         @endforeach
     </div>
 
@@ -347,412 +359,36 @@
         </div>
     </div>
 
-    {{-- ═══ WAREHOUSE / CHECK-IN MODAL ═══ --}}
-    <div id="warehouseModal"
-        class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
+    {{-- Reuse exactly the same check-in flow as Order Management/Product Testing. --}}
+    @include('admin.bookings.partials.checkin-modal')
 
-            {{-- Modal Header --}}
-            <div class="px-6 pt-6 pb-5 border-b border-gray-100">
-                <div class="flex items-start justify-between mb-6">
-                    <div>
-                        <h3 class="text-base font-semibold text-gray-800">Check-in Process</h3>
-                        <p class="text-xs text-gray-400 mt-0.5">
-                            Code: <span id="display_booking_code" class="font-semibold text-blue-600"></span>
-                        </p>
-                    </div>
-                    <button onclick="closeWarehouseModal()"
-                        class="flex items-center justify-center flex-shrink-0 w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
+@endsection
 
-                {{-- Step Tracker --}}
-                <div class="flex items-center max-w-sm">
-                    @foreach ([['1', 'Verify'], ['2', 'Batching'], ['3', 'Placement']] as [$n, $lbl])
-                        @if (!$loop->first)
-                            <div class="flex-1 h-px mx-2 bg-gray-100"></div>
-                        @endif
-                        <div class="flex flex-col items-center gap-1 step-item" data-step="{{ $n }}">
-                            <div
-                                class="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold step-circle {{ $loop->first ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400' }}">
-                                {{ $n }}
-                            </div>
-                            <span
-                                class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{{ $lbl }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <form action="{{ route('admin.bookings.checkin') }}" method="POST" id="checkInForm"
-                class="flex flex-col flex-1 overflow-hidden">
-                @csrf
-                <input type="hidden" name="booking_code" id="modal_booking_code">
-
-                <div class="flex-1 px-6 py-6 overflow-y-auto">
-
-                    {{-- STEP 1: VERIFICATION --}}
-                    <div class="step-content" id="step1">
-                        <div class="p-5 mb-5 border border-blue-100 bg-blue-50/50 rounded-xl">
-                            <p class="text-[11px] font-semibold text-blue-500 uppercase tracking-wider mb-4">Booking
-                                Details</p>
-                            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                                <div>
-                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        Product</p>
-                                    <p id="check_product_name" class="text-sm font-semibold text-gray-800">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        Category</p>
-                                    <p id="check_product_type" class="text-sm font-medium text-gray-600">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Target
-                                        Dose</p>
-                                    <p class="text-sm font-semibold text-emerald-600"><span id="check_dose">-</span> kGy
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Qty
-                                        Booked</p>
-                                    <p class="text-sm font-semibold text-gray-800"><span id="check_qty">0</span> <span
-                                            id="check_unit"></span></p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <label
-                                class="flex items-start gap-3 p-4 transition-all border border-gray-200 cursor-pointer rounded-xl hover:border-blue-400 hover:bg-blue-50/30">
-                                <input type="checkbox" required
-                                    class="mt-0.5 w-4 h-4 rounded text-blue-600 border-gray-300 flex-shrink-0">
-                                <span class="text-sm text-gray-600">Saya mengonfirmasi bahwa data fisik yang datang sesuai
-                                    dengan data booking di atas.</span>
-                            </label>
-                            <input type="text" name="pic_warehouse" required
-                                placeholder="Nama PIC Warehouse penanggung jawab"
-                                class="w-full h-10 px-4 text-sm transition-all border border-gray-200 outline-none rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
-                        </div>
-                    </div>
-
-                    {{-- STEP 2: BATCHING --}}
-                    <div class="hidden step-content" id="step2">
-                        <div class="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <h4 class="text-sm font-semibold text-gray-800">Pembagian Batch & Porter</h4>
-                                <p class="text-xs text-gray-400 mt-0.5">
-                                    Total: <span id="current_total_display" class="font-semibold text-blue-600">0</span>
-                                    / <span id="total_qty_display" class="font-semibold text-gray-700">0</span>
-                                </p>
-                            </div>
-                            <button type="button" onclick="addBatchField()"
-                                class="inline-flex items-center self-start gap-2 px-4 text-xs font-medium text-white transition-colors bg-blue-600 h-9 hover:bg-blue-700 rounded-xl sm:self-auto">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                                Tambah Batch
-                            </button>
-                        </div>
-                        <div id="batchContainer" class="space-y-3"></div>
-                    </div>
-
-                    {{-- STEP 3: PLACEMENT --}}
-                    <div class="hidden step-content" id="step3">
-                        <div class="flex items-start gap-3 p-4 mb-5 border bg-amber-50 border-amber-100 rounded-xl">
-                            <svg class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                            </svg>
-                            <p class="text-xs text-amber-700">Input kode palet atau lokasi secara manual sesuai posisi yang
-                                diletakkan oleh porter di lapangan.</p>
-                        </div>
-                        <div id="placementContainer" class="space-y-3"></div>
-                    </div>
-
-                </div>
-
-                {{-- Modal Footer --}}
-                <div class="flex items-center gap-3 px-6 py-5 border-t border-gray-100 bg-gray-50/60">
-                    <button type="button" id="prevBtn" onclick="changeStep(-1)"
-                        class="hidden h-10 px-5 text-sm font-medium text-gray-500 transition-colors bg-white border border-gray-200 rounded-xl hover:bg-gray-100">
-                        Previous
-                    </button>
-                    <button type="button" id="nextBtn" onclick="changeStep(1)"
-                        class="flex-1 h-10 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors active:scale-[0.98]">
-                        Continue
-                    </button>
-                    <button type="submit" id="finalSubmitBtn"
-                        class="hidden flex-1 h-10 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors active:scale-[0.98]">
-                        Confirm & Save
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/html5-qrcode"></script>
+@push('scripts')
+    <script src="{{ asset('js/admin/checkin.js') }}"></script>
     <script>
-        let currentStep = 1;
-        let maxQty = 0;
-
-        function getInventoryData() {
-            const rawInventory = document.querySelectorAll('#palletInventoryData div');
-            return Array.from(rawInventory).map(el => ({
-                line: el.dataset.line,
-                petak: el.dataset.petak,
-                pallet: el.dataset.pallet
-            }));
-        }
-        window.currentInventory = getInventoryData();
-
-        function openWarehouseModal(code) {
-            const dataSource = document.querySelector(`#bookingDataSource [data-code="${code}"]`);
-            if (!dataSource) return alert('Kode Booking tidak valid atau sudah diproses!');
-
-            maxQty = parseFloat(dataSource.getAttribute('data-qty')) || 0;
-
-            document.getElementById('check_product_name').innerText = dataSource.getAttribute('data-name');
-            document.getElementById('check_product_type').innerText = dataSource.getAttribute('data-type');
-            document.getElementById('check_qty').innerText = maxQty;
-            document.getElementById('check_dose').innerText = dataSource.getAttribute('data-dose');
-            document.getElementById('check_unit').innerText = dataSource.getAttribute('data-unit');
-            document.getElementById('total_qty_display').innerText = maxQty;
-            document.getElementById('display_booking_code').innerText = code;
-            document.getElementById('modal_booking_code').value = code;
-
-            currentStep = 1;
-            document.getElementById('batchContainer').innerHTML = '';
-            addBatchField();
-            updateStepUI();
-
-            const modal = document.getElementById('warehouseModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function changeStep(n) {
-            if (n === 1 && !validateCurrentStep()) return;
-            currentStep += n;
-            updateStepUI();
-            if (currentStep === 3) preparePlacementFields();
-        }
-
-        function validateCurrentStep() {
-            if (currentStep === 1) {
-                const pic = document.querySelector('[name="pic_warehouse"]').value.trim();
-                const check = document.querySelector('#step1 input[type="checkbox"]').checked;
-                if (!pic || !check) {
-                    alert('Mohon isi nama PIC dan centang konfirmasi data!');
-                    return false;
-                }
-            }
-            if (currentStep === 2) {
-                const inputs = document.querySelectorAll('.batch-input');
-                let total = 0,
-                    allFilled = true;
-                inputs.forEach(i => {
-                    const v = parseFloat(i.value) || 0;
-                    total += v;
-                    if (v <= 0) allFilled = false;
-                });
-                if (inputs.length === 0 || !allFilled) {
-                    alert('Semua Qty Batch harus diisi dengan angka positif!');
-                    return false;
-                }
-                if (Math.abs(total - maxQty) > 0.001) {
-                    alert(`Total batch (${total}) belum sesuai dengan qty booking (${maxQty})!`);
-                    return false;
-                }
-                let porterFilled = true;
-                document.querySelectorAll('[name="batch_porters[]"]').forEach(p => {
-                    if (!p.value) porterFilled = false;
-                });
-                if (!porterFilled) {
-                    alert('Pilih porter untuk setiap batch!');
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function updateStepUI() {
-            document.querySelectorAll('.step-content').forEach((el, idx) => {
-                el.classList.toggle('hidden', idx + 1 !== currentStep);
-            });
-
-            document.querySelectorAll('.step-item').forEach((el, idx) => {
-                const circle = el.querySelector('.step-circle');
-                const stepNum = idx + 1;
-                if (stepNum < currentStep) {
-                    circle.className =
-                        'step-circle w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold';
-                    circle.innerHTML =
-                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>';
-                } else if (stepNum === currentStep) {
-                    circle.className =
-                        'step-circle w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold';
-                    circle.innerText = stepNum;
-                } else {
-                    circle.className =
-                        'step-circle w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs font-bold';
-                    circle.innerText = stepNum;
-                }
-            });
-
-            document.getElementById('prevBtn').classList.toggle('hidden', currentStep === 1);
-            document.getElementById('nextBtn').classList.toggle('hidden', currentStep === 3);
-            document.getElementById('finalSubmitBtn').classList.toggle('hidden', currentStep !== 3);
-        }
-
-        function addBatchField() {
-            const container = document.getElementById('batchContainer');
-            const porterData = document.querySelectorAll('#porterDataSource div');
-
-            let porterOptions = '<option value="">Pilih Porter</option>';
-            porterData.forEach(p => {
-                porterOptions += `<option value="${p.dataset.name}">${p.dataset.name}</option>`;
-            });
-
-            const div = document.createElement('div');
-            div.className =
-                'batch-row grid grid-cols-1 gap-3 sm:grid-cols-3 items-end p-4 bg-gray-50 border border-gray-100 rounded-xl';
-            div.innerHTML = `
-                <div>
-                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Qty Batch</label>
-                    <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required
-                        placeholder="0"
-                        class="w-full h-10 px-4 text-sm font-medium transition-all bg-white border border-gray-200 outline-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 batch-input">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Porter</label>
-                    <select name="batch_porters[]" required
-                        class="w-full h-10 px-4 text-sm font-medium transition-all bg-white border border-gray-200 outline-none cursor-pointer rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
-                        ${porterOptions}
-                    </select>
-                </div>
-                <div>
-                    <button type="button" onclick="this.closest('.batch-row').remove(); updateBatchTotal();"
-                        class="inline-flex items-center gap-1.5 h-10 px-4 text-xs font-medium text-red-500 hover:bg-red-50 border border-red-100 rounded-xl transition-colors">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                        </svg>
-                        Hapus
-                    </button>
-                </div>
-            `;
-            container.appendChild(div);
-            updateBatchTotal();
-        }
-
-        function updateBatchTotal() {
-            let total = 0;
-            document.querySelectorAll('.batch-input').forEach(i => total += parseFloat(i.value) || 0);
-            document.getElementById('current_total_display').innerText = total.toLocaleString();
-        }
-
-        function preparePlacementFields() {
-            const container = document.getElementById('placementContainer');
-            container.innerHTML = '';
-            const batchInputs = document.querySelectorAll('.batch-input');
-            const porterInputs = document.querySelectorAll('[name="batch_porters[]"]');
-
-            batchInputs.forEach((input, idx) => {
-                const qty = input.value;
-                const porter = porterInputs[idx].value || 'Unknown';
-                const div = document.createElement('div');
-                div.className =
-                    'p-4 border border-gray-100 rounded-xl bg-white flex flex-col lg:flex-row gap-4 items-start lg:items-center';
-                div.innerHTML = `
-                    <div class="flex-shrink-0">
-                        <span class="inline-flex items-center px-2 py-1 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-lg">Batch ${idx + 1}</span>
-                        <p class="mt-1 text-sm font-semibold text-gray-800">${porter}</p>
-                        <p class="text-xs text-gray-400">${qty} unit</p>
-                    </div>
-                    <div class="grid flex-1 w-full grid-cols-3 gap-2">
-                        <select onchange="updatePetakOptions(${idx})" id="line_${idx}" required
-                            class="h-10 px-3 text-xs font-medium transition-all border border-gray-200 outline-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
-                            <option value="">Line</option>
-                        </select>
-                        <select onchange="updatePalletOptions(${idx})" id="petak_${idx}" required
-                            class="h-10 px-3 text-xs font-medium transition-all border border-gray-200 outline-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
-                            <option value="">Petak</option>
-                        </select>
-                        <select name="pallet_ids[]" id="pallet_${idx}" required
-                            class="h-10 px-3 text-xs font-medium transition-all border border-gray-200 outline-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
-                            <option value="">Palet</option>
-                        </select>
-                    </div>
-                `;
-                container.appendChild(div);
-
-                const lineSelect = document.getElementById(`line_${idx}`);
-                const uniqueLines = [...new Set(window.currentInventory.map(i => i.line))];
-                uniqueLines.forEach(l => {
-                    lineSelect.innerHTML += `<option value="${l}">Line ${l}</option>`;
-                });
-            });
-        }
-
-        function updatePetakOptions(idx) {
-            const line = document.getElementById(`line_${idx}`).value;
-            const petakSelect = document.getElementById(`petak_${idx}`);
-            const palletSelect = document.getElementById(`pallet_${idx}`);
-
-            petakSelect.innerHTML = '<option value="">Petak</option>';
-            palletSelect.innerHTML = '<option value="">Palet</option>';
-
-            if (!line) return;
-            [...new Set(window.currentInventory.filter(i => i.line === line).map(i => i.petak))]
-            .forEach(p => {
-                petakSelect.innerHTML += `<option value="${p}">Petak ${p}</option>`;
-            });
-        }
-
-        function updatePalletOptions(idx) {
-            const line = document.getElementById(`line_${idx}`).value;
-            const petak = document.getElementById(`petak_${idx}`).value;
-            const palletSelect = document.getElementById(`pallet_${idx}`);
-
-            palletSelect.innerHTML = '<option value="">Palet</option>';
-            if (!petak) return;
-
-            window.currentInventory.filter(i => i.line === line && i.petak === petak)
-                .forEach(p => {
-                    palletSelect.innerHTML += `<option value="${p.pallet}">${p.pallet}</option>`;
-                });
-        }
-
-        function closeWarehouseModal() {
-            if (confirm('Batalkan proses check-in? Data yang diisi akan hilang.')) {
-                const modal = document.getElementById('warehouseModal');
-                modal.classList.replace('flex', 'hidden');
-            }
-        }
-
         function handleManualInput() {
             const input = document.getElementById('manual_booking_input');
-            if (input.value.trim()) {
-                openWarehouseModal(input.value.trim());
-                input.value = '';
-            }
+            const code = input?.value?.trim();
+            if (!code) return;
+            openWarehouseModal(code);
+            input.value = '';
         }
 
         function onScanSuccess(code) {
-            new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play().catch(() => {});
-            openWarehouseModal(code);
+            if (!code) return;
+            openWarehouseModal(String(code).trim());
         }
 
-        let html5QrcodeScanner = new Html5QrcodeScanner('reader', {
-            fps: 10,
-            qrbox: 250
-        });
-        html5QrcodeScanner.render(onScanSuccess);
-    </script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reader = document.getElementById('reader');
+            if (!reader || typeof Html5QrcodeScanner === 'undefined') return;
 
-@endsection
+            const scanner = new Html5QrcodeScanner('reader', {
+                fps: 10,
+                qrbox: { width: 220, height: 220 },
+            }, false);
+            scanner.render(onScanSuccess, () => {});
+        });
+    </script>
+@endpush

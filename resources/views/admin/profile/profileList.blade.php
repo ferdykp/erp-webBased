@@ -17,7 +17,7 @@
                         Manajemen Hak Akses Pengguna
                     </p>
                 </div>
-                @if (in_array(auth()->user()->role, ['superadmin']))
+                @if (in_array(auth('admin')->user()->role, ['superadmin']))
                     <a href="{{ route('admin.profile.create') }}"
                         class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-black text-white transition-all bg-emerald-500 rounded-xl sm:rounded-2xl hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-100">
                         <i class="fa-solid fa-plus"></i>
@@ -40,7 +40,7 @@
                                 <th
                                     class="px-4 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hidden md:table-cell text-center">
                                     Role</th>
-                                @if (in_array(auth()->user()->role, ['superadmin']))
+                                @if (in_array(auth('admin')->user()->role, ['superadmin']))
                                     <th
                                         class="px-4 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center rounded-r-xl">
                                         Action</th>
@@ -89,7 +89,7 @@
                                     </td>
 
                                     {{-- ACTION --}}
-                                    @if (in_array(auth()->user()->role, ['superadmin']))
+                                    @if (in_array(auth('admin')->user()->role, ['superadmin']))
                                         <td class="px-4 py-4 border-r border-y border-slate-50 rounded-r-2xl">
                                             <div class="flex items-center justify-center gap-2">
                                                 <a href="{{ route('admin.profile.edit', $user->id) }}"

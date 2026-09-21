@@ -28,7 +28,7 @@
                     </div>
 
                     {{-- Action Buttons --}}
-                    @if (in_array(auth()->user()->role, ['superadmin', 'manager']))
+                    @if (in_array(auth('admin')->user()->role, ['superadmin', 'manager']))
                         <div class="flex flex-col w-full gap-3 mt-6 sm:mt-0 sm:w-auto sm:flex-row">
                             <a href="{{ route('admin.profile.profileList') }}"
                                 class="flex items-center justify-center px-6 py-3 text-sm font-bold transition-all border text-slate-700 border-slate-100 bg-slate-50 rounded-xl sm:rounded-2xl hover:bg-slate-100 hover:shadow-md">

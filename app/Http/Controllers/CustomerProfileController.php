@@ -9,6 +9,7 @@ use App\Models\Customer;
 // use App\Models\CustomerAddress; // Pastikan Model ini ada
 // use App\Models\CustomerContact; // Pastikan Model ini ada
 // use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -38,6 +39,10 @@ class CustomerProfileController extends Controller
     }
     public function showCompleteProfile()
     {
+        $user = Auth::guard('customer')->user();
+        if ($user?->customer?->profile_completed) {
+            return redirect()->route('customer.dashboard');
+        }
         return view('customer.profile.complete');
     }
 
@@ -105,74 +110,62 @@ class CustomerProfileController extends Controller
      */
     public function completeProfile(Request $request)
     {
-        $request->validate([
-            'company_name'  => 'required|string|max:255',
-            'industry'      => 'required|string',
-            'email'         => 'required|email', // Email Company
-            'address_line'  => 'required|string',
-            'city'          => 'required|string',
-            'pic_name'      => 'required|string|max:255',
-            'pic_email'     => 'required|email',
-            'phone'         => 'required|string',
+        $user = Auth::guard('customer')->user();
+        abort_unless($user, 403);
+
+        $validated = $request->validate([
+            'company_name' => 'required|string|max:255',
+            'industry' => 'required|string|max:255',
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id, 'unique:customers,email,' . ($user->customer?->id ?? 'NULL')],
+            'address_line' => 'required|string|max:1000',
+            'city' => 'required|string|max:255',
+            'postal_code' => 'nullable|string|max:20',
+            'pic_name' => 'required|string|max:255',
+            'pic_email' => 'required|email|max:255',
+            'phone' => 'required|string|max:30',
+            'position' => 'nullable|string|max:255',
+            'npwp' => 'nullable|string|max:100',
         ]);
 
-        try {
-            DB::beginTransaction();
+        DB::transaction(function () use ($user, $validated) {
+            // Registration already creates the customer row. Update it instead of
+            // creating a duplicate profile for the same user.
+            $customer = Customer::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'company_name' => $validated['company_name'],
+                    'email' => $validated['email'],
+                    'industry' => $validated['industry'],
+                    'npwp' => $validated['npwp'] ?? null,
+                    'phone' => $validated['phone'],
+                    'profile_completed' => true,
+                    'status' => 'active',
+                ]
+            );
 
-            $user = Auth::user();
+            $customer->addresses()->updateOrCreate(
+                ['type' => 'office'],
+                [
+                    'address_line' => $validated['address_line'],
+                    'city' => $validated['city'],
+                    'postal_code' => $validated['postal_code'] ?? null,
+                    'country' => 'Indonesia',
+                ]
+            );
 
-            // 1. Simpan ke customers (tambahkan kolom email perusahaan)
-            $customer = Customer::create([
-                'user_id'           => $user->id,
-                'company_name'      => $request->company_name,
-                'email'             => $request->email,
-                'industry'          => $request->industry, // Pastikan ini ada
-                'npwp'              => $request->npwp,     // Pastikan ini ada
-                'phone'             => $request->phone,    // Jika ingin simpan di sini
-                'profile_completed' => true,
-                'status'            => 'active'
-            ]);
+            $customer->contacts()->updateOrCreate(
+                ['is_primary' => true],
+                [
+                    'name' => $validated['pic_name'],
+                    'email' => $validated['pic_email'],
+                    'phone' => $validated['phone'],
+                    'position' => $validated['position'] ?? null,
+                    'is_primary' => true,
+                ]
+            );
+        });
 
-            // 2. Simpan Alamat (dengan kota dan pos)
-            $customer->addresses()->create([
-                'type'         => 'office',
-                'address_line' => $request->address_line,
-                'city'         => $request->city,
-                'postal_code'  => $request->postal_code,
-            ]);
-
-            // 3. Simpan Contact PIC (dengan email spesifik PIC)
-            $customer->contacts()->create([
-                'name'       => $request->pic_name,
-                'email'      => $request->pic_email,
-                'phone'      => $request->phone,
-                'position'   => $request->position,
-                'is_primary' => true
-            ]);
-
-            $user->update(['profile_completed' => true]);
-
-            DB::commit();
-            return redirect()->route('customer.dashboard')->with('success', 'Profil Berhasil Dibuat!');
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
-
-            // Ambil kode error SQL
-            $errorCode = $e->errorInfo[1];
-
-            // Mapping error spesifik
-            $errorMessage = match ($errorCode) {
-                1062 => "Data gagal disimpan: Email Company '{$request->email}' sudah terdaftar di sistem kami.",
-                1452 => "Data gagal disimpan: Relasi user tidak ditemukan. Silakan login ulang.",
-                1364 => "Data gagal disimpan: Ada kolom wajib di database yang belum terisi.",
-                default => "Terjadi kesalahan database: " . $e->getMessage() // Untuk debugging dev
-            };
-
-            return back()->withErrors(['error' => $errorMessage])->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => "Terjadi kesalahan sistem: " . $e->getMessage()])->withInput();
-        }
+        return redirect()->route('customer.dashboard')->with('success', 'Profil berhasil dilengkapi.');
     }
 
     /**
@@ -181,7 +174,7 @@ class CustomerProfileController extends Controller
 
     public function edit()
     {
-        $user = Auth::user();
+        $user = Auth::guard('customer')->user();
         $user->load(['customer.addresses', 'customer.contacts']);
 
         return view('customer.profile.profile_edit', compact('user'));
@@ -189,7 +182,7 @@ class CustomerProfileController extends Controller
 
     public function update(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::guard('customer')->user();
         $customer = $user->customer;
 
         if (!$customer) {
@@ -199,7 +192,7 @@ class CustomerProfileController extends Controller
         // ✅ VALIDASI (SUDAH FIX)
         $request->validate([
             'username'         => 'required|string|max:255',
-            'email'            => 'required|email|unique:users,email,' . $user->id,
+            'email'            => ['required', 'email', 'unique:users,email,' . $user->id, 'unique:customers,email,' . $customer->id],
             'company_name'     => 'required|string|max:255',
             'address_line'     => 'required|string',
             'contact_name'     => 'required|string|max:255', // ✅ ini penting
@@ -225,6 +218,8 @@ class CustomerProfileController extends Controller
                 'company_name' => $request->company_name,
                 'industry'     => $request->industry,
                 'npwp'         => $request->npwp,
+                'email'        => $request->email,
+                'phone'        => $request->contact_phone,
             ]);
 
             // ✅ 3. UPDATE ADDRESS
@@ -262,6 +257,18 @@ class CustomerProfileController extends Controller
                 'error' => 'Gagal menyimpan: ' . $e->getMessage()
             ])->withInput();
         }
+    }
+
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password:customer'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ]);
+
+        Auth::guard('customer')->user()->update(['password' => Hash::make($validated['password'])]);
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 
     public function updateAdmin(Request $request, $id)

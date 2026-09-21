@@ -40,7 +40,7 @@
                                 class="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            @if (in_array(auth()->user()->role, ['superadmin']))
+                            @if (in_array(auth('admin')->user()->role, ['superadmin']))
                                 <button @click="openEdit = true; selectedCustomer = {{ json_encode($customer) }}"
                                     class="p-2.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
                                     <i class="fa-solid fa-pen-to-square"></i>

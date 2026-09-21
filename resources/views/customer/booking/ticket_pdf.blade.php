@@ -1,186 +1,60 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Booking Ticket - {{ $booking->booking_code }}</title>
-    <style>
-        body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            color: #333;
-            line-height: 1.5;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            padding: 30px;
-        }
-
-        .header {
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .header-table {
-            width: 100%;
-        }
-
-        .logo-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            /* Blue 600 */
-        }
-
-        .ticket-label {
-            text-align: right;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: #94a3b8;
-        }
-
-        .booking-id {
-            text-align: right;
-            font-size: 20px;
-            font-weight: bold;
-            color: #1e293b;
-        }
-
-        .main-content {
-            width: 100%;
-            margin-bottom: 40px;
-        }
-
-        .qr-section {
-            width: 30%;
-            text-align: center;
-            vertical-align: top;
-        }
-
-        .info-section {
-            width: 70%;
-            padding-left: 40px;
-            vertical-align: top;
-        }
-
-        .info-item {
-            margin-bottom: 15px;
-        }
-
-        .info-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #64748b;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .info-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #0f172a;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: #f1f5f9;
-            border-radius: 20px;
-            font-size: 11px;
-            color: #475569;
-            text-transform: uppercase;
-        }
-
-        .table-products {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .table-products th {
-            background-color: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 12px;
-            text-align: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #64748b;
-        }
-
-        .table-products td {
-            padding: 12px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 13px;
-        }
-
-        .footer {
-            position: fixed;
-            bottom: 30px;
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            color: #94a3b8;
-        }
-    </style>
+    @php
+        $manifestPath = public_path('build/manifest.json');
+        $manifest = file_exists($manifestPath) ? json_decode(file_get_contents($manifestPath), true) : [];
+        $tailwindAsset = $manifest['resources/css/app.css']['file'] ?? null;
+        $tailwindCss = $tailwindAsset && file_exists(public_path('build/'.$tailwindAsset))
+            ? file_get_contents(public_path('build/'.$tailwindAsset))
+            : '';
+    @endphp
+    <style>{!! $tailwindCss !!}</style>
 </head>
-
-<body>
-
-    <div class="container">
-        {{-- HEADER --}}
-        <div class="header">
-            <table class="header-table">
+<body class="m-0 bg-white p-0 font-sans text-slate-700">
+    <main class="p-8">
+        <header class="mb-8 border-b-2 border-slate-100 pb-5">
+            <table class="w-full border-collapse">
                 <tr>
-                    <td>
-                        <div class="logo-text">BEAM<span style="color: #64748b;">APP</span></div>
-                        <div style="font-size: 10px; color: #64748b;">E-Beam Sterilization Ticket</div>
+                    <td class="align-top">
+                        <div class="text-2xl font-extrabold tracking-tight text-blue-600">BEAM<span class="text-slate-500">APP</span></div>
+                        <div class="mt-1 text-[10px] text-slate-500">E-Beam Sterilization Ticket</div>
                     </td>
-                    <td>
-                        <div class="ticket-label">Booking Confirmation</div>
-                        <div class="booking-id">#{{ $booking->booking_code }}</div>
+                    <td class="align-top text-right">
+                        <div class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Booking Confirmation</div>
+                        <div class="mt-1 text-xl font-extrabold text-slate-800">#{{ $booking->booking_code }}</div>
                     </td>
                 </tr>
             </table>
-        </div>
+        </header>
 
-        {{-- MAIN SECTION: QR & PRIMARY INFO --}}
-        <table class="main-content">
+        <table class="mb-10 w-full border-collapse">
             <tr>
-                <td class="qr-section">
-                    {{-- Kita render sebagai SVG string dan di-encode ke Base64 --}}
+                <td class="w-[30%] align-top text-center">
                     @php
                         $qrcode = QrCode::size(140)->margin(0)->generate($booking->booking_code);
                     @endphp
-                    <img src="data:image/svg+xml;base64,{{ base64_encode($qrcode) }}" width="140" height="140">
-                    <div style="margin-top: 10px; font-size: 9px; color: #94a3b8;">Scan for verification</div>
+                    <img src="data:image/svg+xml;base64,{{ base64_encode($qrcode) }}" width="140" height="140" class="mx-auto">
+                    <div class="mt-2 text-[9px] text-slate-400">Scan for verification</div>
                 </td>
-                <td class="info-section">
-                    <table width="100%">
+                <td class="w-[70%] align-top pl-10">
+                    <table class="w-full border-collapse">
                         <tr>
-                            <td class="info-item">
-                                <div class="info-label">Customer Name</div>
-                                <div class="info-value">{{ auth()->user()->username ?? '-' }}</div>
+                            <td class="pb-4 align-top">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Customer Name</div>
+                                <div class="mt-1 text-sm font-bold text-slate-900">{{ auth('customer')->user()->username ?? auth('customer')->user()->name ?? '-' }}</div>
                             </td>
-                            <td class="info-item">
-                                <div class="info-label">Status</div>
-                                <div class="status-badge">{{ $booking->status }}</div>
+                            <td class="pb-4 align-top">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Status</div>
+                                <div class="mt-1 inline-block rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase text-slate-600">{{ $booking->status }}</div>
                             </td>
                         </tr>
                         <tr>
-                            <td class="info-item" colspan="2">
-                                <div class="info-label">Schedule Slot</div>
-                                @if ($booking->slot)
-                                    <div class="info-value">
-                                        {{ \Carbon\Carbon::parse($booking->slot->date)->format('l, d F Y') }}<br>
-                                        <span style="color: #2563eb;">{{ $booking->slot->start_time }} -
-                                            {{ $booking->slot->end_time }}</span>
-                                    </div>
-                                @else
-                                    <div class="text-gray-400 info-value">-</div>
-                                @endif
+                            <td class="pt-1 align-top" colspan="2">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Booking Created</div>
+                                <div class="mt-1 text-sm font-bold text-slate-900">{{ $booking->created_at->format('l, d F Y · H:i') }}</div>
                             </td>
                         </tr>
                     </table>
@@ -188,48 +62,42 @@
             </tr>
         </table>
 
-        {{-- PRODUCT LIST --}}
-        <div class="info-label" style="margin-bottom: 10px;">Product Details</div>
-        <table class="table-products">
-            <thead>
+        <div class="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Product Details</div>
+        <table class="w-full border-collapse">
+            <thead class="bg-slate-50">
                 <tr>
-                    <th width="10">No</th>
-                    <th>Product Name</th>
-                    <th style="text-align: right;">Quantity</th>
+                    <th class="w-10 border-b border-slate-200 px-3 py-3 text-left text-[11px] font-bold uppercase text-slate-500">No</th>
+                    <th class="border-b border-slate-200 px-3 py-3 text-left text-[11px] font-bold uppercase text-slate-500">Product Name</th>
+                    <th class="border-b border-slate-200 px-3 py-3 text-right text-[11px] font-bold uppercase text-slate-500">Quantity</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($booking->products as $index => $product)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>
-                            <div style="font-weight: bold;">{{ $product->product_name }}</div>
-                            <div style="font-size: 10px; color: #64748b;">Sterilization Service</div>
+                        <td class="border-b border-slate-100 px-3 py-3 text-xs text-slate-600">{{ $index + 1 }}</td>
+                        <td class="border-b border-slate-100 px-3 py-3">
+                            <div class="text-xs font-bold text-slate-800">{{ $product->product_name }}</div>
+                            <div class="mt-0.5 text-[10px] text-slate-500">Sterilization Service</div>
                         </td>
-                        <td style="text-align: right; font-weight: bold;">
-                            {{ $product->quantity }} {{ $product->unit }}
-                        </td>
+                        <td class="border-b border-slate-100 px-3 py-3 text-right text-xs font-bold text-slate-700">{{ $product->quantity }} {{ $product->unit }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
-        {{-- INSTRUCTIONS (Optional but helpful) --}}
-        <div style="margin-top: 50px; background: #f8fafc; padding: 15px; border-radius: 10px;">
-            <div class="info-label">Important Note:</div>
-            <ul style="font-size: 10px; color: #475569; margin-top: 5px; padding-left: 15px;">
-                <li>Harap membawa tiket ini (digital/cetak) saat kedatangan.</li>
-                <li>Pastikan barang sudah dikemas sesuai dengan standar operasional.</li>
-                <li>Datang 15 menit sebelum slot waktu yang dijadwalkan.</li>
+        <section class="mt-12 rounded-xl bg-slate-50 p-4">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Important Note</div>
+            <ul class="mt-2 list-disc space-y-1 pl-4 text-[10px] leading-5 text-slate-600">
+                <li>Harap membawa tiket ini dalam bentuk digital atau cetak saat kedatangan.</li>
+                <li>Pastikan barang sudah dikemas sesuai standar operasional.</li>
+                <li>Koordinasikan waktu kedatangan dengan pihak operasional sebelum pengiriman barang.</li>
             </ul>
-        </div>
+        </section>
 
-        <div class="footer">
-            Generated by BeamApp System • {{ date('d M Y H:i:s') }}<br>
-            Jl. Sterilisasi No. 123, Jakarta, Indonesia
-        </div>
-    </div>
-
+        <footer class="mt-12 border-t border-slate-100 pt-4 text-center text-[10px] leading-5 text-slate-400">
+            Generated by BeamApp System · {{ date('d M Y H:i:s') }}<br>
+            E-Beam Sterilization Operations
+        </footer>
+    </main>
 </body>
-
 </html>

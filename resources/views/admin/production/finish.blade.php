@@ -181,6 +181,7 @@
                                             <button onclick="openFinishDetailModal(this)"
                                                 data-batch-id="{{ $batch->id }}" data-booking-id="{{ $booking->id }}"
                                                 data-payment-status="{{ $booking->payment_status }}"
+                                                data-booking-type="{{ $booking->booking_type }}"
                                                 data-booking-code="{{ $booking->booking_code }}"
                                                 data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                                 data-product-name="{{ $product->product_name ?? '-' }}"
@@ -290,6 +291,7 @@
                                 <button onclick="openFinishDetailModal(this)" data-batch-id="{{ $batch->id }}"
                                     data-booking-id="{{ $booking->id }}"
                                     data-payment-status="{{ $booking->payment_status }}"
+                                                data-booking-type="{{ $booking->booking_type }}"
                                     data-booking-code="{{ $booking->booking_code }}"
                                     data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                     data-product-name="{{ $product->product_name ?? '-' }}"
@@ -880,7 +882,8 @@
             document.getElementById('editFinishedAt').addEventListener('change', calculateAutoMinutes);
 
             // ═══ VALIDASI PAYMENT & LINK DOWNLOAD SERTIFIKAT ═══
-            const isPaid = d.paymentStatus === 'paid';
+            const isTest = d.bookingType === 'test';
+            const isPaid = d.paymentStatus === 'paid' || isTest;
             const printBtn = document.getElementById('printCertificateBtn');
             const unpaidAlert = document.getElementById('unpaidAlert');
             const paymentCont = document.getElementById('paymentStatusContainer');
@@ -897,7 +900,7 @@
                 paymentSelectWrapper.classList.add('hidden');
                 paymentText.classList.remove('hidden');
 
-                paymentText.textContent = 'PAID & VERIFIED';
+                paymentText.textContent = isTest ? 'PRODUCT TEST · PAYMENT EXEMPT' : 'PAID & VERIFIED';
                 paymentText.className = 'text-sm font-bold text-emerald-600 mt-0.5';
                 paymentCont.className = 'p-5 border border-emerald-100 rounded-xl bg-emerald-50/40 transition-all';
                 paymentIcon.className =

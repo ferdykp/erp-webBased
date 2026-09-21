@@ -376,7 +376,7 @@
                                 </label>
                             </div>
 
-                            <div x-show="hasDamage === 'yes'" x-collapse
+                            <div x-show="hasDamage === 'yes'" x-transition.opacity.duration.150ms
                                 class="grid grid-cols-4 gap-3 pt-5 mt-5 border-t border-slate-200">
                                 <div class="col-span-1">
                                     <label class="block mb-1.5 text-[9px] font-black uppercase text-red-500">Qty</label>

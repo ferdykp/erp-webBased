@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Models\BookingSlot;
 use App\Models\BookingProduct;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 
 
@@ -18,84 +18,97 @@ class CustomerBookingController extends Controller
 
     public function index()
     {
-        $data = Booking::with(['products'])
-            ->where('customer_id', auth('customer')->id())
+        $user = Auth::guard('customer')->user();
+        abort_unless($user && $user->customer, 403);
+
+        $data = Booking::with('products')
+            ->where('customer_id', $user->customer->id)
             ->latest()
             ->paginate(10);
 
-        return view('customer.dashboard', compact('data'));
+        return view('customer.dashboard.index', compact('data'));
     }
 
-    public function create(BookingSlot $slot)
+    public function create()
     {
+        $user = Auth::guard('customer')->user();
+        if (!$user?->customer || !$user->customer->profile_completed) {
+            return redirect()->route('customer.profile.complete')
+                ->withErrors(['error' => 'Lengkapi profile customer sebelum membuat booking.']);
+        }
+
         return view('customer.booking.create');
     }
     public function store(Request $request)
     {
-        $today = now();
-        $prefix = $today->format('ymd');
+        $user = Auth::guard('customer')->user();
+        if (!$user?->customer || !$user->customer->profile_completed) {
+            return redirect()->route('customer.profile.complete')
+                ->withErrors(['error' => 'Lengkapi profile customer sebelum membuat booking.']);
+        }
 
-        // $countThisMonth = Booking::whereYear('created_at', $today->year)
-        //     ->whereMonth('created_at', $today->month)
-        //     ->count();
-        $countToday = Booking::whereDate('created_at', $today->toDateString())
-            ->count();
-
-        $sequence = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
-
-        $bookingCode = $prefix . $sequence;
-        $request->validate([
-            // 'customer_id'    => 'required|exists:customers,id',
-            'product_name'   => 'required|string',
-            'quantity'       => 'required|numeric',
-            'dimension_pack' => 'required|string',
-            'vol_total'      => 'required|numeric',
-            'payment_status' => 'required|in:paid,unpaid',
-            // 'total_price'    => $request->total_price ?? 0,
-            'total_price'    => 'nullable|numeric',
+        $validated = $request->validate([
+            'product_name' => 'required|string|max:255',
+            'product_type' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'unit' => 'required|string|max:50',
+            'dmin' => 'required|numeric|min:0',
+            'dmax' => 'nullable|numeric|gte:dmin',
+            'dim_length' => 'required|numeric|min:0.001',
+            'dim_width' => 'required|numeric|min:0.001',
+            'dim_height' => 'required|numeric|min:0.001',
+            'net_weight_pcs' => 'nullable|numeric|min:0',
+            'gross_weight_per_pcs' => 'required|numeric|min:0',
+            'expect_temp' => 'nullable|string|max:100',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $quantity = (int) $validated['quantity'];
+        $volumePerPcs = (float) $validated['dim_length'] * (float) $validated['dim_width'] * (float) $validated['dim_height'];
+        $volumeTotal = $volumePerPcs * $quantity;
+        $netPerPcs = (float) ($validated['net_weight_pcs'] ?? 0);
+        $grossPerPcs = (float) $validated['gross_weight_per_pcs'];
+        $totalNet = $netPerPcs * $quantity;
+        $totalGross = $grossPerPcs * $quantity;
+        $dimension = rtrim(rtrim((string) $validated['dim_length'], '0'), '.') . 'x' .
+            rtrim(rtrim((string) $validated['dim_width'], '0'), '.') . 'x' .
+            rtrim(rtrim((string) $validated['dim_height'], '0'), '.');
 
+        $booking = DB::transaction(function () use ($user, $validated, $quantity, $volumePerPcs, $volumeTotal, $netPerPcs, $grossPerPcs, $totalNet, $totalGross, $dimension) {
             $booking = Booking::create([
-                'user_id'        => auth()->id(),
-                // 'customer_id'  => $request->customer_id,
-                'customer_id' => auth()->user()->customer->id,
-                'booking_code'   => $bookingCode,
-                'status'       => 'pending',
-                'payment_status' => $request->payment_status,
-                'qr_token' => \Str::uuid(),
-                'total_price'    => $request->total_price ?? 0,
+                'user_id' => $user->id,
+                'customer_id' => $user->customer->id,
+                'booking_code' => $this->nextBookingCode(),
+                'booking_type' => 'regular',
+                'status' => 'pending',
+                'payment_status' => 'unpaid',
+                'qr_token' => Str::uuid(),
+                'total_price' => 0,
             ]);
 
-            // 3. Create Booking Product (Data Aktual)
             BookingProduct::create([
-                'booking_id'           => $booking->id,
-                'product_name'         => $request->product_name,
-                'product_type'         => $request->product_type,
-                'quantity'             => $request->quantity,
-                'unit'                 => $request->unit,
-                'dmin'                 => $request->dmin,
-                'dmax'                 => $request->dmax,
-                'dimension_pack'       => $request->dimension_pack,
-                'vol_per_pcs'          => $request->vol_per_pcs,
-                'vol_total'            => $request->vol_total,
-                'net_weight_pcs'       => $request->net_weight_pcs,
-                'total_net_weight'     => $request->total_net_weight,
-                'gross_weight_per_pcs' => $request->gross_weight_per_pcs,
-                'total_gross_weight'   => $request->total_gross_weight,
-                'expect_temp'          => $request->expect_temp,
-                'density_gross'        => $request->density_gross,
-                'density_nett'         => $request->density_nett,
+                'booking_id' => $booking->id,
+                'product_name' => $validated['product_name'],
+                'product_type' => $validated['product_type'],
+                'quantity' => $quantity,
+                'unit' => $validated['unit'],
+                'dmin' => $validated['dmin'],
+                'dmax' => $validated['dmax'] ?? null,
+                'dimension_pack' => $dimension,
+                'vol_per_pcs' => $volumePerPcs,
+                'vol_total' => $volumeTotal,
+                'net_weight_pcs' => $netPerPcs,
+                'total_net_weight' => $totalNet,
+                'gross_weight_per_pcs' => $grossPerPcs,
+                'total_gross_weight' => $totalGross,
+                'expect_temp' => $validated['expect_temp'] ?? null,
+                'density_gross' => $volumeTotal > 0 ? $totalGross / $volumeTotal : 0,
+                'density_nett' => $volumeTotal > 0 ? $totalNet / $volumeTotal : 0,
             ]);
 
-            DB::commit();
-            return redirect()->route('customer.dashboard')->with('success', 'Order #' . $booking->booking_code . ' berhasil dibuat.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+            return $booking;
+        });
+
+        return redirect()->route('customer.dashboard')->with('success', 'Order #' . $booking->booking_code . ' berhasil dibuat.');
     }
 
 
@@ -157,7 +170,9 @@ class CustomerBookingController extends Controller
 
     public function show($id)
     {
-        $booking = Booking::with(['products'])
+        $user = Auth::guard('customer')->user();
+        $booking = Booking::with('products')
+            ->where('customer_id', $user->customer->id)
             ->findOrFail($id);
 
         return view('customer.booking.booking_detail', compact('booking'));
@@ -165,18 +180,33 @@ class CustomerBookingController extends Controller
 
     public function print($id)
     {
-        $booking = Booking::with(['products'])
+        $user = Auth::guard('customer')->user();
+        $booking = Booking::with('products')
+            ->where('customer_id', $user->customer->id)
             ->findOrFail($id);
 
         $pdf = Pdf::loadView('customer.booking.ticket_pdf', compact('booking'));
-
-        return $pdf->stream('ticket-' . $booking->ticket_code . '.pdf');
+        return $pdf->stream('ticket-' . $booking->booking_code . '.pdf');
     }
 
     public function destroy(int $id)
     {
-        Booking::findOrFail($id)->delete();
+        $user = Auth::guard('customer')->user();
+        $booking = Booking::where('customer_id', $user->customer->id)->findOrFail($id);
+        abort_if(!in_array($booking->status, ['pending', 'cancelled'], true), 403);
+        $booking->delete();
 
-        return redirect('customer.index');
+        return redirect()->route('customer.dashboard')->with('success', 'Booking deleted.');
     }
+
+    private function nextBookingCode(): string
+    {
+        $prefix = now()->format('ymd');
+        $lastCode = Booking::where('booking_code', 'like', $prefix . '%')
+            ->orderByDesc('booking_code')
+            ->value('booking_code');
+        $lastSequence = $lastCode ? (int) substr($lastCode, strlen($prefix)) : 0;
+        return $prefix . str_pad($lastSequence + 1, 3, '0', STR_PAD_LEFT);
+    }
+
 }

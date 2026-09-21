@@ -38,7 +38,7 @@
         </div>
 
         {{-- ═══ COLLAPSIBLE CONFIGURATION SUITE ═══ --}}
-        <div x-show="showConfig" x-cloak x-collapse
+        <div x-show="showConfig" x-transition.opacity.duration.150ms
             class="grid grid-cols-1 gap-6 p-6 border bg-slate-50/50 border-slate-200/60 rounded-2xl md:grid-cols-3">
             {{-- Form 1: Add/Modify Single Line --}}
             <div class="p-4 bg-white border shadow-sm border-slate-100 rounded-xl">

@@ -26,7 +26,7 @@
                     <i
                         class="absolute transition-colors -translate-y-1/2 fa-solid fa-magnifying-glass left-5 top-1/2 text-slate-400 group-focus-within:text-blue-500"></i>
                 </div>
-                @if (in_array(auth()->user()->role, ['superadmin']))
+                @if (in_array(auth('admin')->user()->role, ['superadmin']))
                     <button @click="openCreate = true"
                         class="flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white transition-all bg-blue-600 shadow-lg rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">
                         <i class="fa-solid fa-plus"></i>
@@ -64,7 +64,7 @@
                 prevStep() { if (this.step > 1) this.step-- }
             }"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
-            x-cloak>
+           >
 
             <div @click.away="openCreate = false; step = 1" x-show="openCreate"
                 x-transition:enter="transition ease-out duration-300 delay-100"
@@ -77,7 +77,7 @@
                     <div class="relative flex items-center justify-between max-w-md mx-auto">
                         <div class="absolute top-5 left-0 w-full h-[2px] bg-slate-200 -z-0">
                             <div class="h-full transition-all duration-700 bg-blue-500"
-                                :style="`width: ${step === 1 ? '0%' : '100%'}`"></div>
+                                :class="step === 1 ? 'w-0' : 'w-full'"></div>
                         </div>
 
                         <div class="relative z-10 flex flex-col items-center">
@@ -195,7 +195,7 @@
         <div x-show="openProfile" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
-            x-cloak>
+           >
 
             <div @click.away="openProfile = false" x-show="openProfile"
                 x-transition:enter="transition ease-out duration-300 transform"
@@ -381,7 +381,7 @@
                 prevStep() { if (this.editStep > 1) this.editStep-- }
             }"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
-            x-cloak>
+           >
 
             <div @click.away="openEdit = false; editStep = 1" x-show="openEdit"
                 x-transition:enter="transition ease-out duration-300 delay-100"
@@ -394,7 +394,7 @@
                     <div class="relative flex items-center justify-between max-w-md mx-auto">
                         <div class="absolute top-5 left-0 w-full h-[2px] bg-slate-200 -z-0">
                             <div class="h-full transition-all duration-700 bg-blue-500"
-                                :style="`width: ${editStep === 1 ? '0%' : '100%'}`"></div>
+                                :class="editStep === 1 ? 'w-0' : 'w-full'"></div>
                         </div>
 
                         <div class="relative z-10 flex flex-col items-center">
@@ -523,7 +523,7 @@
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+            class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
 
             <div @click.away="openDelete = false" x-show="openDelete"
                 x-transition:enter="transition ease-out duration-300 transform"

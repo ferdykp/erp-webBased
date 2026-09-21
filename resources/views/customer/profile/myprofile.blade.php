@@ -12,8 +12,8 @@
                             <div
                                 class="w-full h-full bg-blue-100 rounded-[1.5rem] flex items-center justify-center text-4xl font-black text-blue-600">
                                 {{-- Perbaikan: Hapus ('customer') dan gunakan null-safe operator --}}
-                                {{ substr(auth()->user()->username ?? 'U', 0, 1) }}
-                                {{-- {{ auth()->user()->username ?? '-' }} --}}
+                                {{ substr(auth('customer')->user()->username ?? 'U', 0, 1) }}
+                                {{-- {{ auth('customer')->user()->username ?? '-' }} --}}
                             </div>
                         </div>
                         <div class="absolute w-6 h-6 bg-green-500 border-4 border-white rounded-full bottom-2 right-2"></div>
@@ -26,9 +26,9 @@
 
                 <div>
                     {{-- Perbaikan: Hapus ('customer') --}}
-                    <h2 class="text-3xl font-black tracking-tight text-gray-900">{{ auth()->user()->username ?? '-' }}</h2>
+                    <h2 class="text-3xl font-black tracking-tight text-gray-900">{{ auth('customer')->user()->username ?? '-' }}</h2>
                     <p class="italic font-medium text-gray-400">Customer ID:
-                        #{{ str_pad(auth()->id(), 5, '0', STR_PAD_LEFT) }}</p>
+                        #{{ str_pad(auth('customer')->id(), 5, '0', STR_PAD_LEFT) }}</p>
                 </div>
             </div>
         </div>
@@ -43,12 +43,12 @@
                     <div>
                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</label>
                         {{-- Perbaikan: Hapus ('customer') --}}
-                        <p class="mt-1 font-bold text-gray-800">{{ auth()->user()->email ?? '-' }}</p>
+                        <p class="mt-1 font-bold text-gray-800">{{ auth('customer')->user()->email ?? '-' }}</p>
                     </div>
                     <div>
                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</label>
                         {{-- Perbaikan: Hapus ('customer') --}}
-                        <p class="mt-1 font-bold text-gray-800">{{ auth()->user()->phone ?? '+62 812-3456-7890' }}
+                        <p class="mt-1 font-bold text-gray-800">{{ auth('customer')->user()->phone ?? '+62 812-3456-7890' }}
                         </p>
                     </div>
                 </div>

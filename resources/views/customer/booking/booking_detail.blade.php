@@ -37,14 +37,6 @@
             class="flex flex-col flex-1 overflow-hidden">
             @csrf
 
-            {{-- <form
-            action="{{ isset($booking) ? route('admin.bookings.update', $booking->id) : route('admin.bookings.store') }}"
-            method="POST" id="finalForm" class="flex flex-col flex-1 overflow-hidden">
-            @csrf
-            @if (isset($booking))
-                @method('PUT')
-                <input type="hidden" name="status" value="{{ $booking->status }}">
-            @endif --}}
             <input type="hidden" name="customer_id" id="final_customer_id">
             <input type="hidden" name="product_name" id="final_product_name">
             <input type="hidden" name="product_type" id="final_product_type">

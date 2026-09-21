@@ -42,18 +42,24 @@ return [
     //     ],
     // ],
     'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
 
         'admin' => [
             'driver' => 'session',
             'provider' => 'admins',
         ],
 
+        // Dedicated customer guard. Customer credentials live in the users table,
+        // but this guard has a separate session key from the staff/admin guard.
         'customer' => [
             'driver' => 'session',
-            'provider' => 'customers',
+            'provider' => 'users',
         ],
-
     ],
+
 
 
     /*
@@ -85,18 +91,17 @@ return [
     // ],
     // ],
     'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\User::class,
+        ],
 
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
-
-        'customers' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Customer::class,
-        ],
-
     ],
+
 
 
     /*

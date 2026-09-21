@@ -10,10 +10,12 @@ class Booking extends Model
 {
     protected $fillable = [
         'booking_code',
+        'booking_type',
         'customer_id',
         'user_id',
         'arrival_time',
         'pic_warehouse',
+        'porter_name',
         'status',
         'qr_token',
         'payment_status',

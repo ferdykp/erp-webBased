@@ -75,7 +75,7 @@ class UserAdminController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'current_password' => ['required', 'current_password'],
+            'current_password' => ['required', 'current_password:admin'],
             'password'         => ['required', 'confirmed', Password::defaults()],
         ]);
 

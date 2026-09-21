@@ -72,7 +72,7 @@ class UserCustomController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'current_password' => ['required', 'current_password'],
+            'current_password' => ['required', 'current_password:customer'],
             'password'         => ['required', 'confirmed', Password::defaults()],
         ]);
 
@@ -88,15 +88,18 @@ class UserCustomController extends Controller
     public function history()
     {
         // Ambil user yang sedang login menggunakan auth standar
-        $user = auth()->user();
+        $user = auth('customer')->user();
 
         // Pastikan user tidak null sebelum mengambil ID
         if (!$user) {
             return redirect()->route('customer.login');
         }
 
-        $history = \App\Models\Booking::where('customer_id', $user->id)
-            ->orWhere('user_id', $user->id)
+        if (!$user->customer) {
+            return redirect()->route('customer.profile.complete');
+        }
+
+        $history = \App\Models\Booking::where('customer_id', $user->customer->id)
             ->with(['products'])
             ->latest()
             ->paginate(10);
