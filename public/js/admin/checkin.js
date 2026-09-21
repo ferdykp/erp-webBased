@@ -160,10 +160,10 @@ function openWarehouseModal(code) {
     document.getElementById("modal_booking_code").value = code;
 
     document.getElementById("porterContainer").innerHTML = `
-<select name="porters[]"
-class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
-${generatePorterOptions()}
-</select>
+    <select name="porter"
+        class="w-full px-6 py-4 font-bold border-none bg-slate-50 rounded-2xl">
+        ${generatePorterOptions()}
+    </select>
 `;
     // Reset Flow Modal
     currentStep = 1;
@@ -299,9 +299,7 @@ function validateCurrentStep() {
             return false;
         }
 
-        const porter = document.querySelector(
-            '#porterContainer select[name="porters[]"]',
-        );
+        const porter = document.querySelector('[name="porter"]');
 
         if (!porter || !porter.value.trim()) {
             alert("Please choose a Porter Team!");

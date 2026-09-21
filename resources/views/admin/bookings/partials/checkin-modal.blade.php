@@ -192,7 +192,7 @@
                             <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Porter
                                 Team</label>
                             <div id="porterContainer" class="space-y-2">
-                                <select name="porters[]"
+                                <select name="porter"
                                     class="w-full px-5 py-3.5 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                                     <option value="">Choose Porter</option>
                                     @foreach ($porters as $p)
