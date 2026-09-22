@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
-    <div class="max-w-5xl px-4 py-8 mx-auto bg-white shadow-lg sm:px-6 rounded-xl">
+    <div class="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white px-4 py-6 shadow-sm sm:px-6 sm:py-8 lg:px-8 3xl:max-w-[1600px]">
         <form action="{{ route('customer.profile.update') }}" method="POST">
             @csrf
             @method('PUT')
@@ -51,7 +51,7 @@
                         <div class="grid grid-cols-1 gap-4">
                             <div class="space-y-1">
                                 <label class="text-[11px] font-bold text-gray-400 uppercase">Nama & Jabatan</label>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                                     <input type="text" name="contact_name" placeholder="Nama"
                                         value="{{ old('contact_name', $user->customer->contacts->where('is_primary', true)->first()->name ?? '') }}"
                                         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-500">
@@ -62,7 +62,7 @@
                             </div>
                             <div class="space-y-1">
                                 <label class="text-[11px] font-bold text-gray-400 uppercase">Telepon / WA</label>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                                     <input type="text" name="contact_phone" placeholder="Telepon"
                                         value="{{ old('contact_phone', $user->customer->contacts->where('is_primary', true)->first()->phone ?? '') }}"
                                         class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-500">

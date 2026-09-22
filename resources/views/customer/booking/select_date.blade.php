@@ -47,7 +47,7 @@
             <div class="p-8">
 
                 @if ($dates->count() > 0)
-                    <div class="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
+                    <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-4 md:gap-6 xl:grid-cols-5">
 
                         @foreach ($dates as $item)
                             <a href="{{ route('customer.booking.session', $item->date) }}"

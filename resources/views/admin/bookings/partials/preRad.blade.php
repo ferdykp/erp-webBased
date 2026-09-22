@@ -58,7 +58,7 @@
                     <div class="p-5 border border-slate-100 rounded-[2rem] bg-slate-50/50">
                         <p class="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest">Product Summary
                         </p>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                             <div class="p-4 bg-white border shadow-sm rounded-2xl border-slate-100">
                                 <p class="text-[8px] font-black text-slate-400 uppercase">Total Pallets</p>
                                 <p id="qcPalletCount" class="text-lg font-black text-slate-800">0</p>

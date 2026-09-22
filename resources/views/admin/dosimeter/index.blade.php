@@ -3,7 +3,7 @@
 @section('title', 'Dosimeter Queue List')
 
 @section('content')
-    <div class="max-w-6xl p-6 mx-auto bg-white border shadow-md rounded-xl md:p-8 border-gray-150">
+    <div class="mx-auto w-full max-w-none rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 md:p-8 2xl:p-10">
 
         {{-- Header & Search Section --}}
         <div class="flex flex-col gap-4 pb-4 mb-6 border-b border-gray-200 md:flex-row md:items-center md:justify-between">

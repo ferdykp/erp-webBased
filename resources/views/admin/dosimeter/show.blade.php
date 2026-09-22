@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="mx-auto w-full max-w-none space-y-6">
 
         {{-- Breadcrumb & Back Button --}}
         <div class="flex items-center justify-between">
@@ -113,7 +113,7 @@
                     @csrf
 
                     {{-- Grid Input Tablet --}}
-                    <div id="dynamic-inputs-container" class="grid grid-cols-2 gap-5 mb-8 lg:grid-cols-3">
+                    <div id="dynamic-inputs-container" class="mb-8 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 2xl:gap-5">
                         @if ($record)
                             @foreach ($record->details as $detail)
                                 <div

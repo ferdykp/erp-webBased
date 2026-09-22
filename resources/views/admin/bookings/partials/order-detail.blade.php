@@ -84,7 +84,7 @@
                     <div class="p-6 md:p-8 bg-blue-50/40 border border-blue-100 rounded-[2.5rem]">
                         <h4 class="mb-6 text-sm font-black tracking-widest uppercase text-slate-800">Data
                         </h4>
-                        <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
+                        <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-4 md:gap-6">
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Product</p>
                                 <p id="check_product_name" class="font-bold text-slate-800">-</p>
@@ -106,7 +106,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:gap-6">
                         <div class="space-y-1">
                             <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Volume/Pcs
                                 (cm³)</label>

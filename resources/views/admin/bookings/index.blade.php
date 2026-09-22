@@ -197,7 +197,7 @@
                             <x-status-badge :status="$booking->status" />
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 py-3 border-y border-slate-50">
+                        <div class="grid grid-cols-1 gap-4 py-3 min-[420px]:grid-cols-2 border-y border-slate-50">
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Date</p>
                                 <p class="text-xs font-bold text-slate-700">{{ $booking->created_at->format('d M Y') }}

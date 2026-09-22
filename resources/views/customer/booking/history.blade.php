@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
-    <div class="max-w-6xl mx-auto space-y-6">
+    <div class="mx-auto w-full max-w-none space-y-6">
 
         {{-- HEADER SECTION --}}
         <div class="flex flex-col justify-between gap-4 px-4 md:flex-row md:items-center">

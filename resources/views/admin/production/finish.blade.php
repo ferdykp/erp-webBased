@@ -412,7 +412,7 @@
 
                             {{-- Info Grid Statis --}}
                             <div
-                                class="grid grid-cols-2 gap-4 p-5 border border-gray-100 sm:grid-cols-4 bg-gray-50 rounded-xl">
+                                class="grid grid-cols-1 gap-4 p-5 border border-gray-100 min-[420px]:grid-cols-2 sm:grid-cols-4 bg-gray-50 rounded-xl">
                                 <div>
                                     <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
                                         Customer</p>

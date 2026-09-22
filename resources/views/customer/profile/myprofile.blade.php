@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="mx-auto w-full max-w-7xl space-y-6 3xl:max-w-[1600px]">
         {{-- HEADER PROFILE --}}
         <div class="bg-white border border-gray-100 shadow-sm rounded-[2.5rem] overflow-hidden">
             <div class="h-32 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
@@ -34,7 +34,7 @@
         </div>
 
         {{-- ACCOUNT DETAILS --}}
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-6">
             <div class="bg-white p-8 border border-gray-100 shadow-sm rounded-[2rem] space-y-6">
                 <h3 class="flex items-center gap-2 text-lg font-black text-gray-900">
                     <i class="text-blue-600 fa-solid fa-user"></i> Informasi Pribadi

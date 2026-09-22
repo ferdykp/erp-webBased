@@ -1,4 +1,4 @@
-<nav class="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-xl print:hidden sm:px-6 lg:px-8">
+<nav class="sticky top-0 z-30 flex h-[68px] items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-3 backdrop-blur-xl print:hidden sm:h-[72px] sm:px-5 md:px-6 lg:h-[76px] lg:px-8 xl:px-10 2xl:h-[80px] 2xl:px-12 3xl:px-14 4xl:px-16">
     <div class="flex min-w-0 items-center gap-3">
         <button @click="sidebarOpen = true"
             class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm text-slate-600 transition-colors hover:bg-slate-50 lg:hidden">

@@ -2,7 +2,7 @@
 @section('title', 'Onboard Warehouse PIC')
 
 @section('content')
-    <div class="max-w-xl pb-20 mx-auto space-y-6">
+    <div class="mx-auto w-full max-w-3xl space-y-6 pb-16 2xl:max-w-4xl">
 
         {{-- BACK LINK & HEADER --}}
         <div>

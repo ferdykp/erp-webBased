@@ -48,7 +48,7 @@
         </form>
     </section>
 
-    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-5">
         @forelse ($tests as $test)
             @php
                 $isComplete = $test->status === 'completed';
@@ -70,7 +70,7 @@
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><i class="fa-solid fa-flask"></i></div>
                 </div>
 
-                <div class="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200">
+                <div class="mt-5 grid grid-cols-1 gap-px overflow-hidden min-[420px]:grid-cols-2 rounded-xl border border-slate-200 bg-slate-200">
                     <div class="min-w-0 bg-slate-50 p-3"><span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">Quantity</span><b class="mt-1 block truncate text-xs font-semibold text-slate-700">{{ $test->quantity !== null ? rtrim(rtrim(number_format((float)$test->quantity, 3, '.', ''), '0'), '.') . ' ' . ($test->unit ?: '') : 'Not specified' }}</b></div>
                     <div class="min-w-0 bg-slate-50 p-3"><span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">Reference Dose</span><b class="mt-1 block truncate text-xs font-semibold text-slate-700">{{ $test->dmin !== null ? $test->dmin : '-' }}{{ $test->dmax !== null ? ' – '.$test->dmax : '' }}{{ $test->dmin !== null || $test->dmax !== null ? ' kGy' : '' }}</b></div>
                     <div class="min-w-0 bg-slate-50 p-3"><span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">Production Unit</span><b class="mt-1 block truncate text-xs font-semibold text-slate-700">{{ $test->productionLine?->name ?: 'Not set' }}</b></div>

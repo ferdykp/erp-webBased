@@ -1,6 +1,6 @@
 <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-    class="fixed inset-y-0 left-0 z-50 flex w-[min(270px,calc(100vw-24px))] flex-col border-r border-slate-200 bg-white shadow-2xl shadow-slate-900/10 transition-transform duration-300 print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[270px] lg:shrink-0 lg:shadow-none">
-    <div class="flex h-[76px] items-center justify-between border-b border-slate-200 px-5">
+    class="fixed inset-y-0 left-0 z-50 flex w-[min(288px,calc(100vw-16px))] flex-col border-r border-slate-200 bg-white shadow-2xl shadow-slate-900/10 transition-transform duration-300 print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[268px] lg:shrink-0 lg:shadow-none xl:w-[276px] 2xl:w-[288px] 3xl:w-[300px]">
+    <div class="flex h-[68px] items-center justify-between border-b border-slate-200 px-4 sm:h-[72px] sm:px-5 lg:h-[76px] 2xl:h-[80px] 2xl:px-6">
         <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-3">
             <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white"><i class="fa-solid fa-bolt"></i></div>
             <div><p class="text-[15px] font-extrabold tracking-tight text-slate-900">BeamApp</p><p class="mt-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">Customer Portal</p></div>

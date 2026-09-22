@@ -34,7 +34,7 @@
                 class="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[400px] h-[400px] bg-indigo-100/30 rounded-full blur-[80px] -z-10">
             </div>
 
-            <div class="grid items-center gap-16 mx-auto max-w-7xl lg:grid-cols-2">
+            <div class="grid items-center gap-16 mx-auto max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1680px] lg:grid-cols-2">
                 <div class="order-2 lg:order-1">
                     <div
                         class="inline-flex items-center gap-2 px-4 py-2 mb-8 text-[11px] font-black tracking-[0.2em] text-blue-600 uppercase bg-blue-50 rounded-full">
@@ -126,7 +126,7 @@
             </div>
         </main>
         <section class="px-6 py-24 bg-white md:px-12">
-            <div class="mx-auto max-w-7xl">
+            <div class="mx-auto max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1680px]">
                 <div class="max-w-3xl mb-16">
                     <h2 class="mb-6 text-4xl font-black text-slate-900">
                         Integrated Booking & Monitoring Platform
@@ -169,7 +169,7 @@
             </div>
         </section>
         <section class="px-6 py-24 bg-slate-50 md:px-12">
-            <div class="mx-auto text-center max-w-7xl">
+            <div class="mx-auto text-center max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1680px]">
                 <h2 class="mb-16 text-4xl font-black text-slate-900">
                     How The System Works
                 </h2>
@@ -214,7 +214,7 @@
             </div>
         </section>
         <section class="px-6 py-24 bg-white md:px-12">
-            <div class="grid items-center gap-16 mx-auto max-w-7xl lg:grid-cols-2">
+            <div class="grid items-center gap-16 mx-auto max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1680px] lg:grid-cols-2">
 
                 <div>
                     <h2 class="mb-8 text-4xl font-black text-slate-900">
@@ -240,7 +240,7 @@
             </div>
         </section>
         <section class="px-6 py-20 text-white bg-gradient-to-r from-blue-600 to-indigo-600 md:px-12">
-            <div class="mx-auto text-center max-w-7xl">
+            <div class="mx-auto text-center max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1680px]">
                 <h2 class="mb-6 text-4xl font-black">
                     Optimize Irradiation Operations Through Integrated Digital Control </h2>
                 <a href="{{ route('customer.login') }}"
@@ -251,7 +251,7 @@
 
         <footer class="px-6 py-10 bg-white border-t md:px-12 border-slate-100">
             <div
-                class="flex flex-col items-center justify-between gap-8 mx-auto text-center max-w-7xl md:flex-row md:text-left">
+                class="flex flex-col items-center justify-between gap-8 mx-auto text-center max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1680px] md:flex-row md:text-left">
                 <div class="flex flex-col gap-2">
                     <span class="text-sm font-black tracking-tighter uppercase text-slate-800">NUCTECH IRRADIATION</span>
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">© {{ date('Y') }}

@@ -157,7 +157,7 @@
                     <div class="p-6 space-y-4 border border-blue-50 bg-blue-50/30 rounded-3xl">
                         <h3 class="text-[11px] font-black text-blue-600 uppercase tracking-widest ml-1">Live Calculation
                             Results</h3>
-                        <div class="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-6">
+                        <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-3 md:gap-6 xl:grid-cols-6">
                             <div class="space-y-1">
                                 <span class="text-[9px] font-bold text-gray-400 uppercase">Vol/Pcs (cm³)</span>
                                 <p id="res_vol_pcs" class="text-lg font-black text-gray-800">0</p>

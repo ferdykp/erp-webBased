@@ -84,7 +84,7 @@
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
                                 <div>
                                     <p class="text-[9px] font-black text-slate-400 uppercase">Product</p>
                                     <p class="text-xs font-bold truncate text-slate-700">{{ $product->product_name ?? '-' }}
@@ -334,7 +334,7 @@
                                 class="w-full px-5 py-4 text-2xl font-black text-center transition-all bg-white border-2 outline-none border-emerald-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-emerald-700">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
                             <div class="space-y-1.5">
                                 <label class="block px-1 text-[10px] font-black uppercase text-slate-400">Visual
                                     Check</label>

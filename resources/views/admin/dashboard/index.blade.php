@@ -97,7 +97,7 @@
         ];
     @endphp
 
-    <div class="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-3 lg:grid-cols-5">
+    <div class="mb-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5 2xl:gap-5">
         @foreach ($stats as $stat)
             <div
                 class="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
@@ -226,7 +226,7 @@
     </div>
 
     {{-- ═══ SCANNER + RECENT ARRIVALS ═══ --}}
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6 2xl:grid-cols-4 3xl:gap-8">
 
         {{-- QR Scanner --}}
         <div class="lg:col-span-1">
@@ -270,7 +270,7 @@
         </div>
 
         {{-- Recent Arrivals --}}
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 2xl:col-span-3">
             <div class="flex flex-col h-full bg-white border border-gray-100 shadow-sm rounded-2xl">
                 <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                     <div>

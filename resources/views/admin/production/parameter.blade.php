@@ -99,7 +99,7 @@
                                 <span
                                     class="px-2 py-1 text-[9px] font-black bg-white border border-slate-200 rounded-lg text-slate-500 uppercase">{{ $booking->status }}</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                                 <div>
                                     <p class="text-[9px] font-black text-slate-400 uppercase">Product</p>
                                     <p class="text-xs font-bold truncate text-slate-700">{{ $product->product_name ?? '-' }}
@@ -251,7 +251,7 @@
                 </div>
 
                 {{-- Summary --}}
-                <div class="grid grid-cols-2 gap-4 p-5 border border-slate-100 rounded-2xl bg-slate-50/60 md:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-5 min-[420px]:grid-cols-2 md:grid-cols-3">
                     <div class="col-span-2 md:col-span-1">
                         <p class="text-[9px] font-black text-slate-400 uppercase">Booking</p>
                         <p id="processBookingCode" class="text-xs font-black text-slate-800">#-</p>

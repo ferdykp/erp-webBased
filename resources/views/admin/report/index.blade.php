@@ -9,7 +9,7 @@
         $canJts = in_array($adminRole, ['superadmin', 'manager', 'cargo_admin']);
     @endphp
 
-    <div class="mx-auto w-full max-w-[1600px] space-y-6 pb-10 sm:space-y-8">
+    <div class="mx-auto w-full max-w-none space-y-6 pb-10 sm:space-y-8">
         <section class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div class="min-w-0">
                 <div class="mb-3 flex flex-wrap items-center gap-2">

@@ -6,7 +6,7 @@
 @php
     $format = fn($value, $decimals = 4) => $value === null ? '-' : rtrim(rtrim(number_format((float)$value, $decimals, '.', ''), '0'), '.');
 @endphp
-<div class="mx-auto max-w-7xl space-y-5 print:m-0 print:max-w-none print:space-y-4 sm:space-y-6">
+<div class="mx-auto w-full max-w-none space-y-5 print:m-0 print:max-w-none print:space-y-4 sm:space-y-6">
     <div class="flex flex-col gap-4 print:hidden sm:flex-row sm:items-end sm:justify-between">
         <div>
             <a href="{{ route('admin.testing.index') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition-colors hover:text-blue-600"><i class="fa-solid fa-arrow-left"></i> Product Testing</a>

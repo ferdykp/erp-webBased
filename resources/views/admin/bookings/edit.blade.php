@@ -172,7 +172,7 @@
                             <h3 class="text-[10px] md:text-[11px] font-black text-blue-600 uppercase tracking-widest">
                                 Calculated Results</h3>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 lg:gap-6">
+                        <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:gap-6">
                             <div class="flex flex-col p-4 bg-white border shadow-sm border-slate-100 rounded-2xl">
                                 <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Vol/Pcs
                                     (cm³)</span>

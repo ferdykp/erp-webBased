@@ -3,7 +3,7 @@
 @section('title', 'Process Parameter')
 
 @section('content')
-<div class="mx-auto max-w-6xl space-y-5 sm:space-y-6">
+<div class="mx-auto w-full max-w-none space-y-5 sm:space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <div>
             <a href="{{ route('admin.testing.index') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition-colors hover:text-blue-600"><i class="fa-solid fa-arrow-left"></i> Product Testing</a>
@@ -39,7 +39,7 @@
         <div class="flex gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs leading-5 text-rose-700"><i class="fa-solid fa-circle-exclamation mt-0.5"></i><div><p class="font-bold">Please check the process parameter.</p><ul class="mt-1 list-disc space-y-1 pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div></div>
     @endif
 
-    <div class="grid grid-cols-1 gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-[320px_minmax(0,1fr)] 2xl:grid-cols-[360px_minmax(0,1fr)] 3xl:grid-cols-[380px_minmax(0,1fr)] 3xl:gap-7">
         <aside class="h-fit rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/30 sm:p-6 xl:sticky xl:top-24">
             <div class="mb-4 flex items-start justify-between gap-4">
                 <div><p class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-blue-600">Test Summary</p><h2 class="mt-1 text-base font-bold tracking-tight text-slate-900 sm:text-lg">{{ $test->sample_name }}</h2></div>
@@ -67,8 +67,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-                    <label class="block min-w-0 md:col-span-2">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 2xl:grid-cols-3">
+                    <label class="block min-w-0 md:col-span-2 2xl:col-span-3">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">E-Beam Unit / Production Line <em class="not-italic text-rose-500">*</em></span>
                         <select name="production_line_id" required class="w-full min-w-0 cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-3 pr-9 text-base font-medium text-slate-800 outline-none hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm">
                             <option value="">Select unit / machine</option>

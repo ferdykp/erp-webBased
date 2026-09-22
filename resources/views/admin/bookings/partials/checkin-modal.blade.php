@@ -52,7 +52,7 @@
                 <div class="step-content" id="step1">
                     <div class="p-6 md:p-10 bg-blue-50/40 border border-blue-100 rounded-[2rem] md:rounded-[3rem] mb-8">
                         <h4 class="mb-6 text-sm font-black md:text-lg text-slate-800">Matched Actual Data</h4>
-                        <div class="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4 md:gap-6">
+                        <div class="mb-8 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-4 md:gap-6">
                             @php
                                 $infoFields = [
                                     ['Product', 'check_product_name', 'text-slate-800'],
@@ -235,7 +235,7 @@
                             <h5
                                 class="text-[9px] md:text-xs font-black tracking-widest uppercase text-emerald-600 mb-4">
                                 Distribution Logic</h5>
-                            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-4">
                                 @foreach (['Total Qty' => 'sum_qty', 'Pallets' => 'sum_pallet', 'Isi/Pallet' => 'sum_per_pallet', 'Sisa' => 'sum_remainder'] as $label => $id)
                                     <div class="p-3 bg-slate-50 rounded-xl">
                                         <p class="text-[8px] font-black text-slate-400 uppercase mb-0.5">

@@ -3,7 +3,7 @@
 @section('title', $test ? 'Edit Product Test' : 'New Product Test')
 
 @section('content')
-<div class="mx-auto max-w-6xl space-y-5 sm:space-y-6">
+<div class="mx-auto w-full max-w-none space-y-5 sm:space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <div>
             <a href="{{ route('admin.testing.index') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition-colors hover:text-blue-600">
@@ -67,7 +67,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 2xl:grid-cols-4">
                 <label class="block min-w-0">
                     <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Requester / Researcher</span>
                     <input name="requester_name" value="{{ old('requester_name', $test?->requester_name) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="Nama orang, PIC, atau internal team">
@@ -103,7 +103,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 2xl:grid-cols-4">
                 <div class="grid grid-cols-[minmax(0,1fr)_minmax(110px,0.55fr)] gap-3">
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Quantity</span>

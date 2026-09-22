@@ -115,7 +115,7 @@
                     </div>
 
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
                         <div class="col-span-1">
                             <label
                                 class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Industry</label>
@@ -130,7 +130,7 @@
                                 class="w-full px-5 py-3.5 text-sm font-medium transition-all bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 focus:bg-white outline-none">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="mt-4 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
                         <div class="col-span-1">
                             <label
                                 class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">City</label>
@@ -172,7 +172,7 @@
                             class="w-full px-5 py-3.5 text-sm font-medium bg-slate-50 border-none rounded-2xl focus:ring-[6px] focus:ring-blue-500/10 outline-none">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
                         <div class="col-span-1">
                             <label
                                 class="block mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400">Phone/WhatsApp</label>

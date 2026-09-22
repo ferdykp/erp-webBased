@@ -16,8 +16,8 @@
 
         <div class="relative flex min-w-0 flex-1 flex-col bg-slate-50 print:block print:h-auto print:overflow-visible lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-contain">
             @include('admin.layout.navbar')
-            <main class="w-full flex-1 px-3 py-5 print:p-0 sm:px-5 sm:py-6 lg:px-8 lg:py-7">
-                <div class="mx-auto w-full max-w-[1540px] print:max-w-none">
+            <main class="w-full flex-1 px-3 py-4 print:p-0 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7 xl:px-10 2xl:px-12 3xl:px-14 4xl:px-16">
+                <div class="mx-auto w-full max-w-none print:max-w-none">
                     <div class="mb-4 print:hidden">@include('admin.layout.notif')</div>
                     @yield('content')
                 </div>
