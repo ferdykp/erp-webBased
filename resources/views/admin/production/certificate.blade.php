@@ -52,8 +52,8 @@
                     </tr>
                     <tr>
                         <td class="border border-slate-300 p-4 font-bold">Irradiation Dose (kGy)</td>
-                        <td class="border border-slate-300 p-4 text-center italic text-slate-500">Target: {{ (int) $batch->target_dose }}</td>
-                        <td class="border border-slate-300 p-4 text-center font-black text-emerald-700">Actual: {{ $batch->qa->actual_dose ?? '-' }}</td>
+                        <td class="border border-slate-300 p-4 text-center italic text-slate-500">Target: {{ $batch->target_dose !== null ? \App\Support\NumberFormatter::smart($batch->target_dose, 4) : '-' }}</td>
+                        <td class="border border-slate-300 p-4 text-center font-black text-emerald-700">Actual: {{ $batch->qa?->actual_dose !== null ? \App\Support\NumberFormatter::smart($batch->qa->actual_dose, 4) : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="border border-slate-300 p-4 font-bold">Visual Inspection</td>

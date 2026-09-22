@@ -249,7 +249,7 @@
      */
     function formatNum(num, decimals = 4) {
         if (!num) return "0";
-        return parseFloat(parseFloat(num).toFixed(decimals)).toString();
+        return window.formatSmartNumber(num, decimals, '0');
     }
 
     document.addEventListener('DOMContentLoaded', function() {

@@ -47,8 +47,8 @@
             <dl class="divide-y divide-slate-100">
                 <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Requester</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->requester_name ?: 'Internal / not specified' }}</dd></div>
                 <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Institution</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->requester_organization ?: '-' }}</dd></div>
-                <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Quantity</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->quantity ? rtrim(rtrim(number_format((float)$test->quantity, 3, '.', ''), '0'), '.') . ' ' . ($test->unit ?: '') : '-' }}</dd></div>
-                <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Reference Dose</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->dmin !== null ? $test->dmin : '-' }}{{ $test->dmax !== null ? ' – '.$test->dmax : '' }}{{ $test->dmin !== null || $test->dmax !== null ? ' kGy' : '' }}</dd></div>
+                <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Quantity</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->quantity !== null ? \App\Support\NumberFormatter::integer($test->quantity) . ' ' . ($test->unit ?: '') : '-' }}</dd></div>
+                <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Reference Dose</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->dmin !== null ? \App\Support\NumberFormatter::smart($test->dmin, 4) : '-' }}{{ $test->dmax !== null ? ' – '.\App\Support\NumberFormatter::smart($test->dmax, 4) : '' }}{{ $test->dmin !== null || $test->dmax !== null ? ' kGy' : '' }}</dd></div>
                 <div class="flex items-start justify-between gap-4 py-3"><dt class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Dimension</dt><dd class="max-w-[58%] text-right text-xs font-semibold text-slate-700">{{ $test->dimension_label }}</dd></div>
             </dl>
             <a href="{{ route('admin.testing.edit', $test) }}" class="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99]"><i class="fa-solid fa-pen"></i> Edit Test Data</a>
@@ -80,12 +80,12 @@
 
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Beam Speed (m/s) <em class="not-italic text-rose-500">*</em></span>
-                        <input type="number" min="0.0001" step="0.0001" name="beam_speed" required value="{{ old('beam_speed', $test->beam_speed) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="e.g. 0.3500">
+                        <input type="number" min="0.0001" step="0.0001" name="beam_speed" required value="{{ old('beam_speed', $test->beam_speed !== null ? \App\Support\NumberFormatter::smart($test->beam_speed, 4) : '') }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="e.g. 0.3500">
                     </label>
 
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Target Dose (kGy)</span>
-                        <input type="number" min="0" step="0.0001" name="target_dose" value="{{ old('target_dose', $test->target_dose) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="Optional for dose finding test">
+                        <input type="number" min="0" step="0.0001" name="target_dose" value="{{ old('target_dose', $test->target_dose !== null ? \App\Support\NumberFormatter::smart($test->target_dose, 4) : '') }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="Optional for dose finding test">
                     </label>
 
                     <label class="block min-w-0">
@@ -105,12 +105,12 @@
 
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Frequency (Hz) <em class="not-italic text-rose-500">*</em></span>
-                        <input type="number" min="0" step="0.0001" name="freq" required value="{{ old('freq', $test->freq) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="e.g. 20">
+                        <input type="number" min="0" step="0.0001" name="freq" required value="{{ old('freq', $test->freq !== null ? \App\Support\NumberFormatter::smart($test->freq, 4) : '') }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="e.g. 20">
                     </label>
 
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Scan Gear <em class="not-italic text-rose-500">*</em></span>
-                        <input type="number" min="0" step="0.0001" name="scan_gear" required value="{{ old('scan_gear', $test->scan_gear) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="e.g. 1">
+                        <input type="number" min="0" step="0.0001" name="scan_gear" required value="{{ old('scan_gear', $test->scan_gear !== null ? \App\Support\NumberFormatter::smart($test->scan_gear, 4) : '') }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="e.g. 1">
                     </label>
                 </div>
             </section>

@@ -141,7 +141,7 @@
                                 class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
                                 Quantity <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" id="in_qty" value="{{ old('quantity') }}"
+                            <input type="number" min="1" step="1" id="in_qty" value="{{ old('quantity') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                         <div class="space-y-2">
@@ -227,13 +227,7 @@
 
     <script>
         function formatNum(num, decimals = 2) {
-            if (num === null || num === undefined || num === "") return "";
-            if (isNaN(num)) return "0";
-
-            return new Intl.NumberFormat('id-ID', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: decimals
-            }).format(num);
+            return window.formatSmartNumber(num, decimals, '0');
         }
 
         document.addEventListener('DOMContentLoaded', function() {

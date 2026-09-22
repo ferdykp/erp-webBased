@@ -63,53 +63,53 @@
                         <span class="text-indigo-700">{{ $product->dimension_pack ?? '-' }} cm</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Dose:
-                        <span class="text-indigo-700"> {{ number_format($product->dmin ?? 0, 0) }} -
-                            {{ number_format($product->dmax ?? 0, 0) }} kGy
+                        <span class="text-indigo-700"> {{ \App\Support\NumberFormatter::smart($product->dmin ?? 0, 4) }} -
+                            {{ \App\Support\NumberFormatter::smart($product->dmax ?? 0, 4) }} kGy
                         </span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Vol Pcs:
-                        <span class="text-indigo-700">{{ number_format($product->vol_per_pcs ?? 0) }} cm³</span>
+                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->vol_per_pcs ?? 0, 4) }} cm³</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Vol Total:
-                        <span class="text-indigo-700">{{ number_format($product->vol_total ?? 0) }} cm³</span>
+                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->vol_total ?? 0, 4) }} cm³</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Total Quantity</p>
-                    <p class="font-bold text-blue-600">{{ $product->quantity ?? 0 }} {{ $product->unit ?? '' }}</p>
+                    <p class="font-bold text-blue-600">{{ \App\Support\NumberFormatter::integer($product->quantity ?? 0) }} {{ $product->unit ?? '' }}</p>
                 </div>
             </div>
             <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Nett Weigth</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
-                        <span class="text-indigo-700">{{ number_format($product->net_weight_pcs ?? 0) }} kg</span>
+                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->net_weight_pcs ?? 0, 4) }} kg</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Total:
-                        <span class="text-indigo-700">{{ number_format($product->total_net_weight ?? 0) }} kg</span>
+                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->total_net_weight ?? 0, 4) }} kg</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Gross Weigth</p>
 
                     <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
-                        <span class="text-indigo-700">{{ number_format($product->gross_weight_per_pcs ?? 0) }}
+                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->gross_weight_per_pcs ?? 0, 4) }}
                             kg</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Total:
-                        <span class="text-indigo-700">{{ number_format($product->total_gross_weight ?? 0) }} kg</span>
+                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->total_gross_weight ?? 0, 4) }} kg</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Density</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Nett:
-                        <span class="text-indigo-700">{{ $product->density_nett ?? '-' }}</span>
+                        <span class="text-indigo-700">{{ $product->density_nett !== null ? \App\Support\NumberFormatter::smart($product->density_nett, 6) : '-' }}</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Gross:
-                        <span class="text-indigo-700">{{ $product->density_gross ?? '-' }}</span>
+                        <span class="text-indigo-700">{{ $product->density_gross !== null ? \App\Support\NumberFormatter::smart($product->density_gross, 6) : '-' }}</span>
                     </p>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                                 }
                             }
                         }
-                        $unevenness = $minDose > 0 && $minDose != 999 ? number_format($maxDose / $minDose, 2) : '1.08';
+                        $unevenness = $minDose > 0 && $minDose != 999 ? \App\Support\NumberFormatter::smart($maxDose / $minDose, 4) : '1.08';
                     @endphp
 
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -161,12 +161,12 @@
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-xs font-bold text-slate-600">
                                         Min Absorbed Dose: <span
-                                            class="text-rose-600">{{ $minDose == 999 ? '-' : number_format($minDose, 1) }}
+                                            class="text-rose-600">{{ $minDose == 999 ? '-' : \App\Support\NumberFormatter::smart($minDose, 4) }}
                                             kGy</span>
                                     </div>
                                     <div class="flex justify-between text-xs font-bold text-slate-600">
                                         Max Absorbed Dose: <span
-                                            class="text-emerald-600">{{ $maxDose == 0 ? '-' : number_format($maxDose, 1) }}
+                                            class="text-emerald-600">{{ $maxDose == 0 ? '-' : \App\Support\NumberFormatter::smart($maxDose, 4) }}
                                             kGy</span>
                                     </div>
                                     <div class="flex justify-between text-xs font-bold text-slate-600">
@@ -203,10 +203,10 @@
                                             <td class="px-6 py-3 text-center text-slate-500">
                                                 {{ $detail->dosimeter_number ?? '-' }}</td>
                                             <td class="px-6 py-3 font-mono text-center text-indigo-600">
-                                                {{ $detail->absorbance ? number_format($detail->absorbance, 3) : '-' }}
+                                                {{ $detail->absorbance !== null ? \App\Support\NumberFormatter::smart($detail->absorbance, 4) : '-' }}
                                             </td>
                                             <td class="px-6 py-3 font-black text-right text-slate-900">
-                                                {{ $detail->dose_kgy ? number_format($detail->dose_kgy, 1) . ' kGy' : '-' }}
+                                                {{ $detail->dose_kgy !== null ? \App\Support\NumberFormatter::smart($detail->dose_kgy, 4) . ' kGy' : '-' }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -255,13 +255,13 @@
                                     <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
                                         #{{ $batch->id }}</td>
                                     <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
-                                        {{ (int) $batch->freq . ' Hz' }}
+                                        {{ $batch->freq !== null ? \App\Support\NumberFormatter::smart($batch->freq, 4) . ' Hz' : '-' }}
                                     </td>
                                     <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
-                                        {{ (int) $batch->beam_speed . ' m/s' }}
+                                        {{ $batch->beam_speed !== null ? \App\Support\NumberFormatter::smart($batch->beam_speed, 4) . ' m/s' : '-' }}
                                     </td>
                                     <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
-                                        {{ (int) $batch->scan_gear }}
+                                        {{ $batch->scan_gear !== null ? \App\Support\NumberFormatter::smart($batch->scan_gear, 4) : '-' }}
                                     </td>
                                     <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
                                         {{ $batch->loading_mode }}
@@ -273,7 +273,7 @@
                                         </span>
                                     </td>
                                     <td class="px-8 py-4 text-xs font-black text-center text-slate-800">
-                                        {{ number_format($batch->quantity, 0, ',', '.') }}
+                                        {{ \App\Support\NumberFormatter::integer($batch->quantity) }}
                                     </td>
                                 </tr>
                             @empty

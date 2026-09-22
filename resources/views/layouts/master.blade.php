@@ -14,7 +14,7 @@
             <div class="flex min-w-0 flex-1 flex-col lg:h-[100dvh] lg:overflow-hidden">
                 @include('layouts.navbar')
                 <main class="relative flex-1 overflow-y-auto">
-                    <div class="mx-auto w-full max-w-none px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7 xl:px-10 2xl:px-12 3xl:px-14 4xl:px-16">
+                    <div class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)]">
                         @yield('content')
                     </div>
                     <footer class="border-t border-slate-200 bg-white py-5 text-center text-[11px] text-slate-400">

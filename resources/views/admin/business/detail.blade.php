@@ -87,7 +87,7 @@
                             <div class="p-4 border bg-slate-50/50 rounded-2xl border-slate-50">
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Dose Target
                                 </p>
-                                <p class="font-black text-indigo-600">{{ $product->dmin }} - {{ $product->dmax }} kGy</p>
+                                <p class="font-black text-indigo-600">{{ \App\Support\NumberFormatter::smart($product->dmin, 4) }} - {{ \App\Support\NumberFormatter::smart($product->dmax, 4) }} kGy</p>
                             </div>
                             <div class="p-4 border bg-slate-50/50 rounded-2xl border-slate-50">
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Exp. Temp</p>

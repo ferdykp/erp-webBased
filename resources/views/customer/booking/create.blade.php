@@ -131,7 +131,7 @@
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">Total
                                 Quantity</label>
-                            <input type="number" id="in_qty" name="quantity" value="{{ old('quantity') }}"
+                            <input type="number" min="1" step="1" id="in_qty" name="quantity" value="{{ old('quantity') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold outline-none"
                                 required>
                         </div>
@@ -231,12 +231,12 @@
                 const densityGross = totalVolCm3 > 0 ? (totalGross / totalVolCm3) : 0;
 
                 // Update UI Live Display
-                document.getElementById('res_vol_pcs').innerText = volPcs.toLocaleString('id-ID');
-                document.getElementById('res_vol_total').innerText = totalVolCm3.toLocaleString('id-ID');
-                document.getElementById('res_net_total').innerText = totalNet.toLocaleString('id-ID');
-                document.getElementById('res_gross_total').innerText = totalGross.toLocaleString('id-ID');
-                document.getElementById('res_density_nett').innerText = densityNet.toFixed(6);
-                document.getElementById('res_density_gross').innerText = densityGross.toFixed(6);
+                document.getElementById('res_vol_pcs').innerText = window.formatSmartNumber(volPcs, 4, '0');
+                document.getElementById('res_vol_total').innerText = window.formatSmartNumber(totalVolCm3, 4, '0');
+                document.getElementById('res_net_total').innerText = window.formatSmartNumber(totalNet, 4, '0');
+                document.getElementById('res_gross_total').innerText = window.formatSmartNumber(totalGross, 4, '0');
+                document.getElementById('res_density_nett').innerText = window.formatSmartNumber(densityNet, 6, '0');
+                document.getElementById('res_density_gross').innerText = window.formatSmartNumber(densityGross, 6, '0');
 
                 // Update Hidden Inputs
                 document.getElementById('vol_per_pcs').value = volPcs;

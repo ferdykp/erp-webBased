@@ -197,7 +197,7 @@ class ProductTestingController extends Controller
             'requester_organization' => 'nullable|string|max:255',
             'requester_contact' => 'nullable|string|max:255',
             'sample_name' => 'required|string|max:255',
-            'quantity' => 'nullable|numeric|min:0.001',
+            'quantity' => 'nullable|integer|min:1',
             'unit' => 'nullable|string|max:50',
             'dmin' => 'nullable|numeric|min:0',
             'dmax' => 'nullable|numeric|min:0|gte:dmin',

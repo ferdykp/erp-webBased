@@ -6,6 +6,19 @@
     <meta name="color-scheme" content="light">
     <title>Beam Admin - @yield('title')</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        window.formatSmartNumber = function (value, maxDecimals = 6, fallback = '-') {
+            if (value === null || value === undefined || value === '') return fallback;
+            const number = Number(value);
+            if (!Number.isFinite(number)) return fallback;
+            const decimals = Math.max(0, Math.min(Number(maxDecimals) || 0, 12));
+            return new Intl.NumberFormat('en-US', {
+                useGrouping: false,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: decimals,
+            }).format(number);
+        };
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/html5-qrcode"></script>
     @stack('styles')
@@ -16,8 +29,8 @@
 
         <div class="relative flex min-w-0 flex-1 flex-col bg-slate-50 print:block print:h-auto print:overflow-visible lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-contain">
             @include('admin.layout.navbar')
-            <main class="w-full flex-1 px-3 py-4 print:p-0 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7 xl:px-10 2xl:px-12 3xl:px-14 4xl:px-16">
-                <div class="mx-auto w-full max-w-none print:max-w-none">
+            <main class="w-full flex-1 px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)] print:p-0">
+                <div class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none print:min-h-0 print:max-w-none">
                     <div class="mb-4 print:hidden">@include('admin.layout.notif')</div>
                     @yield('content')
                 </div>

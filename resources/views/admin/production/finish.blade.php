@@ -139,15 +139,15 @@
                                     </td>
                                     <td class="px-6 py-4 text-center align-middle">
                                         <p class="text-sm font-semibold text-gray-800">Batch #{{ $batch->batch_number }}</p>
-                                        <p class="text-xs text-gray-400 mt-0.5">{{ number_format($batch->quantity) }}
+                                        <p class="text-xs text-gray-400 mt-0.5">{{ \App\Support\NumberFormatter::integer($batch->quantity) }}
                                             {{ $batch->unit }}</p>
                                     </td>
                                     <td class="px-6 py-4 text-center align-middle">
                                         <div class="inline-flex items-center gap-1.5 text-xs">
-                                            <span class="text-gray-400">T: {{ (int) $batch->target_dose }}</span>
+                                            <span class="text-gray-400">T: {{ \App\Support\NumberFormatter::smart($batch->target_dose, 4) }}</span>
                                             <span class="text-gray-200">/</span>
                                             <span class="font-semibold text-emerald-600">A:
-                                                {{ $qa->actual_dose ?? '-' }}</span>
+                                                {{ $qa?->actual_dose !== null ? \App\Support\NumberFormatter::smart($qa->actual_dose, 4) : '-' }}</span>
                                         </div>
                                         <p class="text-[10px] text-gray-300 mt-0.5">kGy</p>
                                     </td>
@@ -186,15 +186,15 @@
                                                 data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                                 data-product-name="{{ $product->product_name ?? '-' }}"
                                                 data-batch-no="{{ $batch->batch_number }}"
-                                                data-quantity="{{ number_format($batch->quantity) }}"
+                                                data-quantity="{{ \App\Support\NumberFormatter::integer($batch->quantity) }}"
                                                 data-unit="{{ $batch->unit }}"
                                                 data-line="{{ $batch->productionLine->name ?? '-' }}"
-                                                data-target-dose="{{ (int) $batch->target_dose }}"
-                                                data-freq="{{ (int) $batch->freq . ' Hz' }}"
-                                                data-beam-speed="{{ (int) $batch->beam_speed . ' m/s' }}"
-                                                data-scan-gear="{{ (int) $batch->scan_gear }}"
+                                                data-target-dose="{{ \App\Support\NumberFormatter::smart($batch->target_dose, 4) }}"
+                                                data-freq="{{ $batch->freq !== null ? \App\Support\NumberFormatter::smart($batch->freq, 4) . ' Hz' : '-' }}"
+                                                data-beam-speed="{{ $batch->beam_speed !== null ? \App\Support\NumberFormatter::smart($batch->beam_speed, 4) . ' m/s' : '-' }}"
+                                                data-scan-gear="{{ $batch->scan_gear !== null ? \App\Support\NumberFormatter::smart($batch->scan_gear, 4) : '-' }}"
                                                 data-loading-mode="{{ $batch->loading_mode }}"
-                                                data-actual-dose="{{ $qa->actual_dose ?? '-' }}"
+                                                data-actual-dose="{{ $qa?->actual_dose !== null ? \App\Support\NumberFormatter::smart($qa->actual_dose, 4) : '-' }}"
                                                 data-visual="{{ strtoupper($qa->visual_check ?? '-') }}"
                                                 data-indicator="{{ strtoupper($qa->indicator_check ?? '-') }}"
                                                 data-damaged="{{ $qa->is_damaged ? 'YES (' . $qa->damaged_qty . ' Box)' : 'NO' }}"
@@ -273,7 +273,7 @@
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Dose</p>
-                                    <p class="text-xs font-semibold text-emerald-600 mt-0.5">{{ $qa->actual_dose ?? '-' }}
+                                    <p class="text-xs font-semibold text-emerald-600 mt-0.5">{{ $qa?->actual_dose !== null ? \App\Support\NumberFormatter::smart($qa->actual_dose, 4) : '-' }}
                                         kGy</p>
                                 </div>
                             </div>
@@ -296,15 +296,15 @@
                                     data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                     data-product-name="{{ $product->product_name ?? '-' }}"
                                     data-batch-no="{{ $batch->batch_number }}"
-                                    data-quantity="{{ number_format($batch->quantity) }}"
+                                    data-quantity="{{ \App\Support\NumberFormatter::integer($batch->quantity) }}"
                                     data-unit="{{ $batch->unit }}"
                                     data-line="{{ $batch->productionLine->name ?? '-' }}"
-                                    data-target-dose="{{ (int) $batch->target_dose }}"
-                                    data-freq="{{ (int) $batch->freq . ' Hz' }}"
-                                    data-beam-speed="{{ (int) $batch->beam_speed . ' m/s' }}"
-                                    data-scan-gear="{{ (int) $batch->scan_gear }}"
+                                    data-target-dose="{{ \App\Support\NumberFormatter::smart($batch->target_dose, 4) }}"
+                                    data-freq="{{ $batch->freq !== null ? \App\Support\NumberFormatter::smart($batch->freq, 4) . ' Hz' : '-' }}"
+                                    data-beam-speed="{{ $batch->beam_speed !== null ? \App\Support\NumberFormatter::smart($batch->beam_speed, 4) . ' m/s' : '-' }}"
+                                    data-scan-gear="{{ $batch->scan_gear !== null ? \App\Support\NumberFormatter::smart($batch->scan_gear, 4) : '-' }}"
                                     data-loading-mode="{{ $batch->loading_mode }}"
-                                    data-actual-dose="{{ $qa->actual_dose ?? '-' }}"
+                                    data-actual-dose="{{ $qa?->actual_dose !== null ? \App\Support\NumberFormatter::smart($qa->actual_dose, 4) : '-' }}"
                                     data-visual="{{ strtoupper($qa->visual_check ?? '-') }}"
                                     data-indicator="{{ strtoupper($qa->indicator_check ?? '-') }}"
                                     data-damaged="{{ $qa->is_damaged ? 'YES (' . $qa->damaged_qty . ' Box)' : 'NO' }}"

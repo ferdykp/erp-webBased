@@ -2,7 +2,7 @@
 @section('title', 'Modify Porter Dossier')
 
 @section('content')
-    <div class="mx-auto w-full max-w-3xl space-y-6 pb-16 2xl:max-w-4xl">
+    <div class="mx-auto w-full max-w-3xl space-y-6 pb-16 xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl">
 
         {{-- BACK LINK & HEADER --}}
         <div>

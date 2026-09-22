@@ -141,7 +141,7 @@
                                             <div class="relative">
                                                 <input type="number" step="0.0001" min="0" max="5"
                                                     name="absorbance[{{ $detail->tablet_number }}]"
-                                                    value="{{ $detail->absorbance }}" placeholder="0.0000" required
+                                                    value="{{ $detail->absorbance !== null ? \App\Support\NumberFormatter::smart($detail->absorbance, 4) : '' }}" placeholder="0.0000" required
                                                     class="w-full py-2 pl-3 pr-12 text-sm font-bold transition-all border border-gray-200 outline-none rounded-xl bg-gray-50/30 focus:bg-white focus:ring-4 focus:ring-blue-50">
                                                 <div
                                                     class="absolute inset-y-0 right-0 flex items-center pr-3 text-[10px] font-bold text-gray-300">
@@ -164,7 +164,7 @@
                                                 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
                                                 Absorbance</div>
                                             <span
-                                                class="text-lg font-black text-gray-800 display-value">{{ $detail->absorbance ? (float) $detail->absorbance : '-' }}</span>
+                                                class="text-lg font-black text-gray-800 display-value">{{ $detail->absorbance !== null ? \App\Support\NumberFormatter::smart($detail->absorbance, 4) : '-' }}</span>
                                             <span class="text-xs font-bold text-gray-400 ml-0.5">ABS</span>
                                         </div>
 
@@ -174,7 +174,7 @@
                                                     class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">
                                                     Absorbed Dose</div>
                                                 <span
-                                                    class="text-xl font-black text-emerald-600">{{ (float) number_format($detail->dose_kgy, 4) }}</span>
+                                                    class="text-xl font-black text-emerald-600">{{ \App\Support\NumberFormatter::smart($detail->dose_kgy, 4) }}</span>
                                                 <span class="text-xs font-bold text-emerald-400 ml-0.5">kGy</span>
                                             </div>
                                         @endif

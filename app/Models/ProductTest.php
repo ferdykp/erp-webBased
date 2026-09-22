@@ -37,18 +37,18 @@ class ProductTest extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:3',
-        'dmin' => 'decimal:4',
-        'dmax' => 'decimal:4',
-        'length_cm' => 'decimal:3',
-        'width_cm' => 'decimal:3',
-        'height_cm' => 'decimal:3',
-        'net_weight_kg' => 'decimal:4',
-        'gross_weight_kg' => 'decimal:4',
-        'target_dose' => 'decimal:4',
-        'beam_speed' => 'decimal:4',
-        'freq' => 'decimal:4',
-        'scan_gear' => 'decimal:4',
+        'quantity' => 'integer',
+        'dmin' => 'float',
+        'dmax' => 'float',
+        'length_cm' => 'float',
+        'width_cm' => 'float',
+        'height_cm' => 'float',
+        'net_weight_kg' => 'float',
+        'gross_weight_kg' => 'float',
+        'target_dose' => 'float',
+        'beam_speed' => 'float',
+        'freq' => 'float',
+        'scan_gear' => 'float',
         'processed_at' => 'datetime',
     ];
 
@@ -70,7 +70,7 @@ class ProductTest extends Model
         }
 
         return collect($values)
-            ->map(fn ($value) => $value === null ? '-' : rtrim(rtrim(number_format((float) $value, 3, '.', ''), '0'), '.'))
+            ->map(fn ($value) => $value === null ? '-' : \App\Support\NumberFormatter::smart($value, 3))
             ->implode(' × ') . ' cm';
     }
 }

@@ -25,6 +25,7 @@ class Booking extends Model
 
     protected $casts = [
         'arrival_time' => 'datetime',
+        'total_price' => 'float',
     ];
 
     public function customer(): BelongsTo

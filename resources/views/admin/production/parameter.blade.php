@@ -377,7 +377,7 @@
             div.innerHTML = `
                 <div class="flex-1 w-full">
                     <label class="text-[9px] font-black text-slate-400 uppercase mb-1.5 block">Batch Qty</label>
-                    <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="any" required 
+                    <input type="number" name="batch_quantities[]" oninput="updateBatchTotal()" step="1" min="1" required 
                         value="${qty}"
                         class="w-full px-4 py-3 text-xs font-bold bg-white border border-slate-200 batch-input rounded-xl focus:ring-2 focus:ring-blue-500">
                 </div>
@@ -400,14 +400,14 @@
         function updateBatchTotal() {
             const inputs = document.querySelectorAll('#updateProcessModal .batch-input');
             let total = 0;
-            inputs.forEach(input => total += parseFloat(input.value) || 0);
+            inputs.forEach(input => total += parseInt(input.value, 10) || 0);
 
-            document.getElementById('current_total_display').innerText = total.toLocaleString();
+            document.getElementById('current_total_display').innerText = window.formatSmartNumber(total, 0, '0');
             const submitBtn = document.getElementById('submitProcessBtn');
             const capBadge = document.getElementById('cap_badge');
 
-            const safeTotal = parseFloat(total.toFixed(4));
-            const safeMax = parseFloat(maxQty.toFixed(4));
+            const safeTotal = total;
+            const safeMax = maxQty;
 
             if (inputs.length > 0 && safeTotal === safeMax) {
                 capBadge.className = "px-3 py-1.5 text-[9px] font-black bg-emerald-100 rounded-lg text-emerald-700";
@@ -434,8 +434,8 @@
             modal.querySelector('#processRemainingInfo').textContent = `${data.remaining} ${data.unit} ready to process.`;
             modal.querySelector('input[name="booking_id"]').value = data.bookingId;
 
-            maxQty = parseFloat(data.remaining) || 0;
-            document.getElementById('total_qty_display').textContent = maxQty;
+            maxQty = parseInt(data.remaining, 10) || 0;
+            document.getElementById('total_qty_display').textContent = window.formatSmartNumber(maxQty, 0, '0');
 
             document.getElementById('batchContainer').innerHTML = '';
             const pending = JSON.parse(data.pendingBatches || '[]');

@@ -79,7 +79,7 @@
                             <div class="text-xs font-bold text-slate-800">{{ $product->product_name }}</div>
                             <div class="mt-0.5 text-[10px] text-slate-500">Sterilization Service</div>
                         </td>
-                        <td class="border-b border-slate-100 px-3 py-3 text-right text-xs font-bold text-slate-700">{{ $product->quantity }} {{ $product->unit }}</td>
+                        <td class="border-b border-slate-100 px-3 py-3 text-right text-xs font-bold text-slate-700">{{ \App\Support\NumberFormatter::integer($product->quantity) }} {{ $product->unit }}</td>
                     </tr>
                 @endforeach
             </tbody>

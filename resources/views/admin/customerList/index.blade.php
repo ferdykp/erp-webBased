@@ -322,7 +322,7 @@
                                                     <td class="px-4 py-4 text-center">
                                                         <span
                                                             class="px-2.5 py-1 bg-slate-100 rounded-lg font-black text-slate-600 text-[11px]"
-                                                            x-text="product.quantity + ' ' + (product.unit || 'Box')"></span>
+                                                            x-text="window.formatSmartNumber(product.quantity, 0, '0') + ' ' + (product.unit || 'Box')"></span>
                                                     </td>
                                                     <td class="px-4 py-4 text-center">
                                                         <span
@@ -336,14 +336,14 @@
                                                                     class="text-[8px] font-black text-slate-300 uppercase italic">Min</span>
                                                                 <span
                                                                     class="px-2 py-1 bg-slate-50 border border-slate-100 rounded-md text-[10px] font-black text-slate-700 min-w-[55px] text-center"
-                                                                    x-text="(product.dmin ? Number(product.dmin).toFixed(0) : '0') + ' kGy'"></span>
+                                                                    x-text="window.formatSmartNumber(product.dmin, 4, '0') + ' kGy'"></span>
                                                             </div>
                                                             <div class="flex items-center gap-2">
                                                                 <span
                                                                     class="text-[8px] font-black text-slate-300 uppercase italic">Max</span>
                                                                 <span
                                                                     class="px-2 py-1 bg-slate-50 border border-slate-100 rounded-md text-[10px] font-black text-slate-700 min-w-[55px] text-center"
-                                                                    x-text="(product.dmax ? Number(product.dmax).toFixed(0) : '0') + ' kGy'"></span>
+                                                                    x-text="window.formatSmartNumber(product.dmax, 4, '0') + ' kGy'"></span>
                                                             </div>
                                                         </div>
                                                     </td>

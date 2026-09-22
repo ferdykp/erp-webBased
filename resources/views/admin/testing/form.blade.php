@@ -107,7 +107,7 @@
                 <div class="grid grid-cols-[minmax(0,1fr)_minmax(110px,0.55fr)] gap-3">
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Quantity</span>
-                        <input type="number" min="0.001" step="0.001" name="quantity" value="{{ old('quantity', $test?->quantity) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="Optional">
+                        <input type="number" min="1" step="1" name="quantity" value="{{ old('quantity', $test?->quantity) }}" class="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm" placeholder="Optional">
                     </label>
                     <label class="block min-w-0">
                         <span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Unit</span>

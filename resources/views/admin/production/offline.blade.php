@@ -92,7 +92,7 @@
                                 </div>
                                 <div>
                                     <p class="text-[9px] font-black text-slate-400 uppercase text-right">Target Dose</p>
-                                    <p class="text-xs font-bold text-right text-slate-700">{{ (int) $batch->target_dose }}
+                                    <p class="text-xs font-bold text-right text-slate-700">{{ $batch->target_dose !== null ? \App\Support\NumberFormatter::smart($batch->target_dose, 4) : '-' }}
                                         kGy</p>
                                 </div>
                             </div>
@@ -102,11 +102,11 @@
                                 data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                 data-customer-name="{{ $booking->customer->contacts->first()->name ?? 'Guest' }}"
                                 data-product-name="{{ $product->product_name ?? '-' }}"
-                                data-quantity="{{ $batch->quantity }}" data-unit="{{ $batch->unit }}"
+                                data-quantity="{{ \App\Support\NumberFormatter::integer($batch->quantity) }}" data-unit="{{ $batch->unit }}"
                                 data-line="{{ $batch->productionLine->name ?? '-' }}"
-                                data-target-dose="{{ $batch->target_dose ?? '' }}"
-                                data-beam-speed="{{ $batch->beam_speed ?? '' }}" data-frequency="{{ $batch->freq ?? '' }}"
-                                data-scangear="{{ $batch->scan_gear ?? '' }}"
+                                data-target-dose="{{ $batch->target_dose !== null ? \App\Support\NumberFormatter::smart($batch->target_dose, 4) : '' }}"
+                                data-beam-speed="{{ $batch->beam_speed !== null ? \App\Support\NumberFormatter::smart($batch->beam_speed, 4) : '' }}" data-frequency="{{ $batch->freq !== null ? \App\Support\NumberFormatter::smart($batch->freq, 4) : '' }}"
+                                data-scangear="{{ $batch->scan_gear !== null ? \App\Support\NumberFormatter::smart($batch->scan_gear, 4) : '' }}"
                                 data-loading-mode="{{ $batch->loading_mode ?? '' }}"
                                 class="w-full py-3 text-xs font-black text-white uppercase transition-all shadow-lg bg-slate-900 rounded-xl active:scale-95 shadow-slate-200">
                                 <i class="mr-2 fa-solid fa-eye"></i> Finish Process
@@ -162,11 +162,11 @@
                                             {{ $product->product_name ?? '-' }}</p>
                                     </td>
                                     <td class="px-6 py-4 text-center border-y border-slate-100">
-                                        <p class="text-sm font-bold text-slate-700">{{ number_format($batch->quantity) }}
+                                        <p class="text-sm font-bold text-slate-700">{{ \App\Support\NumberFormatter::integer($batch->quantity) }}
                                             {{ $batch->unit }}</p>
                                     </td>
                                     <td class="px-6 py-4 text-center border-y border-slate-100">
-                                        <p class="text-sm font-black text-slate-700">{{ (int) $batch->target_dose }} <span
+                                        <p class="text-sm font-black text-slate-700">{{ $batch->target_dose !== null ? \App\Support\NumberFormatter::smart($batch->target_dose, 4) : '-' }} <span
                                                 class="text-[10px] text-slate-400">kGy</span></p>
                                     </td>
                                     <td class="px-6 py-4 text-center border-y border-slate-100">
@@ -181,12 +181,12 @@
                                             data-company-name="{{ $booking->customer->company_name ?? '-' }}"
                                             data-customer-name="{{ $booking->customer->contacts->first()->name ?? 'Guest' }}"
                                             data-product-name="{{ $product->product_name ?? '-' }}"
-                                            data-quantity="{{ $batch->quantity }}" data-unit="{{ $batch->unit }}"
+                                            data-quantity="{{ \App\Support\NumberFormatter::integer($batch->quantity) }}" data-unit="{{ $batch->unit }}"
                                             data-line="{{ $batch->productionLine->name ?? '-' }}"
-                                            data-target-dose="{{ $batch->target_dose ?? '' }}"
-                                            data-beam-speed="{{ $batch->beam_speed ?? '' }}"
-                                            data-frequency="{{ $batch->freq ?? '' }}"
-                                            data-scangear="{{ $batch->scan_gear ?? '' }}"
+                                            data-target-dose="{{ $batch->target_dose !== null ? \App\Support\NumberFormatter::smart($batch->target_dose, 4) : '' }}"
+                                            data-beam-speed="{{ $batch->beam_speed !== null ? \App\Support\NumberFormatter::smart($batch->beam_speed, 4) : '' }}"
+                                            data-frequency="{{ $batch->freq !== null ? \App\Support\NumberFormatter::smart($batch->freq, 4) : '' }}"
+                                            data-scangear="{{ $batch->scan_gear !== null ? \App\Support\NumberFormatter::smart($batch->scan_gear, 4) : '' }}"
                                             data-loading-mode="{{ $batch->loading_mode ?? '' }}"
                                             data-offline-at="{{ $batch->offline_at }}" {{-- Tambahkan ini --}}
                                             class="inline-flex items-center gap-2 px-4 py-2.5 text-[10px] font-black uppercase border-2 border-slate-200 rounded-xl hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95">
@@ -380,7 +380,7 @@
                                 class="grid grid-cols-4 gap-3 pt-5 mt-5 border-t border-slate-200">
                                 <div class="col-span-1">
                                     <label class="block mb-1.5 text-[9px] font-black uppercase text-red-500">Qty</label>
-                                    <input type="number" name="damaged_qty" placeholder="0"
+                                    <input type="number" min="1" step="1" name="damaged_qty" placeholder="0"
                                         class="w-full p-3 text-xs font-bold bg-white border border-red-100 outline-none rounded-xl focus:ring-2 focus:ring-red-500">
                                 </div>
                                 <div class="col-span-3">

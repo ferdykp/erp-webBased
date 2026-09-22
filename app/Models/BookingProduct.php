@@ -29,6 +29,22 @@ class BookingProduct extends Model
         'density_nett'
     ];
 
+
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'dmin' => 'float',
+        'dmax' => 'float',
+        'vol_per_pcs' => 'float',
+        'vol_total' => 'float',
+        'net_weight_pcs' => 'float',
+        'total_net_weight' => 'float',
+        'gross_weight_per_pcs' => 'float',
+        'total_gross_weight' => 'float',
+        'density_gross' => 'float',
+        'density_nett' => 'float',
+    ];
+
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $format = fn($value, $decimals = 4) => $value === null ? '-' : rtrim(rtrim(number_format((float)$value, $decimals, '.', ''), '0'), '.');
+    $format = fn($value, $decimals = 4) => \App\Support\NumberFormatter::smart($value, $decimals);
 @endphp
 <div class="mx-auto w-full max-w-none space-y-5 print:m-0 print:max-w-none print:space-y-4 sm:space-y-6">
     <div class="flex flex-col gap-4 print:hidden sm:flex-row sm:items-end sm:justify-between">
@@ -46,7 +46,7 @@
                     ['Requester', $test->requester_name ?: '-'],
                     ['Institution / Company', $test->requester_organization ?: '-'],
                     ['Contact', $test->requester_contact ?: '-'],
-                    ['Quantity', $test->quantity !== null ? $format($test->quantity, 3).' '.($test->unit ?: '') : '-'],
+                    ['Quantity', $test->quantity !== null ? \App\Support\NumberFormatter::integer($test->quantity).' '.($test->unit ?: '') : '-'],
                     ['Reference Dose', ($test->dmin !== null ? $format($test->dmin) : '-').($test->dmax !== null ? ' – '.$format($test->dmax) : '').(($test->dmin !== null || $test->dmax !== null) ? ' kGy' : '')],
                     ['Dimension P × L × T', $test->dimension_label],
                     ['Expected Temperature', $test->expected_temperature ?: '-'],
@@ -87,9 +87,9 @@
 
     @if($test->dosimeters->count())
     <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-arrow-down"></i></div><div><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Minimum Measured Dose</span><strong class="mt-1 block text-xl font-extrabold tracking-tight text-slate-900">{{ $doseStats['min'] !== null ? number_format($doseStats['min'], 3).' kGy' : '-' }}</strong></div></div>
-        <div class="flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><i class="fa-solid fa-chart-line"></i></div><div><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Average Measured Dose</span><strong class="mt-1 block text-xl font-extrabold tracking-tight text-slate-900">{{ $doseStats['avg'] !== null ? number_format($doseStats['avg'], 3).' kGy' : '-' }}</strong></div></div>
-        <div class="flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><i class="fa-solid fa-arrow-up"></i></div><div><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Maximum Measured Dose</span><strong class="mt-1 block text-xl font-extrabold tracking-tight text-slate-900">{{ $doseStats['max'] !== null ? number_format($doseStats['max'], 3).' kGy' : '-' }}</strong></div></div>
+        <div class="flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-arrow-down"></i></div><div><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Minimum Measured Dose</span><strong class="mt-1 block text-xl font-extrabold tracking-tight text-slate-900">{{ $doseStats['min'] !== null ? $format($doseStats['min'], 4).' kGy' : '-' }}</strong></div></div>
+        <div class="flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><i class="fa-solid fa-chart-line"></i></div><div><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Average Measured Dose</span><strong class="mt-1 block text-xl font-extrabold tracking-tight text-slate-900">{{ $doseStats['avg'] !== null ? $format($doseStats['avg'], 4).' kGy' : '-' }}</strong></div></div>
+        <div class="flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><i class="fa-solid fa-arrow-up"></i></div><div><span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Maximum Measured Dose</span><strong class="mt-1 block text-xl font-extrabold tracking-tight text-slate-900">{{ $doseStats['max'] !== null ? $format($doseStats['max'], 4).' kGy' : '-' }}</strong></div></div>
     </section>
     @endif
 
@@ -141,7 +141,7 @@ function dosimeterEditor(initialRows) {
             if (value === '' || value === null || value === undefined || Number.isNaN(Number(value))) return '-';
             const x = Number(value);
             const dose = (13.099 * Math.pow(x, 3)) + (8.7891 * Math.pow(x, 2)) + (57.786 * x) - 2.423;
-            return dose.toFixed(4);
+            return window.formatSmartNumber(dose, 4, '-');
         }
     }
 }

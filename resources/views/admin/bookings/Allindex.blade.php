@@ -373,7 +373,7 @@
             if (booking.batches && booking.batches.length > 0) {
                 let totalQty = 0;
                 booking.batches.forEach((batch, i) => {
-                    const qty = parseFloat(batch.quantity || 0);
+                    const qty = parseInt(batch.quantity || 0, 10);
                     totalQty += qty;
 
                     batchTableBody.innerHTML += `
@@ -398,12 +398,12 @@
                             <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-lg uppercase">${mainProduct.target_dose || '0'} <span class="text-[8px] opacity-70">kGy</span></span>
                         </td>
                         <td class="px-8 py-6 font-black text-right text-slate-800">
-                            ${qty.toLocaleString()} <span class="text-[9px] text-slate-400 font-bold ml-1">${pUnit}</span>
+                            ${window.formatSmartNumber(qty, 0, '0')} <span class="text-[9px] text-slate-400 font-bold ml-1">${pUnit}</span>
                         </td>
                     </tr>`;
                 });
 
-                document.getElementById('batch_total_sum').innerText = `${totalQty.toLocaleString()} ${pUnit}`;
+                document.getElementById('batch_total_sum').innerText = `${window.formatSmartNumber(totalQty, 0, '0')} ${pUnit}`;
                 document.getElementById('batch_count_badge').innerText = `${booking.batches.length} Batches`;
                 document.getElementById('batch_result_section').classList.remove('hidden');
             } else {

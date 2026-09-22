@@ -48,8 +48,8 @@
                                 <td class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-800">{{ $product->product_name }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-center">{{ $product->product_type }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-center">{{ $product->dimension_pack }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ $product->quantity }} {{ $product->unit }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ (int) $product->dmin }} - {{ (int) $product->dmax }} kGy</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ \App\Support\NumberFormatter::integer($product->quantity) }} {{ $product->unit }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ \App\Support\NumberFormatter::smart($product->dmin, 4) }} - {{ \App\Support\NumberFormatter::smart($product->dmax, 4) }} kGy</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -73,7 +73,7 @@
                             <tr>
                                 <td class="border-b border-slate-100 px-4 py-3 text-center font-semibold">{{ $batch->batch_number }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3">{{ $batch->porter_name }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ (int) $batch->quantity }} {{ $batch->unit }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-center">{{ \App\Support\NumberFormatter::integer($batch->quantity) }} {{ $batch->unit }}</td>
                             </tr>
                         @endforeach
                     </tbody>

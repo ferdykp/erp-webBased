@@ -143,7 +143,7 @@
                         <div class="space-y-2">
                             <label
                                 class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-widest ml-1">Quantity</label>
-                            <input type="number" id="in_qty" value="{{ $booking->quantity }}"
+                            <input type="number" min="1" step="1" id="in_qty" value="{{ $booking->quantity }}"
                                 class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:bg-white transition-all outline-none">
                         </div>
                         <div class="space-y-2">
@@ -227,11 +227,7 @@
 
     <script>
         function formatNum(num, decimals = 2) {
-            if (num === null || num === undefined || isNaN(num)) return "0";
-            return new Intl.NumberFormat('id-ID', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: decimals
-            }).format(num);
+            return window.formatSmartNumber(num, decimals, '0');
         }
 
         document.addEventListener('DOMContentLoaded', function() {

@@ -14,6 +14,14 @@ class InvoiceItem extends Model
         'total'
     ];
 
+
+
+    protected $casts = [
+        'qty' => 'float',
+        'unit_price' => 'float',
+        'total' => 'float',
+    ];
+
     /*
     |--------------------------------------------------------------------------
     | RELATIONSHIPS

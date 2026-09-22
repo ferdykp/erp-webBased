@@ -32,6 +32,19 @@ class BookingBatch extends Model
         'total_duration', // <--- Tambahkan ini
     ];
 
+
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'target_dose' => 'float',
+        'beam_speed' => 'float',
+        'freq' => 'float',
+        'scan_gear' => 'float',
+        'offline_at' => 'datetime',
+        'finished_at' => 'datetime',
+        'total_duration' => 'integer',
+    ];
+
     /**
      * Relasi: Batch ini milik booking mana.
      */

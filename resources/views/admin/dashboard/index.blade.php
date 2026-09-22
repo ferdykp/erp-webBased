@@ -33,14 +33,15 @@
         @endforeach
     </div>
 
+    <div class="flex min-h-[calc(100dvh-9rem)] w-full flex-col">
     {{-- ═══ PAGE HEADER ═══ --}}
-    <div class="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between 2xl:mb-6 3xl:mb-7">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-400">Monitoring warehouse operations and bookings.</p>
+            <h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl 2xl:text-[2rem] 3xl:text-4xl">Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-400 2xl:text-[15px] 3xl:text-base">Monitoring warehouse operations and bookings.</p>
         </div>
         <div
-            class="inline-flex items-center self-start gap-2 px-4 py-2 bg-white border border-gray-100 shadow-sm rounded-xl sm:self-auto">
+            class="inline-flex items-center self-start gap-2 rounded-xl border border-gray-100 bg-white px-4 py-2 shadow-sm sm:self-auto 2xl:px-5 2xl:py-2.5 3xl:text-base">
             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -97,30 +98,30 @@
         ];
     @endphp
 
-    <div class="mb-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5 2xl:gap-5">
+    <div class="mb-5 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5 2xl:mb-6 2xl:gap-5 3xl:mb-7 3xl:gap-6">
         @foreach ($stats as $stat)
             <div
-                class="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center justify-center w-9 h-9 {{ $stat['bg'] }} rounded-xl">
-                        <svg class="w-4 h-4 {{ $stat['text'] }}" fill="none" stroke="currentColor" stroke-width="2"
+                class="min-h-[116px] rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md 2xl:min-h-[132px] 2xl:p-6 3xl:min-h-[150px] 3xl:p-7 4xl:min-h-[166px]">
+                <div class="mb-4 flex items-center justify-between 2xl:mb-5">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl {{ $stat['bg'] }} 2xl:h-10 2xl:w-10 3xl:h-11 3xl:w-11">
+                        <svg class="h-4 w-4 {{ $stat['text'] }} 2xl:h-[18px] 2xl:w-[18px] 3xl:h-5 3xl:w-5" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="{{ $stat['icon'] }}" />
                         </svg>
                     </div>
                 </div>
-                <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{{ $stat['label'] }}</p>
-                <p class="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">{{ $stat['count'] }}</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 2xl:text-xs 3xl:text-[13px]">{{ $stat['label'] }}</p>
+                <p class="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl 2xl:text-4xl 3xl:text-[2.6rem]">{{ $stat['count'] }}</p>
             </div>
         @endforeach
     </div>
 
     {{-- ═══ WORKFLOW GUIDE ═══ --}}
-    <div class="mb-8">
-        <div class="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mb-5 2xl:mb-6 3xl:mb-7">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between 2xl:mb-5">
             <div>
-                <h2 class="text-sm font-semibold text-gray-800">Operational Workflow</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Follow these steps to process orders end-to-end.</p>
+                <h2 class="text-sm font-semibold text-gray-800 2xl:text-base 3xl:text-lg">Operational Workflow</h2>
+                <p class="mt-0.5 text-xs text-gray-400 2xl:text-sm">Follow these steps to process orders end-to-end.</p>
             </div>
             <span
                 class="hidden sm:inline-flex items-center px-3 py-1 text-[11px] font-semibold text-gray-400 bg-gray-100 rounded-full uppercase tracking-wider">
@@ -128,7 +129,7 @@
             </span>
         </div>
 
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:gap-5 3xl:gap-6">
             @php
                 $steps = [
                     [
@@ -199,13 +200,13 @@
             @foreach ($steps as $step)
                 @php $a = $accentMap[$step['accent']]; @endphp
                 <div
-                    class="relative p-5 bg-white border border-gray-100 rounded-2xl shadow-sm {{ $a['hover'] }} transition-all duration-200 overflow-hidden group">
+                    class="group relative min-h-[138px] overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 {{ $a['hover'] }} 2xl:min-h-[158px] 2xl:p-6 3xl:min-h-[178px] 3xl:p-7">
                     <div
                         class="absolute -right-2 -top-1 text-6xl font-bold text-gray-50 group-hover:text-{{ $step['accent'] }}-50 transition-colors select-none">
                         {{ $step['num'] }}
                     </div>
                     <div class="relative">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="mb-4 flex items-center justify-between 2xl:mb-5">
                             <div class="flex items-center justify-center w-9 h-9 {{ $a['bg'] }} rounded-xl">
                                 <svg class="w-4 h-4 {{ $a['text'] }}" fill="none" stroke="currentColor"
                                     stroke-width="1.5" viewBox="0 0 24 24">
@@ -217,8 +218,8 @@
                                 {{ $step['num'] }}
                             </span>
                         </div>
-                        <h3 class="mb-1 text-sm font-semibold text-gray-800">{{ $step['title'] }}</h3>
-                        <p class="text-xs leading-relaxed text-gray-400">{!! $step['desc'] !!}</p>
+                        <h3 class="mb-1 text-sm font-semibold text-gray-800 2xl:text-base 3xl:text-[17px]">{{ $step['title'] }}</h3>
+                        <p class="text-xs leading-relaxed text-gray-400 2xl:text-[13px] 3xl:text-sm">{!! $step['desc'] !!}</p>
                     </div>
                 </div>
             @endforeach
@@ -226,11 +227,11 @@
     </div>
 
     {{-- ═══ SCANNER + RECENT ARRIVALS ═══ --}}
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6 2xl:grid-cols-4 3xl:gap-8">
+    <div class="grid flex-1 grid-cols-1 items-stretch gap-5 lg:min-h-[340px] lg:grid-cols-3 lg:gap-6 2xl:min-h-[410px] 2xl:grid-cols-4 3xl:min-h-[480px] 3xl:gap-8 4xl:min-h-[560px]">
 
         {{-- QR Scanner --}}
-        <div class="lg:col-span-1">
-            <div class="flex flex-col h-full gap-5 p-6 text-white bg-gray-900 rounded-2xl">
+        <div class="h-full lg:col-span-1">
+            <div class="flex h-full min-h-[320px] flex-col gap-5 rounded-2xl bg-gray-900 p-6 text-white 2xl:min-h-[390px] 2xl:gap-6 2xl:p-7 3xl:min-h-[460px] 3xl:p-8 4xl:min-h-[540px]">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center justify-center w-9 h-9 bg-blue-500/20 rounded-xl">
                         <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2"
@@ -247,7 +248,7 @@
                     </div>
                 </div>
 
-                <div id="reader" class="overflow-hidden border border-gray-700 rounded-xl bg-gray-800/60"></div>
+                <div id="reader" class="min-h-[150px] flex-1 overflow-hidden rounded-xl border border-gray-700 bg-gray-800/60 2xl:min-h-[210px] 3xl:min-h-[260px] 4xl:min-h-[330px]"></div>
 
                 <div class="space-y-3">
                     <div class="relative">
@@ -270,9 +271,9 @@
         </div>
 
         {{-- Recent Arrivals --}}
-        <div class="lg:col-span-2 2xl:col-span-3">
-            <div class="flex flex-col h-full bg-white border border-gray-100 shadow-sm rounded-2xl">
-                <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div class="h-full lg:col-span-2 2xl:col-span-3">
+            <div class="flex h-full min-h-[320px] flex-col rounded-2xl border border-gray-100 bg-white shadow-sm 2xl:min-h-[390px] 3xl:min-h-[460px] 4xl:min-h-[540px]">
+                <div class="flex items-center justify-between border-b border-gray-100 px-6 py-5 2xl:px-7 2xl:py-6 3xl:px-8">
                     <div>
                         <h3 class="text-sm font-semibold text-gray-800">Recent Arrivals</h3>
                         <p class="text-xs text-gray-400 mt-0.5">Latest check-ins today</p>
@@ -285,7 +286,7 @@
                 </div>
 
                 {{-- Desktop Table --}}
-                <div class="flex-1 hidden overflow-x-auto sm:block">
+                <div class="hidden flex-1 overflow-auto sm:block">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-50 bg-gray-50/60">
@@ -304,21 +305,21 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
-                            @forelse (\App\Models\Booking::whereNotNull('arrival_time')->latest('arrival_time')->take(6)->get() as $recent)
+                            @forelse (\App\Models\Booking::whereNotNull('arrival_time')->latest('arrival_time')->take(10)->get() as $recent)
                                 <tr class="transition-colors hover:bg-gray-50/60">
-                                    <td class="px-6 py-3.5">
+                                    <td class="px-6 py-3.5 2xl:px-7 2xl:py-4 3xl:px-8 3xl:py-[18px]">
                                         <span
                                             class="inline-flex items-center px-2.5 py-1 text-xs font-mono font-semibold text-blue-700 bg-blue-50 rounded-lg">
                                             #{{ $recent->booking_code }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-3.5 text-sm font-medium text-gray-700">
+                                    <td class="px-6 py-3.5 text-sm font-medium text-gray-700 2xl:px-7 2xl:py-4 2xl:text-[15px] 3xl:px-8 3xl:py-[18px]">
                                         {{ $recent->customer->contacts->first()->name ?? 'Guest' }}
                                     </td>
-                                    <td class="px-6 py-3.5 text-sm text-gray-500">
+                                    <td class="px-6 py-3.5 text-sm text-gray-500 2xl:px-7 2xl:py-4 2xl:text-[15px] 3xl:px-8 3xl:py-[18px]">
                                         {{ $recent->products->first()?->product_name ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-3.5 text-sm font-semibold text-gray-700 text-right">
+                                    <td class="px-6 py-3.5 text-right text-sm font-semibold text-gray-700 2xl:px-7 2xl:py-4 2xl:text-[15px] 3xl:px-8 3xl:py-[18px]">
                                         {{ $recent->arrival_time->format('H:i') }}
                                     </td>
                                 </tr>
@@ -334,7 +335,7 @@
 
                 {{-- Mobile Card List --}}
                 <div class="flex-1 divide-y divide-gray-100 sm:hidden">
-                    @forelse (\App\Models\Booking::whereNotNull('arrival_time')->latest('arrival_time')->take(6)->get() as $recent)
+                    @forelse (\App\Models\Booking::whereNotNull('arrival_time')->latest('arrival_time')->take(10)->get() as $recent)
                         <div class="flex items-center justify-between px-5 py-4">
                             <div class="flex items-center gap-3">
                                 <span
@@ -357,6 +358,8 @@
                 </div>
             </div>
         </div>
+    </div>
+
     </div>
 
     {{-- Reuse exactly the same check-in flow as Order Management/Product Testing. --}}

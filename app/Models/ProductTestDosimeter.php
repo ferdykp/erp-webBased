@@ -17,8 +17,8 @@ class ProductTestDosimeter extends Model
     ];
 
     protected $casts = [
-        'absorbance' => 'decimal:4',
-        'dose_kgy' => 'decimal:4',
+        'absorbance' => 'float',
+        'dose_kgy' => 'float',
     ];
 
     public function productTest(): BelongsTo

@@ -37,9 +37,9 @@
                                 <div class="relative pl-4 border-l-2 border-blue-200">
                                     <p class="text-sm font-bold leading-tight text-gray-800">
                                         {{ $product->product_name }}</p>
-                                    <p class="text-[11px] text-gray-500 font-medium">{{ $product->quantity }}
-                                        {{ $product->unit }} • Min Dose: {{ $product->dmin }}• Max Dose:
-                                        {{ $product->dmax }}</p>
+                                    <p class="text-[11px] text-gray-500 font-medium">{{ \App\Support\NumberFormatter::integer($product->quantity) }}
+                                        {{ $product->unit }} • Min Dose: {{ \App\Support\NumberFormatter::smart($product->dmin, 4) }}• Max Dose:
+                                        {{ $product->dmax !== null ? \App\Support\NumberFormatter::smart($product->dmax, 4) : '-' }}</p>
                                 </div>
                             @endforeach
                         </div>

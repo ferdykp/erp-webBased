@@ -1,4 +1,4 @@
-<nav class="sticky top-0 z-30 flex h-[68px] items-center justify-between gap-3 border-b border-slate-200/80 bg-white/95 px-3 backdrop-blur-xl print:hidden sm:h-[72px] sm:gap-4 sm:px-5 md:px-6 lg:h-[76px] lg:px-8 xl:px-10 2xl:h-[80px] 2xl:px-12 3xl:px-14 4xl:px-16">
+<nav class="sticky top-0 z-30 flex h-[68px] items-center justify-between gap-3 border-b border-slate-200/80 bg-white/95 px-[clamp(0.75rem,1.25vw,2rem)] backdrop-blur-xl print:hidden sm:h-[72px] sm:gap-4 lg:h-[76px] 2xl:h-[80px] 3xl:h-[84px]">
     <div class="flex min-w-0 items-center gap-3">
         <button @click="sidebarOpen = true"
             class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm text-slate-600 transition-colors hover:bg-slate-50 lg:hidden"
@@ -6,8 +6,8 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="min-w-0">
-            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">E-Beam Operations</p>
-            <h1 class="mt-0.5 truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg">@yield('title', 'Dashboard')</h1>
+            <p class="text-[10px] font-bold uppercase 3xl:text-[11px] tracking-[0.16em] text-slate-400">E-Beam Operations</p>
+            <h1 class="mt-0.5 truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg 3xl:text-xl">@yield('title', 'Dashboard')</h1>
         </div>
     </div>
 
@@ -20,7 +20,7 @@
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" @click.outside="open = false"
                 class="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-slate-100">
-                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm">
+                <div class="flex h-9 w-9 items-center 3xl:h-10 3xl:w-10 justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm">
                     {{ strtoupper(substr(auth('admin')->user()->name, 0, 1)) }}
                 </div>
                 <div class="hidden max-w-36 text-left sm:block">

@@ -84,7 +84,7 @@ class AdminProductionController extends Controller
         $validated = $request->validate([
             'booking_id' => 'required|exists:bookings,id',
             'batch_quantities' => 'required|array|min:1',
-            'batch_quantities.*' => 'required|numeric|min:0.01',
+            'batch_quantities.*' => 'required|integer|min:1',
             'batch_porters' => 'required|array|min:1',
             'batch_porters.*' => 'required|string|max:255',
             'production_line_id' => 'required|exists:production_lines,id',
@@ -109,12 +109,12 @@ class AdminProductionController extends Controller
                     throw new \RuntimeException('Booking harus sudah warehouse check-in sebelum masuk Production.');
                 }
 
-                $totalProductQty = (float) $booking->products->sum('quantity');
-                $existingBatchQty = (float) $booking->batches->where('status', '!=', 'pending')->sum('quantity');
+                $totalProductQty = (int) $booking->products->sum('quantity');
+                $existingBatchQty = (int) $booking->batches->where('status', '!=', 'pending')->sum('quantity');
                 $remainingCapacity = max(0, $totalProductQty - $existingBatchQty);
-                $totalRequestedQty = array_sum(array_map('floatval', $validated['batch_quantities']));
+                $totalRequestedQty = array_sum(array_map('intval', $validated['batch_quantities']));
 
-                if ($totalRequestedQty <= 0 || $totalRequestedQty > $remainingCapacity + 0.00001) {
+                if ($totalRequestedQty <= 0 || $totalRequestedQty > $remainingCapacity) {
                     throw new \RuntimeException("Total quantity batch ({$totalRequestedQty}) melebihi sisa kapasitas ({$remainingCapacity}).");
                 }
 
@@ -165,7 +165,7 @@ class AdminProductionController extends Controller
     {
         $validated = $request->validate([
             'booking_id' => 'required|exists:bookings,id',
-            'quantity' => 'required|numeric|min:0.01',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         try {
@@ -175,12 +175,12 @@ class AdminProductionController extends Controller
                     throw new \RuntimeException('Booking harus sudah warehouse check-in sebelum batch dibuat.');
                 }
 
-                $totalProductQty = (float) $booking->products->sum('quantity');
-                $existingBatchQty = (float) $booking->batches->sum('quantity');
+                $totalProductQty = (int) $booking->products->sum('quantity');
+                $existingBatchQty = (int) $booking->batches->sum('quantity');
                 $remainingCapacity = max(0, $totalProductQty - $existingBatchQty);
-                $quantity = (float) $validated['quantity'];
+                $quantity = (int) $validated['quantity'];
 
-                if ($quantity > $remainingCapacity + 0.00001) {
+                if ($quantity > $remainingCapacity) {
                     throw new \RuntimeException("Quantity batch ({$quantity}) melebihi sisa kapasitas ({$remainingCapacity}).");
                 }
 
@@ -256,7 +256,7 @@ class AdminProductionController extends Controller
             'visual_check' => 'required|in:pass,fail',
             'indicator_check' => 'required|in:changed,no_change',
             'is_damaged' => 'required|in:yes,no',
-            'damaged_qty' => 'required_if:is_damaged,yes|nullable|numeric|min:1|max:' . $batch->quantity,
+            'damaged_qty' => 'required_if:is_damaged,yes|nullable|integer|min:1|max:' . $batch->quantity,
             'damage_description' => 'required_if:is_damaged,yes|nullable|string|max:500',
             'qa_notes' => 'nullable|string|max:2000',
         ]);

@@ -9,6 +9,14 @@ class DosimeterDetail extends Model
 {
     protected $fillable = ['dosimeter_record_id', 'tablet_number', 'dosimeter_number', 'absorbance', 'dose_kgy', 'image'];
 
+
+
+    protected $casts = [
+        'tablet_number' => 'integer',
+        'absorbance' => 'float',
+        'dose_kgy' => 'float',
+    ];
+
     public function record(): BelongsTo
     {
         return $this->belongsTo(DosimeterRecord::class, 'dosimeter_record_id');

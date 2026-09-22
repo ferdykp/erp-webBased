@@ -32,7 +32,7 @@
         <section class="p-5 border border-slate-100 rounded-2xl">
             <h3 class="text-xs font-black tracking-widest uppercase text-slate-500">Product</h3>
             <p class="mt-3 font-black text-slate-800">{{ $product?->product_name ?? '-' }}</p>
-            <p class="mt-1 text-xs text-slate-500">{{ number_format($product?->quantity ?? 0) }} {{ $product?->unit ?? '' }} · {{ $product?->dmin ?? '-' }}–{{ $product?->dmax ?? '-' }} kGy</p>
+            <p class="mt-1 text-xs text-slate-500">{{ \App\Support\NumberFormatter::integer($product?->quantity ?? 0) }} {{ $product?->unit ?? '' }} · {{ $product?->dmin !== null ? \App\Support\NumberFormatter::smart($product->dmin, 4) : '-' }}–{{ $product?->dmax !== null ? \App\Support\NumberFormatter::smart($product->dmax, 4) : '-' }} kGy</p>
         </section>
     </div>
 

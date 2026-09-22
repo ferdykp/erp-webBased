@@ -113,7 +113,7 @@
                                                         #{{ $batch->batch_number }}</span>
                                                     <div
                                                         class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold text-slate-400">
-                                                        <span>{{ $batch->quantity }} {{ $batch->unit }}</span>
+                                                        <span>{{ \App\Support\NumberFormatter::integer($batch->quantity) }} {{ $batch->unit }}</span>
                                                         @if ($batch->productionLine)
                                                             <span class="text-slate-300">•</span>
                                                             <span
@@ -132,7 +132,7 @@
 
                                                 {{-- Trigger Modal Konfirmasi --}}
                                                 <button type="button"
-                                                    @click="confirmModal = true; batchAction = '{{ route('admin.production.batches.start', $batch->id) }}'; batchInfo = 'Batch #{{ $batch->batch_number }} ({{ $batch->quantity }} {{ $batch->unit }})'"
+                                                    @click="confirmModal = true; batchAction = '{{ route('admin.production.batches.start', $batch->id) }}'; batchInfo = 'Batch #{{ $batch->batch_number }} ({{ \App\Support\NumberFormatter::integer($batch->quantity) }} {{ $batch->unit }})'"
                                                     class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-100 transition-all">
                                                     <i class="fa-solid fa-play text-[8px]"></i>
                                                     <span>Start Irradiation</span>
