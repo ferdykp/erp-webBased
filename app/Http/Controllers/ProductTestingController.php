@@ -24,7 +24,7 @@ class ProductTestingController extends Controller
                         ->orWhere('requester_organization', 'like', "%{$search}%");
                 });
             })
-            ->when(in_array($status, ['parameter_pending', 'completed'], true), fn ($query) => $query->where('status', $status))
+            ->when(in_array($status, ['parameter_pending', 'completed'], true), fn($query) => $query->where('status', $status))
             ->latest()
             ->paginate(12)
             ->withQueryString();
@@ -47,6 +47,10 @@ class ProductTestingController extends Controller
     {
         $validated = $this->validateTestData($request);
 
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('product-tests', 'public');
+        }
+
         $test = DB::transaction(function () use ($validated) {
             return ProductTest::create([
                 ...$validated,
@@ -68,6 +72,15 @@ class ProductTestingController extends Controller
     public function update(Request $request, ProductTest $test)
     {
         $validated = $this->validateTestData($request);
+
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($test->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($test->image)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($test->image);
+            }
+            $validated['image'] = $request->file('image')->store('product-tests', 'public');
+        }
+
         $test->update($validated);
 
         $nextRoute = $test->status === 'completed'
@@ -126,7 +139,7 @@ class ProductTestingController extends Controller
 
         $test->load(['productionLine', 'dosimeters']);
 
-        $doseValues = $test->dosimeters->pluck('dose_kgy')->filter(fn ($value) => $value !== null)->map(fn ($value) => (float) $value);
+        $doseValues = $test->dosimeters->pluck('dose_kgy')->filter(fn($value) => $value !== null)->map(fn($value) => (float) $value);
         $doseStats = [
             'min' => $doseValues->isNotEmpty() ? $doseValues->min() : null,
             'max' => $doseValues->isNotEmpty() ? $doseValues->max() : null,
@@ -151,14 +164,14 @@ class ProductTestingController extends Controller
         ]);
 
         $rows = collect($validated['readings'] ?? [])
-            ->map(fn ($row) => [
+            ->map(fn($row) => [
                 'dosimeter_number' => trim((string) ($row['dosimeter_number'] ?? '')) ?: null,
                 'position' => trim((string) ($row['position'] ?? '')) ?: null,
                 'absorbance' => array_key_exists('absorbance', $row) && $row['absorbance'] !== null && $row['absorbance'] !== ''
                     ? (float) $row['absorbance']
                     : null,
             ])
-            ->filter(fn ($row) => $row['dosimeter_number'] !== null || $row['position'] !== null || $row['absorbance'] !== null)
+            ->filter(fn($row) => $row['dosimeter_number'] !== null || $row['position'] !== null || $row['absorbance'] !== null)
             ->values();
 
         DB::transaction(function () use ($test, $rows) {
@@ -186,6 +199,9 @@ class ProductTestingController extends Controller
 
     public function destroy(ProductTest $test)
     {
+        if ($test->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($test->image)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($test->image);
+        }
         $test->delete();
         return redirect()->route('admin.testing.index')->with('success', 'Product test berhasil dihapus.');
     }
@@ -208,6 +224,11 @@ class ProductTestingController extends Controller
             'net_weight_kg' => 'nullable|numeric|min:0',
             'gross_weight_kg' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:4000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120', // Diubah jadi 5MB (5120 KB)
+        ], [
+            'image.max' => 'Ukuran file gambar terlalu besar. Maksimal ukuran gambar adalah 5 MB.',
+            'image.image' => 'File yang diunggah harus berupa gambar (jpeg, png, jpg, webp).',
+            'image.mimes' => 'Format gambar harus berjenis: jpeg, png, jpg, atau webp.',
         ]);
     }
 

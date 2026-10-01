@@ -25,6 +25,7 @@ class ProductTest extends Model
         'net_weight_kg',
         'gross_weight_kg',
         'notes',
+        'image',
         'production_line_id',
         'target_dose',
         'beam_speed',
@@ -65,12 +66,12 @@ class ProductTest extends Model
     public function getDimensionLabelAttribute(): string
     {
         $values = [$this->length_cm, $this->width_cm, $this->height_cm];
-        if (collect($values)->filter(fn ($value) => $value !== null)->isEmpty()) {
+        if (collect($values)->filter(fn($value) => $value !== null)->isEmpty()) {
             return '-';
         }
 
         return collect($values)
-            ->map(fn ($value) => $value === null ? '-' : \App\Support\NumberFormatter::smart($value, 3))
+            ->map(fn($value) => $value === null ? '-' : \App\Support\NumberFormatter::smart($value, 3))
             ->implode(' × ') . ' cm';
     }
 }

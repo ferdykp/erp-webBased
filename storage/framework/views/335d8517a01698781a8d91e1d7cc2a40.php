@@ -1,0 +1,345 @@
+
+<div id="modal-detail-<?php echo e($booking->id); ?>"
+    class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500 p-4">
+
+    <div
+        class="modal-card relative w-full max-w-5xl max-h-[95vh] overflow-hidden bg-white shadow-2xl rounded-[3.5rem] transform scale-95 opacity-0 transition-all duration-500 flex flex-col">
+
+        
+        <div class="flex items-start justify-between px-12 pt-12 pb-6">
+            <div>
+                <h2 class="text-3xl font-black tracking-tighter text-slate-800">Product Details</h2>
+                <div class="flex items-center gap-3 mt-2">
+                    <span
+                        class="px-3 py-1 text-[10px] font-black tracking-widest text-blue-600 bg-blue-50 rounded-lg uppercase">
+                        #<?php echo e($booking->booking_code); ?>
+
+                    </span>
+                    <?php if (isset($component)) { $__componentOriginal8c81617a70e11bcf247c4db924ab1b62 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal8c81617a70e11bcf247c4db924ab1b62 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.status-badge','data' => ['status' => $booking->status]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('status-badge'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['status' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($booking->status)]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal8c81617a70e11bcf247c4db924ab1b62)): ?>
+<?php $attributes = $__attributesOriginal8c81617a70e11bcf247c4db924ab1b62; ?>
+<?php unset($__attributesOriginal8c81617a70e11bcf247c4db924ab1b62); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal8c81617a70e11bcf247c4db924ab1b62)): ?>
+<?php $component = $__componentOriginal8c81617a70e11bcf247c4db924ab1b62; ?>
+<?php unset($__componentOriginal8c81617a70e11bcf247c4db924ab1b62); ?>
+<?php endif; ?>
+                </div>
+            </div>
+            <button onclick="toggleDetailModal('<?php echo e($booking->id); ?>', false)"
+                class="flex items-center justify-center w-12 h-12 transition-all bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl">
+                <i class="text-xl fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        
+        <div class="flex-1 px-12 pb-12 space-y-10 overflow-y-auto scrollbar-hide">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div class="p-8 bg-slate-50 border border-slate-100 rounded-[2.5rem]">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Client Information
+                    </p>
+                    <h4 class="text-xl font-black text-slate-800">
+                        <?php echo e($booking->customer->contacts->first()->name ?? 'Guest'); ?></h4>
+                    <p class="mt-1 text-sm font-medium text-slate-500"><?php echo e($booking->customer->email ?? '-'); ?></p>
+                </div>
+
+                <div class="p-8 bg-indigo-50 border border-indigo-100 rounded-[2.5rem]">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Time Input</p>
+                    <div class="space-y-2">
+                        <p class="flex justify-between text-xs font-bold text-slate-600">Booked:
+                            <span class="text-indigo-700"><?php echo e($booking->created_at->format('d M Y H:i')); ?></span>
+                        </p>
+                        <p class="flex justify-between text-xs font-bold text-slate-600">Checked In:
+                            <span
+                                class="text-indigo-700"><?php echo e($booking->arrival_time ? \Carbon\Carbon::parse($booking->arrival_time)->format('d M Y H:i') : 'Waiting'); ?></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <?php $product = $booking->products->first(); ?>
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                <div class="p-6 border border-slate-100 rounded-3xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Product Information</p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Name:
+                        <span class="text-indigo-700"><?php echo e($product->product_name ?? '-'); ?></span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Type:
+                        <span class="text-indigo-700"><?php echo e($product->product_type ?? '-'); ?></span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Dimension:
+                        <span class="text-indigo-700"><?php echo e($product->dimension_pack ?? '-'); ?> cm</span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Dose:
+                        <span class="text-indigo-700"> <?php echo e(\App\Support\NumberFormatter::smart($product->dmin ?? 0, 4)); ?> -
+                            <?php echo e(\App\Support\NumberFormatter::smart($product->dmax ?? 0, 4)); ?> kGy
+                        </span>
+                    </p>
+                </div>
+                <div class="p-6 border border-slate-100 rounded-3xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume</p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Vol Pcs:
+                        <span class="text-indigo-700"><?php echo e(\App\Support\NumberFormatter::smart($product->vol_per_pcs ?? 0, 4)); ?> cm³</span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Vol Total:
+                        <span class="text-indigo-700"><?php echo e(\App\Support\NumberFormatter::smart($product->vol_total ?? 0, 4)); ?> cm³</span>
+                    </p>
+                </div>
+                <div class="p-6 border border-slate-100 rounded-3xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Total Quantity</p>
+                    <p class="font-bold text-blue-600"><?php echo e(\App\Support\NumberFormatter::integer($product->quantity ?? 0)); ?> <?php echo e($product->unit ?? ''); ?></p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                <div class="p-6 border border-slate-100 rounded-3xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Nett Weigth</p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
+                        <span class="text-indigo-700"><?php echo e(\App\Support\NumberFormatter::smart($product->net_weight_pcs ?? 0, 4)); ?> kg</span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Total:
+                        <span class="text-indigo-700"><?php echo e(\App\Support\NumberFormatter::smart($product->total_net_weight ?? 0, 4)); ?> kg</span>
+                    </p>
+                </div>
+                <div class="p-6 border border-slate-100 rounded-3xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Gross Weigth</p>
+
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
+                        <span class="text-indigo-700"><?php echo e(\App\Support\NumberFormatter::smart($product->gross_weight_per_pcs ?? 0, 4)); ?>
+
+                            kg</span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Total:
+                        <span class="text-indigo-700"><?php echo e(\App\Support\NumberFormatter::smart($product->total_gross_weight ?? 0, 4)); ?> kg</span>
+                    </p>
+                </div>
+                <div class="p-6 border border-slate-100 rounded-3xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Density</p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Nett:
+                        <span class="text-indigo-700"><?php echo e($product->density_nett !== null ? \App\Support\NumberFormatter::smart($product->density_nett, 6) : '-'); ?></span>
+                    </p>
+                    <p class="flex justify-between text-xs font-bold text-slate-600">Gross:
+                        <span class="text-indigo-700"><?php echo e($product->density_gross !== null ? \App\Support\NumberFormatter::smart($product->density_gross, 6) : '-'); ?></span>
+                    </p>
+                </div>
+            </div>
+
+            
+            <?php
+                $dosimeterRecord = \App\Models\DosimeterRecord::with('details')
+                    ->where('booking_id', $booking->id)
+                    ->first();
+            ?>
+            <section class="pt-8 space-y-4 border-t border-slate-100">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-black tracking-widest uppercase text-slate-800">
+                        Dosimetry Distribution Validation
+                    </h4>
+                    <?php if($dosimeterRecord): ?>
+                        <span
+                            class="text-[10px] font-black px-3 py-1 bg-amber-50 text-amber-600 rounded-lg uppercase tracking-wider">
+                            Total Tablets: <?php echo e($dosimeterRecord->tablet_quantity ?? 9); ?>
+
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if($dosimeterRecord && $dosimeterRecord->details->count() > 0): ?>
+                    <?php
+                        $minDose = 999;
+                        $maxDose = 0;
+                        foreach ($dosimeterRecord->details as $d) {
+                            $val = (float) $d->dose_kgy;
+                            if ($val > 0) {
+                                if ($val < $minDose) {
+                                    $minDose = $val;
+                                }
+                                if ($val > $maxDose) {
+                                    $maxDose = $val;
+                                }
+                            }
+                        }
+                        $unevenness = $minDose > 0 && $minDose != 999 ? \App\Support\NumberFormatter::smart($maxDose / $minDose, 4) : '1.08';
+                    ?>
+
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        
+                        <div
+                            class="flex flex-col justify-between p-6 space-y-4 border bg-slate-50 border-slate-100 rounded-3xl">
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Analysis
+                                    Summary</p>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                                        Min Absorbed Dose: <span
+                                            class="text-rose-600"><?php echo e($minDose == 999 ? '-' : \App\Support\NumberFormatter::smart($minDose, 4)); ?>
+
+                                            kGy</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                                        Max Absorbed Dose: <span
+                                            class="text-emerald-600"><?php echo e($maxDose == 0 ? '-' : \App\Support\NumberFormatter::smart($maxDose, 4)); ?>
+
+                                            kGy</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                                        Dose Unevenness: <span class="text-indigo-600"><?php echo e($unevenness); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-3 bg-white border border-slate-100 rounded-xl text-[11px] font-medium text-slate-500 leading-relaxed">
+                                <i class="mr-1 text-blue-500 fa-solid fa-circle-info"></i>
+                                Double-sided irradiation process verification. Maximum dose absorbed does not exceed 2x
+                                process requirements.
+                            </div>
+                        </div>
+
+                        
+                        <div
+                            class="lg:col-span-2 overflow-hidden border border-slate-100 rounded-[2rem] max-h-[260px] overflow-y-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead
+                                    class="sticky top-0 bg-slate-100 text-[9px] font-black text-slate-500 uppercase z-10">
+                                    <tr>
+                                        <th class="px-6 py-3">Location Point</th>
+                                        <th class="px-6 py-3 text-center">Dosimeter No.</th>
+                                        <th class="px-6 py-3 text-center">Absorbance (ABS)</th>
+                                        <th class="px-6 py-3 text-right">Dosage (kGy)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs font-bold divide-y divide-slate-50 text-slate-700">
+                                    <?php $__currentLoopData = $dosimeterRecord->details; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detail): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <tr class="transition-colors hover:bg-slate-50/50">
+                                            <td class="px-6 py-3 text-slate-800">Surface <?php echo e($detail->tablet_number); ?>
+
+                                            </td>
+                                            <td class="px-6 py-3 text-center text-slate-500">
+                                                <?php echo e($detail->dosimeter_number ?? '-'); ?></td>
+                                            <td class="px-6 py-3 font-mono text-center text-indigo-600">
+                                                <?php echo e($detail->absorbance !== null ? \App\Support\NumberFormatter::smart($detail->absorbance, 4) : '-'); ?>
+
+                                            </td>
+                                            <td class="px-6 py-3 font-black text-right text-slate-900">
+                                                <?php echo e($detail->dose_kgy !== null ? \App\Support\NumberFormatter::smart($detail->dose_kgy, 4) . ' kGy' : '-'); ?>
+
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div
+                        class="flex flex-col items-center justify-center p-8 border border-dashed border-slate-200 rounded-[2rem] bg-slate-50/50">
+                        <div
+                            class="flex items-center justify-center w-10 h-10 mb-2 bg-slate-100 rounded-xl text-slate-400">
+                            <i class="fa-solid fa-circle-nodes"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-400">No dosimetry analysis data has been generated yet.
+                        </p>
+                        <p class="text-[9px] font-medium text-slate-300 uppercase mt-0.5">Awaiting calibration from
+                            warehouse logistics</p>
+                    </div>
+                <?php endif; ?>
+            </section>
+
+
+            
+            <section class="pt-8 space-y-4 border-t border-slate-100">
+                <h4 class="text-sm font-black tracking-widest uppercase text-slate-800">
+                    Production Batches (<?php echo e($booking->batches->count()); ?>)
+                </h4>
+
+                <div class="overflow-hidden border border-slate-100 rounded-[2rem]">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-[9px] font-black text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-8 py-4 text-center">Batch ID</th>
+                                <th class="px-8 py-4 text-center">Frequency</th>
+                                <th class="px-8 py-4 text-center">Beam Speed</th>
+                                <th class="px-8 py-4 text-center">Scan Gear</th>
+                                <th class="px-8 py-4 text-center">Loading Mode</th>
+                                <th class="px-8 py-4 text-center">Status</th>
+                                <th class="px-8 py-4 text-center ">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <?php $__empty_1 = true; $__currentLoopData = $booking->batches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $batch): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <tr>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        #<?php echo e($batch->id); ?></td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        <?php echo e($batch->freq !== null ? \App\Support\NumberFormatter::smart($batch->freq, 4) . ' Hz' : '-'); ?>
+
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        <?php echo e($batch->beam_speed !== null ? \App\Support\NumberFormatter::smart($batch->beam_speed, 4) . ' m/s' : '-'); ?>
+
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        <?php echo e($batch->scan_gear !== null ? \App\Support\NumberFormatter::smart($batch->scan_gear, 4) : '-'); ?>
+
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-bold text-center text-slate-700">
+                                        <?php echo e($batch->loading_mode); ?>
+
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span
+                                            class="text-[10px] font-bold px-2 py-1 rounded-lg bg-blue-50 text-blue-600 uppercase">
+                                            <?php echo e($batch->status); ?>
+
+                                        </span>
+                                    </td>
+                                    <td class="px-8 py-4 text-xs font-black text-center text-slate-800">
+                                        <?php echo e(\App\Support\NumberFormatter::integer($batch->quantity)); ?>
+
+                                    </td>
+                                </tr>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                
+                                <tr>
+                                    <td colspan="7" class="px-8 py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <div
+                                                class="flex items-center justify-center w-12 h-12 mb-3 bg-slate-50 rounded-2xl text-slate-300">
+                                                <i class="text-xl fa-solid fa-layer-group"></i>
+                                            </div>
+                                            <p class="text-xs font-bold text-slate-400">Belum ada pembagian batch
+                                                produksi.</p>
+                                            <p
+                                                class="text-[10px] font-medium text-slate-300 uppercase tracking-tighter mt-1">
+                                                Menunggu proses Update Parameter / Check-in
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="flex justify-end px-12 py-8 border-t bg-slate-50 border-slate-100">
+            <button onclick="toggleDetailModal('<?php echo e($booking->id); ?>', false)"
+                class="px-10 py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all">
+                Close Details
+            </button>
+        </div>
+    </div>
+</div>
+<?php /**PATH /Users/ferdy/project-fl/beamCustom/resources/views/admin/bookings/partials/detail-modal.blade.php ENDPATH**/ ?>
