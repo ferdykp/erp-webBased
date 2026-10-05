@@ -368,7 +368,7 @@
             DOSE UNIFORMITY RATIO
         ========================================================== --}}
 
-        <section
+        {{-- <section
             class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6">
 
             <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -399,7 +399,6 @@
                 </div>
 
 
-                {{-- DUR Result --}}
 
                 <div
                     class="flex flex-col items-center justify-center min-w-0 px-6 py-4 text-center border rounded-xl border-blue-100 bg-blue-50 sm:min-w-[190px]">
@@ -431,13 +430,9 @@
             </div>
 
 
-            {{-- =====================================================
-                MEASURED DOSE VALUES
-            ====================================================== --}}
 
             <div class="grid grid-cols-1 gap-3 mt-5 sm:grid-cols-3">
 
-                {{-- Minimum Measured Dose --}}
 
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
@@ -454,7 +449,6 @@
                 </div>
 
 
-                {{-- Maximum Measured Dose --}}
 
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
@@ -471,7 +465,6 @@
                 </div>
 
 
-                {{-- Formula --}}
 
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
@@ -500,9 +493,6 @@
             </div>
 
 
-            {{-- =====================================================
-                CALCULATION DETAIL
-            ====================================================== --}}
 
             @if ($doseDur !== null)
                 <div class="p-4 mt-4 border border-blue-100 rounded-xl bg-blue-50/50">
@@ -590,7 +580,6 @@
             @endif
 
 
-            {{-- Explanation --}}
 
             <div class="p-4 mt-4 border border-slate-200 rounded-xl bg-slate-50">
 
@@ -629,7 +618,7 @@
 
             </div>
 
-        </section>
+        </section> --}}
 
 
         {{-- =========================================================
@@ -718,12 +707,14 @@
                     <div>
 
                         <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Average Measured Dose
+                            Dose Uniformity Ratio (DUR)
                         </span>
 
                         <strong class="block mt-1 text-xl font-extrabold tracking-tight text-slate-900">
 
-                            {{ $doseStats['avg'] !== null ? $format($doseStats['avg'], 4) . ' kGy' : '-' }}
+                            {{-- {{ $doseStats['avg'] !== null ? $format($doseDur['avg'], 4) . ' DUR' : '-' }} --}}
+                            {{ $format($doseDur, 4) }}
+
 
                         </strong>
 
