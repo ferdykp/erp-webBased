@@ -213,8 +213,7 @@
                 02. SAMPLE DATA
             ========================================================== --}}
             <section class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 sm:p-6"
-                x-data="doseFluctuationCalculator()">
-
+                x-data="doseDurCalculator()">
                 <div class="flex items-start justify-between gap-4 mb-5">
                     <div>
                         <p class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-blue-600">
@@ -305,8 +304,8 @@
                     </label>
 
                     {{-- =================================================
-                        FLUCTUATION CALCULATION
-                    ================================================== --}}
+    DUR CALCULATION
+================================================== --}}
                     <div class="md:col-span-2 2xl:col-span-4">
 
                         <div
@@ -317,9 +316,10 @@
                                 <div class="min-w-0">
 
                                     <div class="flex items-center gap-2">
+
                                         <div
                                             class="flex items-center justify-center text-blue-600 bg-blue-100 w-9 h-9 rounded-xl">
-                                            <i class="fa-solid fa-calculator"></i>
+                                            <i class="fa-solid fa-scale-balanced"></i>
                                         </div>
 
                                         <div>
@@ -328,43 +328,52 @@
                                             </p>
 
                                             <h3 class="mt-0.5 text-sm font-bold text-slate-900">
-                                                Dose Fluctuation
+                                                Dose Uniformity Ratio (DUR)
                                             </h3>
                                         </div>
+
                                     </div>
 
                                     <div class="mt-4">
+
                                         <p class="text-[11px] font-medium text-slate-500">
                                             Formula
                                         </p>
 
                                         <div
                                             class="inline-flex items-center gap-2 px-3 py-2 mt-1.5 font-mono text-sm font-semibold text-blue-700 border border-blue-100 rounded-lg bg-white">
-                                            <span>(Max Dose − Min Dose)</span>
+
+                                            <span>Max Dose</span>
+
                                             <span class="text-slate-300">÷</span>
-                                            <span>(Max Dose + Min Dose)</span>
+
+                                            <span>Min Dose</span>
+
                                         </div>
+
                                     </div>
 
                                 </div>
 
+                                {{-- DUR Result --}}
                                 <div
                                     class="flex flex-col justify-center min-w-0 px-5 py-4 text-center bg-white border rounded-xl border-slate-200 sm:min-w-[220px]">
 
                                     <span class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-slate-400">
-                                        Calculated Fluctuation
+                                        Calculated DUR
                                     </span>
 
                                     <strong class="mt-1 text-2xl font-black tracking-tight text-slate-900"
-                                        x-text="formattedPercentage">
+                                        x-text="formattedDur">
                                         —
                                     </strong>
 
-                                    <span class="mt-1 text-[10px] font-medium text-slate-400" x-text="formattedDecimal">
+                                    <span class="mt-1 text-[10px] font-medium text-slate-400" x-text="durStatus">
                                         —
                                     </span>
 
                                 </div>
+
                             </div>
 
                             {{-- Calculation Detail --}}
@@ -373,7 +382,9 @@
                                 <div
                                     class="grid grid-cols-1 gap-3 p-4 border rounded-xl border-slate-200 bg-white/80 sm:grid-cols-3">
 
+                                    {{-- Minimum Dose --}}
                                     <div>
+
                                         <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
                                             Minimum Dose
                                         </span>
@@ -382,9 +393,12 @@
                                             x-text="formattedMinDose">
                                             —
                                         </strong>
+
                                     </div>
 
+                                    {{-- Maximum Dose --}}
                                     <div>
+
                                         <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
                                             Maximum Dose
                                         </span>
@@ -393,29 +407,39 @@
                                             x-text="formattedMaxDose">
                                             —
                                         </strong>
+
                                     </div>
 
+                                    {{-- Result --}}
                                     <div>
+
                                         <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                                            Formula Result
+                                            DUR Result
                                         </span>
 
                                         <strong class="block mt-1 text-sm font-bold text-blue-700" x-text="formulaText">
                                             —
                                         </strong>
+
                                     </div>
 
                                 </div>
 
                                 <p class="mt-3 text-[10px] leading-5 text-slate-400">
+
                                     <i class="mr-1 text-blue-400 fa-solid fa-circle-info"></i>
-                                    Perhitungan dilakukan otomatis berdasarkan Reference Minimum Dose dan
-                                    Reference Maximum Dose. Nilai tidak disimpan sebagai input terpisah karena
-                                    merupakan hasil kalkulasi dari kedua nilai tersebut.
+
+                                    DUR dihitung otomatis berdasarkan Reference Minimum Dose dan
+                                    Reference Maximum Dose menggunakan rasio Maximum Dose ÷ Minimum Dose.
+                                    Nilai DUR tidak disimpan sebagai input terpisah karena merupakan
+                                    hasil kalkulasi dari kedua nilai tersebut.
+
                                 </p>
 
                             </div>
+
                         </div>
+
                     </div>
 
                     {{-- Dimension --}}
@@ -601,15 +625,17 @@
 
 @push('scripts')
     <script>
-        function doseFluctuationCalculator() {
+        function doseDurCalculator() {
             return {
                 minDose: @js(old('dmin', $test?->dmin)),
                 maxDose: @js(old('dmax', $test?->dmax)),
 
-                formattedPercentage: '—',
-                formattedDecimal: '—',
+                formattedDur: '—',
+                durStatus: 'Masukkan Min & Max Dose',
+
                 formattedMinDose: '—',
                 formattedMaxDose: '—',
+
                 formulaText: '—',
 
                 init() {
@@ -630,43 +656,51 @@
                         `${this.formatNumber(max, 4)} kGy` :
                         '—';
 
-                    // Belum lengkap
+                    // Data belum lengkap
                     if (!Number.isFinite(min) || !Number.isFinite(max)) {
-                        this.formattedPercentage = '—';
-                        this.formattedDecimal = 'Masukkan Min & Max Dose';
+                        this.formattedDur = '—';
+                        this.durStatus = 'Masukkan Min & Max Dose';
                         this.formulaText = '—';
+
                         return;
                     }
 
-                    // Validasi sederhana
+                    // Nilai tidak valid
                     if (min < 0 || max < 0) {
-                        this.formattedPercentage = '—';
-                        this.formattedDecimal = 'Nilai dose tidak valid';
+                        this.formattedDur = '—';
+                        this.durStatus = 'Nilai dose tidak valid';
                         this.formulaText = '—';
+
                         return;
                     }
 
-                    const denominator = max + min;
+                    // Minimum dose tidak boleh 0
+                    if (min === 0) {
+                        this.formattedDur = '—';
+                        this.durStatus = 'Min Dose tidak boleh 0';
+                        this.formulaText = 'Max ÷ Min';
 
-                    // Tidak boleh membagi dengan 0
-                    if (denominator === 0) {
-                        this.formattedPercentage = '—';
-                        this.formattedDecimal = 'Tidak dapat dihitung';
-                        this.formulaText = 'Max + Min = 0';
                         return;
                     }
 
-                    const fluctuation = (max - min) / denominator;
-                    const percentage = fluctuation * 100;
+                    // Max harus >= Min
+                    if (max < min) {
+                        this.formattedDur = '—';
+                        this.durStatus = 'Max Dose harus ≥ Min Dose';
+                        this.formulaText = 'Data dose tidak valid';
 
-                    this.formattedPercentage =
-                        `${this.formatNumber(percentage, 2)}%`;
+                        return;
+                    }
 
-                    this.formattedDecimal =
-                        `Index: ${this.formatNumber(fluctuation, 4)}`;
+                    // DUR = Max Dose / Min Dose
+                    const dur = max / min;
+
+                    this.formattedDur = this.formatNumber(dur, 4);
+
+                    this.durStatus = 'Dose Uniformity Ratio';
 
                     this.formulaText =
-                        `(${this.formatNumber(max, 4)} − ${this.formatNumber(min, 4)}) ÷ (${this.formatNumber(max, 4)} + ${this.formatNumber(min, 4)}) = ${this.formatNumber(fluctuation, 4)}`;
+                        `${this.formatNumber(max, 4)} ÷ ${this.formatNumber(min, 4)} = ${this.formatNumber(dur, 4)}`;
                 },
 
                 formatNumber(value, decimals = 4) {

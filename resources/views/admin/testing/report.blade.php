@@ -8,24 +8,25 @@
 
         /*
         |--------------------------------------------------------------------------
-        | Dose Fluctuation Calculation
+        | Dose Uniformity Ratio (DUR)
         |--------------------------------------------------------------------------
         |
         | Formula:
-        | (Max Dose - Min Dose) / (Max Dose + Min Dose)
+        | DUR = Max Dose / Min Dose
+        |
+        | DUR tidak disimpan di database karena merupakan nilai turunan
+        | dari dmin dan dmax.
         |
         */
 
-        $doseFluctuation = null;
-        $doseFluctuationPercentage = null;
+        $doseDur = null;
 
         if ($test->dmin !== null && $test->dmax !== null) {
-            $doseSum = (float) $test->dmax + (float) $test->dmin;
+            $minDose = (float) $test->dmin;
+            $maxDose = (float) $test->dmax;
 
-            if ($doseSum != 0) {
-                $doseFluctuation = ((float) $test->dmax - (float) $test->dmin) / $doseSum;
-
-                $doseFluctuationPercentage = $doseFluctuation * 100;
+            if ($minDose > 0 && $maxDose >= $minDose) {
+                $doseDur = $maxDose / $minDose;
             }
         }
     @endphp
@@ -307,7 +308,7 @@
         </section>
 
         {{-- =========================================================
-            DOSE FLUCTUATION ANALYSIS
+            DOSE UNIFORMITY RATIO
         ========================================================== --}}
         <section
             class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6">
@@ -321,30 +322,31 @@
                     </p>
 
                     <h2 class="mt-1 text-base font-bold tracking-tight text-slate-900 sm:text-lg">
-                        Dose Fluctuation
+                        Dose Uniformity Ratio (DUR)
                     </h2>
 
                     <p class="max-w-2xl mt-1.5 text-xs leading-5 text-slate-500">
-                        Perhitungan indeks fluktuasi berdasarkan Reference Minimum Dose dan
-                        Reference Maximum Dose.
+                        Perhitungan rasio keseragaman dosis berdasarkan Reference Minimum Dose
+                        dan Reference Maximum Dose.
                     </p>
 
                 </div>
 
+                {{-- DUR Result --}}
                 <div
                     class="flex flex-col items-center justify-center min-w-0 px-6 py-4 text-center border rounded-xl border-blue-100 bg-blue-50 sm:min-w-[190px]">
 
                     <span class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-blue-500">
-                        Fluctuation
+                        Dose Uniformity Ratio
                     </span>
 
-                    @if ($doseFluctuationPercentage !== null)
+                    @if ($doseDur !== null)
                         <strong class="mt-1 text-2xl font-black tracking-tight text-blue-700">
-                            {{ $format($doseFluctuationPercentage, 2) }}%
+                            {{ $format($doseDur, 4) }}
                         </strong>
 
                         <span class="mt-1 text-[10px] font-medium text-blue-500">
-                            Index: {{ $format($doseFluctuation, 4) }}
+                            DUR
                         </span>
                     @else
                         <strong class="mt-1 text-2xl font-black tracking-tight text-slate-400">
@@ -360,13 +362,14 @@
 
             </div>
 
+            {{-- Dose Values --}}
             <div class="grid grid-cols-1 gap-3 mt-5 sm:grid-cols-3">
 
                 {{-- Min Dose --}}
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
                     <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                        Minimum Dose
+                        Reference Minimum Dose
                     </span>
 
                     <strong class="block mt-1 text-lg font-extrabold text-slate-900">
@@ -379,7 +382,7 @@
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
                     <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                        Maximum Dose
+                        Reference Maximum Dose
                     </span>
 
                     <strong class="block mt-1 text-lg font-extrabold text-slate-900">
@@ -395,11 +398,11 @@
                         Formula
                     </span>
 
-                    @if ($doseFluctuation !== null)
+                    @if ($doseDur !== null)
                         <strong class="block mt-1 text-sm font-bold text-slate-800">
-                            ({{ $format($test->dmax, 4) }} − {{ $format($test->dmin, 4) }})
+                            {{ $format($test->dmax, 4) }}
                             ÷
-                            ({{ $format($test->dmax, 4) }} + {{ $format($test->dmin, 4) }})
+                            {{ $format($test->dmin, 4) }}
                         </strong>
                     @else
                         <strong class="block mt-1 text-sm font-bold text-slate-400">
@@ -411,41 +414,81 @@
 
             </div>
 
-            @if ($doseFluctuation !== null)
+            {{-- Calculation Detail --}}
+            @if ($doseDur !== null)
                 <div class="p-4 mt-4 border border-blue-100 rounded-xl bg-blue-50/50">
 
                     <div class="flex items-start gap-3">
 
                         <div class="flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-100 rounded-lg shrink-0">
+
                             <i class="fa-solid fa-calculator"></i>
+
                         </div>
 
                         <div class="min-w-0">
 
                             <p class="text-[9px] font-extrabold uppercase tracking-wider text-blue-600">
-                                Calculation Result
+                                DUR Calculation
                             </p>
 
                             <p class="mt-1 text-xs leading-5 text-slate-600">
 
-                                ({{ $format($test->dmax, 4) }} − {{ $format($test->dmin, 4) }})
+                                DUR =
+
+                                <strong class="text-slate-800">
+                                    Max Dose
+                                </strong>
 
                                 ÷
 
-                                ({{ $format($test->dmax, 4) }} + {{ $format($test->dmin, 4) }})
-
-                                =
-
-                                <strong class="text-blue-700">
-                                    {{ $format($doseFluctuation, 4) }}
+                                <strong class="text-slate-800">
+                                    Min Dose
                                 </strong>
 
                                 =
 
+                                {{ $format($test->dmax, 4) }}
+
+                                ÷
+
+                                {{ $format($test->dmin, 4) }}
+
+                                =
+
                                 <strong class="text-blue-700">
-                                    {{ $format($doseFluctuationPercentage, 2) }}%
+                                    {{ $format($doseDur, 4) }}
                                 </strong>
 
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            @else
+                <div class="p-4 mt-4 border rounded-xl border-slate-200 bg-slate-50">
+
+                    <div class="flex items-start gap-3">
+
+                        <div
+                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400 shrink-0">
+
+                            <i class="fa-solid fa-circle-info"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">
+                                DUR Calculation
+                            </p>
+
+                            <p class="mt-1 text-xs leading-5 text-slate-500">
+                                DUR belum dapat dihitung. Pastikan Reference Minimum Dose
+                                tersedia dan lebih besar dari 0, serta Reference Maximum Dose
+                                tidak lebih kecil dari Minimum Dose.
                             </p>
 
                         </div>
