@@ -1,7 +1,7 @@
 @extends('admin.layout.app')
 
-@section('title', 'Product Test Report')
-
+@section('title', ($test->requester_organization ?: 'Company') . ' - ' . ($test->sample_name ?: 'Product') . ' - ' .
+    $test->test_code)
 @section('content')
 
     @php
@@ -1072,31 +1072,65 @@
 
         function printReport() {
 
+            const company = @js($test->requester_organization ?: 'Company');
+            const product = @js($test->sample_name ?: 'Product');
+            // const testCode = @js($test->test_code ?: '');
+
+            const sanitizeFileName = (value) => {
+
+                return String(value || '')
+                    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+            };
+
+            const parts = [
+                sanitizeFileName(company),
+                sanitizeFileName(product),
+                // sanitizeFileName(testCode)
+            ].filter(Boolean);
+
+            const pdfFileName = parts.join(' - ');
+
+            const originalTitle = document.title;
+
+            document.title = pdfFileName;
+
             const images = Array.from(document.images);
 
             const pendingImages = images.filter(image => !image.complete);
 
+            const startPrint = () => {
+
+                setTimeout(() => {
+
+                    window.print();
+
+                }, 150);
+
+            };
+
             if (pendingImages.length === 0) {
 
-                window.print();
+                startPrint();
 
                 return;
 
             }
 
             let remaining = pendingImages.length;
+            let printed = false;
 
             const printWhenReady = () => {
 
                 remaining--;
 
-                if (remaining <= 0) {
+                if (remaining <= 0 && !printed) {
 
-                    setTimeout(() => {
+                    printed = true;
 
-                        window.print();
-
-                    }, 150);
+                    startPrint();
 
                 }
 
@@ -1116,9 +1150,23 @@
 
             setTimeout(() => {
 
-                window.print();
+                if (!printed) {
+
+                    printed = true;
+
+                    startPrint();
+
+                }
 
             }, 3000);
+
+            window.addEventListener('afterprint', () => {
+
+                document.title = originalTitle;
+
+            }, {
+                once: true
+            });
 
         }
     </script>

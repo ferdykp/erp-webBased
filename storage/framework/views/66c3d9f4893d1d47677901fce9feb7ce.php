@@ -1,5 +1,5 @@
-<?php $__env->startSection('title', 'Product Test Report'); ?>
-
+<?php $__env->startSection('title', ($test->requester_organization ?: 'Company') . ' - ' . ($test->sample_name ?: 'Product') . ' - ' .
+    $test->test_code); ?>
 <?php $__env->startSection('content'); ?>
 
     <?php
@@ -816,31 +816,65 @@
 
         function printReport() {
 
+            const company = <?php echo \Illuminate\Support\Js::from($test->requester_organization ?: 'Company')->toHtml() ?>;
+            const product = <?php echo \Illuminate\Support\Js::from($test->sample_name ?: 'Product')->toHtml() ?>;
+            // const testCode = <?php echo \Illuminate\Support\Js::from($test->test_code ?: '')->toHtml() ?>;
+
+            const sanitizeFileName = (value) => {
+
+                return String(value || '')
+                    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+            };
+
+            const parts = [
+                sanitizeFileName(company),
+                sanitizeFileName(product),
+                // sanitizeFileName(testCode)
+            ].filter(Boolean);
+
+            const pdfFileName = parts.join(' - ');
+
+            const originalTitle = document.title;
+
+            document.title = pdfFileName;
+
             const images = Array.from(document.images);
 
             const pendingImages = images.filter(image => !image.complete);
 
+            const startPrint = () => {
+
+                setTimeout(() => {
+
+                    window.print();
+
+                }, 150);
+
+            };
+
             if (pendingImages.length === 0) {
 
-                window.print();
+                startPrint();
 
                 return;
 
             }
 
             let remaining = pendingImages.length;
+            let printed = false;
 
             const printWhenReady = () => {
 
                 remaining--;
 
-                if (remaining <= 0) {
+                if (remaining <= 0 && !printed) {
 
-                    setTimeout(() => {
+                    printed = true;
 
-                        window.print();
-
-                    }, 150);
+                    startPrint();
 
                 }
 
@@ -860,9 +894,23 @@
 
             setTimeout(() => {
 
-                window.print();
+                if (!printed) {
+
+                    printed = true;
+
+                    startPrint();
+
+                }
 
             }, 3000);
+
+            window.addEventListener('afterprint', () => {
+
+                document.title = originalTitle;
+
+            }, {
+                once: true
+            });
 
         }
     </script>
