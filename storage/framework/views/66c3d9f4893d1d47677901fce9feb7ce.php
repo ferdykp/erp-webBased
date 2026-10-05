@@ -1,58 +1,79 @@
 <?php $__env->startSection('title', 'Product Test Report'); ?>
 
 <?php $__env->startSection('content'); ?>
+
     <?php
+
         $format = fn($value, $decimals = 4) => \App\Support\NumberFormatter::smart($value, $decimals);
 
         /*
         |--------------------------------------------------------------------------
-        | Dose Fluctuation Calculation
+        | Dose Uniformity Ratio (DUR)
         |--------------------------------------------------------------------------
         |
+        | DUR dihitung dari HASIL MEASURED DOSE, bukan dari Reference Dose.
+        |
         | Formula:
-        | (Max Dose - Min Dose) / (Max Dose + Min Dose)
+        | DUR = Maximum Measured Dose / Minimum Measured Dose
+        |
+        | Source:
+        | $doseStats['max']
+        | $doseStats['min']
+        |
+        | $test->dmin dan $test->dmax hanya merupakan Reference Dose
+        | dan tidak digunakan dalam perhitungan DUR.
         |
         */
 
-        $doseFluctuation = null;
-        $doseFluctuationPercentage = null;
+        $doseDur = null;
 
-        if ($test->dmin !== null && $test->dmax !== null) {
-            $doseSum = (float) $test->dmax + (float) $test->dmin;
+        if ($doseStats['min'] !== null && $doseStats['max'] !== null) {
+            $minimumMeasuredDose = (float) $doseStats['min'];
+            $maximumMeasuredDose = (float) $doseStats['max'];
 
-            if ($doseSum != 0) {
-                $doseFluctuation = ((float) $test->dmax - (float) $test->dmin) / $doseSum;
-
-                $doseFluctuationPercentage = $doseFluctuation * 100;
+            if ($minimumMeasuredDose > 0) {
+                $doseDur = $maximumMeasuredDose / $minimumMeasuredDose;
             }
         }
+
     ?>
 
     <div class="w-full mx-auto space-y-5 max-w-none print:m-0 print:max-w-none print:space-y-4 sm:space-y-6">
 
         
+
         <div class="flex flex-col gap-4 print:hidden sm:flex-row sm:items-end sm:justify-between">
 
             <div>
+
                 <a href="<?php echo e(route('admin.testing.index')); ?>"
                     class="inline-flex items-center gap-2 text-xs font-semibold transition-colors text-slate-500 hover:text-blue-600">
 
                     <i class="fa-solid fa-arrow-left"></i>
+
                     Product Testing
+
                 </a>
 
                 <p class="mt-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-blue-600">
+
                     <?php echo e($test->test_code); ?>
+
 
                 </p>
 
                 <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
+
                     Product Test Report
+
                 </h1>
 
                 <p class="mt-2 text-sm leading-6 text-slate-500">
+
                     Technical record, process parameters, dosimeter absorbance, and calculated dose.
+
                 </p>
+
             </div>
 
             <div class="flex flex-wrap gap-2">
@@ -61,27 +82,36 @@
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99]">
 
                     <i class="fa-solid fa-pen"></i>
+
                     Edit Data
+
                 </a>
 
                 <a href="<?php echo e(route('admin.testing.parameters', $test)); ?>"
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99]">
 
                     <i class="fa-solid fa-sliders"></i>
+
                     Process Parameter
+
                 </a>
 
                 <button type="button" onclick="printReport()"
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99]">
 
                     <i class="fa-solid fa-print"></i>
+
                     Print / Save PDF
+
                 </button>
 
             </div>
+
         </div>
 
+
         
+
         <div
             class="flex items-center px-4 py-3 overflow-x-auto bg-white border shadow-sm rounded-2xl border-slate-200 print:hidden sm:px-5">
 
@@ -91,9 +121,11 @@
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500 text-[11px] font-bold text-white">
 
                     <i class="fa-solid fa-check"></i>
+
                 </span>
 
                 <div>
+
                     <b class="block text-[11px] font-bold text-slate-700">
                         Test Data
                     </b>
@@ -101,6 +133,7 @@
                     <small class="mt-0.5 hidden text-[9px] text-slate-400 sm:block">
                         Saved
                     </small>
+
                 </div>
 
             </div>
@@ -113,9 +146,11 @@
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500 text-[11px] font-bold text-white">
 
                     <i class="fa-solid fa-check"></i>
+
                 </span>
 
                 <div>
+
                     <b class="block text-[11px] font-bold text-slate-700">
                         Process Parameter
                     </b>
@@ -123,6 +158,7 @@
                     <small class="mt-0.5 hidden text-[9px] text-slate-400 sm:block">
                         Completed
                     </small>
+
                 </div>
 
             </div>
@@ -133,10 +169,13 @@
 
                 <span
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-600 bg-blue-600 text-[11px] font-bold text-white">
+
                     3
+
                 </span>
 
                 <div>
+
                     <b class="block text-[11px] font-bold text-slate-900">
                         Report
                     </b>
@@ -144,15 +183,20 @@
                     <small class="mt-0.5 hidden text-[9px] text-slate-400 sm:block">
                         Result & dosimeter
                     </small>
+
                 </div>
 
             </div>
+
         </div>
 
+
         
+
         <div class="items-center justify-between hidden pb-5 border-b-2 border-slate-900 print:flex">
 
             <div>
+
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                     E-Beam Technical Report
                 </p>
@@ -160,6 +204,7 @@
                 <h1 class="mt-1 text-2xl font-black">
                     Product Testing / Qualification
                 </h1>
+
             </div>
 
             <div class="text-right">
@@ -175,18 +220,23 @@
                 </p>
 
             </div>
+
         </div>
 
+
         
+
         <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
 
             
+
             <div
                 class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6">
 
                 <div class="flex items-start justify-between gap-4 mb-5">
 
                     <div>
+
                         <p class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-blue-600">
                             Test Information
                         </p>
@@ -195,13 +245,16 @@
                             <?php echo e($test->sample_name); ?>
 
                         </h2>
+
                     </div>
 
                     <span
                         class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-bold text-emerald-700">
 
                         <i class="fa-solid fa-circle-check"></i>
+
                         Completed
+
                     </span>
 
                 </div>
@@ -243,13 +296,16 @@
 
             </div>
 
+
             
+
             <div
                 class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6">
 
                 <div class="flex items-start justify-between gap-4 mb-5">
 
                     <div>
+
                         <p class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-blue-600">
                             Irradiation Setup
                         </p>
@@ -257,6 +313,7 @@
                         <h2 class="mt-1 text-base font-bold tracking-tight text-slate-900 sm:text-lg">
                             Process Parameter
                         </h2>
+
                     </div>
 
                     <div class="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-slate-100 text-slate-500">
@@ -306,7 +363,9 @@
 
         </section>
 
+
         
+
         <section
             class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6">
 
@@ -319,31 +378,42 @@
                     </p>
 
                     <h2 class="mt-1 text-base font-bold tracking-tight text-slate-900 sm:text-lg">
-                        Dose Fluctuation
+                        Dose Uniformity Ratio (DUR)
                     </h2>
 
                     <p class="max-w-2xl mt-1.5 text-xs leading-5 text-slate-500">
-                        Perhitungan indeks fluktuasi berdasarkan Reference Minimum Dose dan
-                        Reference Maximum Dose.
+
+                        Perhitungan rasio keseragaman dosis berdasarkan
+                        <strong class="font-semibold text-slate-700">
+                            Minimum Measured Dose
+                        </strong>
+                        dan
+                        <strong class="font-semibold text-slate-700">
+                            Maximum Measured Dose
+                        </strong>.
+
                     </p>
 
                 </div>
+
+
+                
 
                 <div
                     class="flex flex-col items-center justify-center min-w-0 px-6 py-4 text-center border rounded-xl border-blue-100 bg-blue-50 sm:min-w-[190px]">
 
                     <span class="text-[9px] font-extrabold uppercase tracking-[0.15em] text-blue-500">
-                        Fluctuation
+                        Dose Uniformity Ratio
                     </span>
 
-                    <?php if($doseFluctuationPercentage !== null): ?>
+                    <?php if($doseDur !== null): ?>
                         <strong class="mt-1 text-2xl font-black tracking-tight text-blue-700">
-                            <?php echo e($format($doseFluctuationPercentage, 2)); ?>%
+                            <?php echo e($format($doseDur, 4)); ?>
+
                         </strong>
 
                         <span class="mt-1 text-[10px] font-medium text-blue-500">
-                            Index: <?php echo e($format($doseFluctuation, 4)); ?>
-
+                            DUR
                         </span>
                     <?php else: ?>
                         <strong class="mt-1 text-2xl font-black tracking-tight text-slate-400">
@@ -359,48 +429,66 @@
 
             </div>
 
+
+            
+
             <div class="grid grid-cols-1 gap-3 mt-5 sm:grid-cols-3">
 
                 
+
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
                     <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                        Minimum Dose
+                        Minimum Measured Dose
                     </span>
 
                     <strong class="block mt-1 text-lg font-extrabold text-slate-900">
-                        <?php echo e($test->dmin !== null ? $format($test->dmin, 4) . ' kGy' : '—'); ?>
+
+                        <?php echo e($doseStats['min'] !== null ? $format($doseStats['min'], 4) . ' kGy' : '—'); ?>
+
 
                     </strong>
 
                 </div>
 
+
                 
+
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
                     <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                        Maximum Dose
+                        Maximum Measured Dose
                     </span>
 
                     <strong class="block mt-1 text-lg font-extrabold text-slate-900">
-                        <?php echo e($test->dmax !== null ? $format($test->dmax, 4) . ' kGy' : '—'); ?>
+
+                        <?php echo e($doseStats['max'] !== null ? $format($doseStats['max'], 4) . ' kGy' : '—'); ?>
+
 
                     </strong>
 
                 </div>
 
+
                 
+
                 <div class="p-4 border rounded-xl border-slate-200 bg-slate-50">
 
                     <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
                         Formula
                     </span>
 
-                    <?php if($doseFluctuation !== null): ?>
+                    <?php if($doseDur !== null): ?>
                         <strong class="block mt-1 text-sm font-bold text-slate-800">
-                            (<?php echo e($format($test->dmax, 4)); ?> − <?php echo e($format($test->dmin, 4)); ?>)
+
+                            <?php echo e($format($doseStats['max'], 4)); ?>
+
+
                             ÷
-                            (<?php echo e($format($test->dmax, 4)); ?> + <?php echo e($format($test->dmin, 4)); ?>)
+
+                            <?php echo e($format($doseStats['min'], 4)); ?>
+
+
                         </strong>
                     <?php else: ?>
                         <strong class="block mt-1 text-sm font-bold text-slate-400">
@@ -412,41 +500,87 @@
 
             </div>
 
-            <?php if($doseFluctuation !== null): ?>
+
+            
+
+            <?php if($doseDur !== null): ?>
                 <div class="p-4 mt-4 border border-blue-100 rounded-xl bg-blue-50/50">
 
                     <div class="flex items-start gap-3">
 
                         <div class="flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-100 rounded-lg shrink-0">
+
                             <i class="fa-solid fa-calculator"></i>
+
                         </div>
 
                         <div class="min-w-0">
 
                             <p class="text-[9px] font-extrabold uppercase tracking-wider text-blue-600">
-                                Calculation Result
+                                DUR Calculation
                             </p>
 
                             <p class="mt-1 text-xs leading-5 text-slate-600">
 
-                                (<?php echo e($format($test->dmax, 4)); ?> − <?php echo e($format($test->dmin, 4)); ?>)
+                                DUR =
+
+                                <strong class="text-slate-800">
+                                    Maximum Measured Dose
+                                </strong>
 
                                 ÷
 
-                                (<?php echo e($format($test->dmax, 4)); ?> + <?php echo e($format($test->dmin, 4)); ?>)
-
-                                =
-
-                                <strong class="text-blue-700">
-                                    <?php echo e($format($doseFluctuation, 4)); ?>
-
+                                <strong class="text-slate-800">
+                                    Minimum Measured Dose
                                 </strong>
 
                                 =
 
+                                <?php echo e($format($doseStats['max'], 4)); ?>
+
+
+                                ÷
+
+                                <?php echo e($format($doseStats['min'], 4)); ?>
+
+
+                                =
+
                                 <strong class="text-blue-700">
-                                    <?php echo e($format($doseFluctuationPercentage, 2)); ?>%
+                                    <?php echo e($format($doseDur, 4)); ?>
+
                                 </strong>
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            <?php else: ?>
+                <div class="p-4 mt-4 border rounded-xl border-slate-200 bg-slate-50">
+
+                    <div class="flex items-start gap-3">
+
+                        <div
+                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-400 shrink-0">
+
+                            <i class="fa-solid fa-circle-info"></i>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">
+                                DUR Calculation
+                            </p>
+
+                            <p class="mt-1 text-xs leading-5 text-slate-500">
+
+                                DUR belum dapat dihitung. Pastikan terdapat
+                                <strong>Minimum Measured Dose</strong>
+                                dan nilainya lebih besar dari 0.
 
                             </p>
 
@@ -457,9 +591,51 @@
                 </div>
             <?php endif; ?>
 
+
+            
+
+            <div class="p-4 mt-4 border border-slate-200 rounded-xl bg-slate-50">
+
+                <div class="flex items-start gap-3">
+
+                    <div
+                        class="flex items-center justify-center w-8 h-8 text-blue-500 bg-white border rounded-lg border-slate-200 shrink-0">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">
+                            Calculation Source
+                        </p>
+
+                        <p class="mt-1 text-xs leading-5 text-slate-500">
+
+                            Nilai DUR dihitung langsung dari hasil pengukuran aktual.
+                            <strong class="text-slate-700">
+                                Reference Minimum Dose
+                            </strong>
+                            dan
+                            <strong class="text-slate-700">
+                                Reference Maximum Dose
+                            </strong>
+                            tidak digunakan dalam perhitungan DUR.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </section>
 
+
         
+
         <?php if($test->image): ?>
             <section
                 class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6">
@@ -491,11 +667,14 @@
             </section>
         <?php endif; ?>
 
+
         
+
         <?php if($test->dosimeters->count()): ?>
             <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
 
                 
+
                 <div
                     class="flex items-center gap-4 p-4 bg-white border shadow-sm min-h-24 rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5">
 
@@ -513,7 +692,9 @@
                         </span>
 
                         <strong class="block mt-1 text-xl font-extrabold tracking-tight text-slate-900">
+
                             <?php echo e($doseStats['min'] !== null ? $format($doseStats['min'], 4) . ' kGy' : '-'); ?>
+
 
                         </strong>
 
@@ -521,7 +702,9 @@
 
                 </div>
 
+
                 
+
                 <div
                     class="flex items-center gap-4 p-4 bg-white border shadow-sm min-h-24 rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5">
 
@@ -538,7 +721,9 @@
                         </span>
 
                         <strong class="block mt-1 text-xl font-extrabold tracking-tight text-slate-900">
+
                             <?php echo e($doseStats['avg'] !== null ? $format($doseStats['avg'], 4) . ' kGy' : '-'); ?>
+
 
                         </strong>
 
@@ -546,7 +731,9 @@
 
                 </div>
 
+
                 
+
                 <div
                     class="flex items-center gap-4 p-4 bg-white border shadow-sm min-h-24 rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:shadow-none sm:p-5">
 
@@ -563,7 +750,9 @@
                         </span>
 
                         <strong class="block mt-1 text-xl font-extrabold tracking-tight text-slate-900">
+
                             <?php echo e($doseStats['max'] !== null ? $format($doseStats['max'], 4) . ' kGy' : '-'); ?>
+
 
                         </strong>
 
@@ -574,7 +763,9 @@
             </section>
         <?php endif; ?>
 
+
         
+
         <section
             class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200/80 shadow-slate-200/30 print:break-inside-avoid print:border-slate-300 print:p-4 print:shadow-none sm:p-6"
             x-data="dosimeterEditor(<?php echo \Illuminate\Support\Js::from(
@@ -602,8 +793,10 @@
                     </h2>
 
                     <p class="mt-1.5 max-w-3xl text-xs leading-5 text-slate-500 print:hidden">
+
                         Optional. Tambahkan hanya bila pengujian memakai dosimeter.
                         Dose dihitung otomatis menggunakan kurva kalibrasi yang sama dengan modul Dosimeter.
+
                     </p>
 
                 </div>
@@ -612,15 +805,18 @@
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99] print:hidden">
 
                     <i class="fa-solid fa-plus"></i>
+
                     Add Reading
 
                 </button>
 
             </div>
 
+
             <form method="POST" action="<?php echo e(route('admin.testing.dosimeters.update', $test)); ?>">
 
                 <?php echo csrf_field(); ?>
+
                 <?php echo method_field('PUT'); ?>
 
                 <div class="overflow-x-auto border print:overflow-visible rounded-2xl border-slate-200">
@@ -633,31 +829,42 @@
 
                                 <th
                                     class="w-16 border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+
                                     #
+
                                 </th>
 
                                 <th
                                     class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+
                                     Dosimeter ID
+
                                 </th>
 
                                 <th
                                     class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+
                                     Position
+
                                 </th>
 
                                 <th
                                     class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+
                                     Absorbance
+
                                 </th>
 
                                 <th
                                     class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+
                                     Calculated Dose (kGy)
+
                                 </th>
 
                                 <th
                                     class="w-16 border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 print:hidden">
+
                                 </th>
 
                             </tr>
@@ -672,9 +879,12 @@
 
                                     <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-500"
                                         x-text="index + 1">
+
                                     </td>
 
+
                                     
+
                                     <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
 
                                         <input :name="`readings[${index}][dosimeter_number]`"
@@ -684,11 +894,14 @@
 
                                         <span class="hidden font-medium print:inline text-slate-800"
                                             x-text="row.dosimeter_number || '-'">
+
                                         </span>
 
                                     </td>
 
+
                                     
+
                                     <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
 
                                         <input :name="`readings[${index}][position]`" x-model="row.position"
@@ -697,11 +910,14 @@
 
                                         <span class="hidden font-medium print:inline text-slate-800"
                                             x-text="row.position || '-'">
+
                                         </span>
 
                                     </td>
 
+
                                     
+
                                     <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
 
                                         <input type="number" min="0" max="5" step="0.0001"
@@ -711,16 +927,22 @@
 
                                         <span class="hidden font-medium print:inline text-slate-800"
                                             x-text="row.absorbance || '-'">
+
                                         </span>
 
                                     </td>
 
-                                    
-                                    <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-800"
-                                        x-text="dose(row.absorbance)">
-                                    </td>
 
                                     
+
+                                    <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-800"
+                                        x-text="dose(row.absorbance)">
+
+                                    </td>
+
+
+                                    
+
                                     <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600 print:hidden">
 
                                         <button type="button" @click="removeRow(index)"
@@ -735,6 +957,7 @@
                                 </tr>
 
                             </template>
+
 
                             <tr x-show="rows.length === 0">
 
@@ -753,12 +976,14 @@
 
                 </div>
 
+
                 <div class="flex justify-end mt-4 print:hidden">
 
                     <button type="submit"
                         class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99]">
 
                         <i class="fa-solid fa-floppy-disk"></i>
+
                         Save Dosimeter Data
 
                     </button>
@@ -769,48 +994,70 @@
 
         </section>
 
+
         
+
         <footer class="hidden pt-5 text-xs border-t mt-7 border-slate-200 text-slate-500 print:block">
 
             Generated from Beam Admin · Product Testing module ·
+
             <?php echo e(now()->format('d M Y H:i')); ?>
 
 
         </footer>
 
     </div>
+
 <?php $__env->stopSection(); ?>
+
 
 <?php $__env->startPush('scripts'); ?>
     <script>
         function dosimeterEditor(initialRows) {
+
             return {
+
                 rows: (initialRows || []).map((row, i) => ({
+
                     ...row,
+
                     key: Date.now() + i
+
                 })),
 
                 addRow() {
+
                     this.rows.push({
+
                         dosimeter_number: '',
+
                         position: '',
+
                         absorbance: '',
+
                         key: Date.now() + Math.random()
+
                     });
+
                 },
 
                 removeRow(index) {
+
                     this.rows.splice(index, 1);
+
                 },
 
                 dose(value) {
+
                     if (
                         value === '' ||
                         value === null ||
                         value === undefined ||
                         Number.isNaN(Number(value))
                     ) {
+
                         return '-';
+
                     }
 
                     const x = Number(value);
@@ -822,33 +1069,48 @@
                         2.423;
 
                     return window.formatSmartNumber(dose, 4, '-');
+
                 }
+
             }
+
         }
 
+
         function printReport() {
+
             const images = Array.from(document.images);
 
             const pendingImages = images.filter(image => !image.complete);
 
             if (pendingImages.length === 0) {
+
                 window.print();
+
                 return;
+
             }
 
             let remaining = pendingImages.length;
 
             const printWhenReady = () => {
+
                 remaining--;
 
                 if (remaining <= 0) {
+
                     setTimeout(() => {
+
                         window.print();
+
                     }, 150);
+
                 }
+
             };
 
             pendingImages.forEach(image => {
+
                 image.addEventListener('load', printWhenReady, {
                     once: true
                 });
@@ -856,11 +1118,15 @@
                 image.addEventListener('error', printWhenReady, {
                     once: true
                 });
+
             });
 
             setTimeout(() => {
+
                 window.print();
+
             }, 3000);
+
         }
     </script>
 <?php $__env->stopPush(); ?>
