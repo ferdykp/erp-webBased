@@ -1,4 +1,4 @@
-<div id="warehouseModal"
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="warehouseModal"
     class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 md:p-6">
     <div
         class="bg-white w-full max-w-5xl rounded-[2rem] md:rounded-[3.5rem] shadow-2xl relative max-h-[95vh] flex flex-col overflow-hidden">

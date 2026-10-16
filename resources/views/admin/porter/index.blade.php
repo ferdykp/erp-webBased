@@ -88,8 +88,7 @@
                                             <i class="fa-solid fa-pen text-[10px]"></i>
                                         </a>
 
-                                        <form action="{{ route('admin.porter.destroy', $porter->id) }}" method="POST"
-                                            onsubmit="return confirm('Revoke this porter profile permanently?');">
+                                        <form action="{{ route('admin.porter.destroy', $porter->id) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

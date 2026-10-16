@@ -1,8 +1,8 @@
 @extends('admin.layout.app')
-@section('title', 'Pallet Control System')
+@section('title', 'Warehouse Workspace')
 
 @section('content')
-    <div class="w-full pb-20 space-y-8" x-data="{ activeLine: 1, searchQuery: '', showConfig: false }">
+    <div class="w-full pb-20 space-y-8" x-data="{ activeLine: @js((string) ($allLocations->first()?->line ?? '')), searchQuery: '', showConfig: false }">
 
         {{-- ═══ TOP BAR: BRANDING & SEARCH ═══ --}}
         <div class="flex flex-col gap-4 pb-6 border-b lg:flex-row lg:items-center lg:justify-between border-slate-100">
@@ -13,7 +13,7 @@
                     <span class="text-blue-600">Inventory Management</span>
                 </nav>
                 <h2 class="text-2xl font-black tracking-tight text-slate-800 md:text-3xl">
-                    Pallet <span class="text-blue-600">Control Center</span>
+                    Warehouse <span class="text-blue-600">Workspace</span>
                 </h2>
             </div>
 
@@ -38,7 +38,7 @@
         </div>
 
         {{-- ═══ COLLAPSIBLE CONFIGURATION SUITE ═══ --}}
-        <div x-show="showConfig" x-transition.opacity.duration.150ms
+        <div id="warehouse-config" x-cloak x-show="showConfig" x-transition.opacity.duration.150ms
             class="grid grid-cols-1 gap-6 p-6 border bg-slate-50/50 border-slate-200/60 rounded-2xl md:grid-cols-3">
             {{-- Form 1: Add/Modify Single Line --}}
             <div class="p-4 bg-white border shadow-sm border-slate-100 rounded-xl">
@@ -93,28 +93,34 @@
                     <p class="text-[10px] text-slate-400 leading-tight mb-3">Deletes the current selected line structure if
                         there are no items staged inside.</p>
                 </div>
-                <form :action="'/admin/pallets/line/' + activeLine" method="POST"
-                    onsubmit="return confirm('Wipe entire Line? This action cannot be undone.')">
+                <form :action="'/admin/pallets/line/' + activeLine" method="POST">
                     @csrf @method('DELETE')
                     <button type="submit"
                         class="w-full py-1.5 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-600 hover:text-white rounded-lg transition-all text-center">
-                        <i class="fa-solid fa-trash-can mr-1.5 text-[10px]"></i> Wipe Active Line <span
+                        <i class="fa-solid fa-trash-can mr-1.5 text-[10px]"></i> Delete Line <span
                             x-text="activeLine"></span>
                     </button>
                 </form>
             </div>
         </div>
 
+        <a href="{{ route('admin.enhancements.warehouse') }}" class="inline-block rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white">Relocate Stored Goods</a>
+        <nav class="flex flex-wrap gap-2 border-b border-slate-200 pb-4" aria-label="Warehouse workspace sections">
+            <a href="#warehouse-layout" class="rounded-xl bg-slate-950 px-4 py-2 text-xs font-semibold text-white">Pallet Layout</a>
+            <a href="#warehouse-inventory" class="rounded-xl border bg-white px-4 py-2 text-xs font-semibold text-slate-700">Inventory Summary</a>
+            <a href="#warehouse-positions" class="rounded-xl border bg-white px-4 py-2 text-xs font-semibold text-slate-700">Position Matrix</a>
+            <button type="button" @click="showConfig = !showConfig; $nextTick(() => document.getElementById('warehouse-config')?.scrollIntoView({behavior:'smooth'}))" class="rounded-xl border bg-white px-4 py-2 text-xs font-semibold text-slate-700">Layout Settings</button>
+        </nav>
         @php
             $lines = \App\Models\Pallet::whereNotNull('line')->groupBy('line')->pluck('line')->sort();
         @endphp
 
         {{-- ═══ LINE CONTROLLER NAV TABS ═══ --}}
         @if ($lines->count() > 0)
-            <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-max max-w-full overflow-x-auto">
+            <div id="warehouse-layout" class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-max max-w-full overflow-x-auto">
                 @foreach ($lines as $lineNav)
-                    <button @click="activeLine = {{ $lineNav }}"
-                        :class="activeLine === {{ $lineNav }} ? 'bg-white text-slate-900 shadow-sm font-bold' :
+                    <button @click="activeLine = @js((string) $lineNav)"
+                        :class="activeLine === @js((string) $lineNav) ? 'bg-white text-slate-900 shadow-sm font-bold' :
                             'text-slate-500 hover:text-slate-800 font-medium'"
                         class="px-5 py-2 text-xs tracking-tight transition-all duration-150 rounded-lg whitespace-nowrap">
                         Bay Line {{ $lineNav }}
@@ -126,7 +132,7 @@
         {{-- ═══ WAREHOUSE VISUAL MATRIX MAP ═══ --}}
         <div class="overflow-hidden bg-white border shadow-sm border-slate-200/70 rounded-2xl">
             @forelse ($lines as $line)
-                <div x-show="activeLine === {{ $line }}" x-transition:enter="transition ease-out duration-200"
+                <div x-cloak x-show="activeLine === @js((string) $line)" x-transition:enter="transition ease-out duration-200"
                     class="p-6">
 
                     {{-- Grid Layout Matrix --}}
@@ -147,12 +153,12 @@
                                 $totalBoxes = $contents->sum('quantity');
                                 $searchData = $contents
                                     ->map(function ($c) {
-                                        return strtolower($c->product_name . ' ' . $c->booking->booking_code);
+                                        return strtolower($c->product_name . ' ' . $c->booking?->booking_code);
                                     })
                                     ->implode(' ');
                             @endphp
 
-                            <div x-show="searchQuery === '' || '{{ $searchData }}'.includes(searchQuery.toLowerCase())"
+                            <div x-cloak x-show="searchQuery === '' || @js($searchData).includes(searchQuery.toLowerCase())"
                                 class="group flex flex-col justify-between border rounded-xl p-4 transition-all duration-200 min-h-[11rem]
                                  {{ $totalBoxes > 0 ? 'bg-gradient-to-b from-blue-50/10 to-white border-blue-200 shadow-sm hover:border-blue-400' : 'bg-slate-50/40 border-slate-200 border-dashed hover:border-slate-300' }}">
 
@@ -164,8 +170,8 @@
                                     </span>
                                     <div class="text-right">
                                         <span
-                                            class="text-base font-extrabold {{ $totalBoxes > 0 ? 'text-blue-600' : 'text-slate-400' }}">{{ $totalBoxes }}</span>
-                                        <span class="text-[9px] font-medium text-slate-400 uppercase">ctn</span>
+                                            class="text-base font-extrabold {{ $totalBoxes > 0 ? 'text-blue-600' : 'text-slate-400' }}">{{ $contents->groupBy(fn($r) => $r->unit ?? 'unverified unit')->map(fn($rows,$unit) => $rows->sum('quantity').' '.$unit)->implode(', ') ?: '0' }}</span>
+
                                     </div>
                                 </div>
 
@@ -181,8 +187,7 @@
                                                 class="flex items-center justify-between text-[9px] font-medium text-slate-400 mt-0.5">
                                                 <span class="font-mono">#{{ $item->booking->booking_code }}</span>
                                                 <span
-                                                    class="px-1 font-bold rounded text-slate-600 bg-slate-50">{{ $item->quantity }}
-                                                    ctn</span>
+                                                    class="px-1 font-bold rounded text-slate-600 bg-slate-50">{{ $item->quantity }} {{ $item->unit ?? 'unverified unit' }}</span>
                                             </div>
                                         </div>
                                     @empty
@@ -204,7 +209,7 @@
                                     </span>
                                     @if ($totalBoxes == 0)
                                         <form action="{{ route('admin.pallets.destroy', $palletMaster->id ?? 0) }}"
-                                            method="POST" onsubmit="return confirm('Delete this slot?')">
+                                            method="POST">
                                             @csrf @method('DELETE')
                                             <button type="submit"
                                                 class="font-bold transition-colors text-slate-400 hover:text-rose-600">Delete</button>
@@ -231,7 +236,7 @@
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
                 {{-- SKU DISTRIBUTION SUMMARY --}}
-                <div class="p-6 bg-white border shadow-sm border-slate-200/70 rounded-2xl">
+                <div id="warehouse-inventory" class="p-6 bg-white border shadow-sm border-slate-200/70 rounded-2xl">
                     <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-50">
                         <div>
                             <h3 class="text-sm font-black tracking-wider uppercase text-slate-800">Product Allocation</h3>
@@ -253,7 +258,7 @@
                                 @php
                                     $productSummaries = \App\Models\PalletContent::with('pallet')
                                         ->get()
-                                        ->groupBy('product_name');
+                                        ->groupBy(fn($row) => $row->product_name.' · '.($row->unit ?? 'unverified unit'));
                                 @endphp
                                 @forelse ($productSummaries as $productName => $items)
                                     <tr class="transition-colors hover:bg-slate-50/50">
@@ -273,8 +278,7 @@
                                             </div>
                                         </td>
                                         <td class="py-3 pr-2 font-extrabold text-right text-slate-900">
-                                            {{ $items->sum('quantity') }} <span
-                                                class="text-[9px] font-normal text-slate-400 uppercase">ctn</span>
+                                            {{ $items->sum('quantity') }} {{ $items->first()->unit ?? 'unverified unit' }}
                                         </td>
                                     </tr>
                                 @empty
@@ -290,7 +294,7 @@
                 </div>
 
                 {{-- POSITION INTEGRITY LOG --}}
-                <div class="p-6 bg-white border shadow-sm border-slate-200/70 rounded-2xl" x-data="{ summaryFilter: 'all' }">
+                <div id="warehouse-positions" class="p-6 bg-white border shadow-sm border-slate-200/70 rounded-2xl" x-data="{ summaryFilter: 'all' }">
                     <div
                         class="flex flex-col gap-3 pb-3 mb-4 border-b sm:flex-row sm:items-center sm:justify-between border-slate-50">
                         <h3 class="text-sm font-black tracking-wider uppercase text-slate-800">Position Matrix Log</h3>
@@ -327,7 +331,7 @@
                                         $contents = \App\Models\PalletContent::where('pallet_id', $loc->id)->get();
                                         $totalBoxes = $contents->sum('quantity');
                                     @endphp
-                                    <tr x-show="summaryFilter === 'all' || summaryFilter === '{{ $loc->line }}'"
+                                    <tr x-cloak x-show="summaryFilter === 'all' || summaryFilter === '{{ $loc->line }}'"
                                         class="transition-colors hover:bg-slate-50/50">
                                         <td class="py-3 pl-2 font-mono font-bold text-slate-700">
                                             L{{ $loc->line }}-S{{ $loc->slot_section }}
@@ -346,7 +350,7 @@
                                         </td>
                                         <td
                                             class="py-3 pr-2 text-right font-bold {{ $totalBoxes > 0 ? 'text-blue-600' : 'text-slate-300' }}">
-                                            {{ $totalBoxes ?: '0' }}
+                                            {{ $contents->groupBy(fn($r) => $r->unit ?? 'unverified unit')->map(fn($rows,$unit) => $rows->sum('quantity').' '.$unit)->implode(', ') ?: '0' }}
                                         </td>
                                     </tr>
                                 @endforeach

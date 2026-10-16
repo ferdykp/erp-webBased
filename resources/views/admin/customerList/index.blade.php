@@ -38,36 +38,19 @@
         </div>
 
         {{-- TABLE CARD --}}
-        <div id="customer-data-container"
+        <div id="customer-data-container" data-async-table="{{ route('admin.customerList.index') }}" data-search-input="search-input"
             class="bg-white border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-sm">
             @include('admin.customerList.table')
         </div>
 
         {{-- MODAL CREATE (Mobile Responsive) --}}
-        <div x-show="openCreate" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-data="{
-                step: 1,
-                totalSteps: 2,
-                validateAndNext() {
-                    const currentStepEl = document.getElementById('step-' + this.step + '-content');
-                    const inputs = currentStepEl.querySelectorAll('[required]');
-                    let isValid = true;
-                    inputs.forEach(input => {
-                        if (!input.checkValidity()) {
-                            input.reportValidity();
-                            isValid = false;
-                        }
-                    });
-                    if (isValid) this.step++;
-                },
-                prevStep() { if (this.step > 1) this.step-- }
-            }"
+        <div @click.self="openCreate = false" @keydown.escape.stop="openCreate = false" data-ui-modal role="dialog" aria-modal="true" tabindex="-1" x-cloak x-show="openCreate" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-data="customerWizard('openCreate')"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
            >
 
-            <div @click.away="openCreate = false; step = 1" x-show="openCreate"
-                x-transition:enter="transition ease-out duration-300 delay-100"
+            <div x-cloak x-show="openCreate"
+                x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 translate-y-full sm:scale-95 sm:translate-y-8"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100 sm:translate-y-0"
                 class="bg-white w-full max-w-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[95vh] overflow-y-auto">
@@ -83,7 +66,7 @@
                         <div class="relative z-10 flex flex-col items-center">
                             <div :class="step >= 1 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' :
                                 'bg-white border-slate-200 text-slate-400'"
-                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 bg-white border-2 rounded-2xl">
+                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 border-2 rounded-2xl">
                                 <template x-if="step > 1"><i class="text-xs fa-solid fa-check"></i></template>
                                 <template x-if="step === 1"><span class="text-xs font-black">01</span></template>
                             </div>
@@ -92,7 +75,7 @@
                         <div class="relative z-10 flex flex-col items-center">
                             <div :class="step >= 2 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' :
                                 'bg-white border-slate-200 text-slate-400'"
-                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 bg-white border-2 rounded-2xl">
+                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 border-2 rounded-2xl">
                                 <span class="text-xs font-black">02</span>
                             </div>
                         </div>
@@ -104,11 +87,11 @@
                     </div>
                 </div>
 
-                <form action="{{ route('admin.customerList.store') }}" method="POST" class="px-6 pb-10 md:px-10">
+                <form action="{{ route('admin.customerList.store') }}" method="POST" x-ref="wizardForm" novalidate @submit="validateSubmission($event)" class="px-6 pb-10 md:px-10">
                     @csrf
 
                     {{-- STEP 1: COMPANY --}}
-                    <div x-show="step === 1" id="step-1-content" x-transition:enter="transition duration-300"
+                    <div x-cloak x-show="step === 1" data-wizard-step="1" id="step-1-content" x-transition:enter="transition duration-200"
                         class="mt-6 space-y-5">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Company
@@ -139,7 +122,7 @@
                     </div>
 
                     {{-- STEP 2: PIC --}}
-                    <div x-show="step === 2" id="step-2-content" x-transition:enter="transition duration-300"
+                    <div x-cloak x-show="step === 2" data-wizard-step="2" id="step-2-content" x-transition:enter="transition duration-200"
                         class="mt-6 space-y-5 text-left">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">PIC
@@ -165,22 +148,22 @@
 
                     {{-- FOOTER BUTTONS --}}
                     <div class="flex items-center justify-between pt-6 mt-10 border-t border-slate-50">
-                        <button type="button" x-show="step > 1" @click="prevStep()"
+                        <button type="button" x-cloak x-show="step > 1" @click="prevStep()"
                             class="flex items-center gap-2 px-4 py-2 text-sm font-bold transition-colors text-slate-400 hover:text-slate-800">
                             <i class="fa-solid fa-arrow-left"></i> Back
                         </button>
-                        <div x-show="step === 1"></div>
+                        <div x-cloak x-show="step === 1"></div>
 
                         <div class="flex items-center gap-3">
-                            <button type="button" @click="openCreate = false; step = 1"
+                            <button type="button" @click="openCreate = false"
                                 class="px-5 py-2.5 text-sm font-bold text-slate-400 hover:text-rose-500 transition-colors">Cancel</button>
 
-                            <button type="button" x-show="step < totalSteps" @click="validateAndNext()"
+                            <button type="button" x-cloak x-show="step < totalSteps" @click="validateAndNext()"
                                 class="px-8 py-3.5 text-xs font-black tracking-widest text-white uppercase bg-slate-900 rounded-2xl hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-200">
                                 Next Step
                             </button>
 
-                            <button type="submit" x-show="step === totalSteps"
+                            <button type="submit" x-cloak x-show="step === totalSteps"
                                 class="px-8 py-3.5 text-xs font-black tracking-widest text-white uppercase bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200">
                                 Finish Setup
                             </button>
@@ -192,13 +175,13 @@
 
         {{-- MODAL PROFILE --}}
         {{-- MODAL PROFILE (Comprehensive Detail) --}}
-        <div x-show="openProfile" x-transition:enter="transition ease-out duration-300"
+        <div @click.self="openProfile = false" @keydown.escape.stop="openProfile = false" data-ui-modal role="dialog" aria-modal="true" tabindex="-1" x-cloak x-show="openProfile" x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
            >
 
-            <div @click.away="openProfile = false" x-show="openProfile"
-                x-transition:enter="transition ease-out duration-300 transform"
+            <div x-cloak x-show="openProfile"
+                x-transition:enter="transition ease-out duration-200 transform"
                 x-transition:enter-start="translate-y-full sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="translate-y-0 sm:scale-100"
                 class="bg-slate-50 w-full max-w-5xl h-[90vh] sm:h-auto max-h-[95vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl border-t sm:border border-white">
@@ -370,21 +353,13 @@
 
         {{-- MODAL EDIT --}}
         {{-- MODAL EDIT (Step-by-Step matching Create Modal) --}}
-        <div x-show="openEdit" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-data="{
-                editStep: 1,
-                totalSteps: 2,
-                validateAndNext() {
-                    this.editStep++;
-                },
-                prevStep() { if (this.editStep > 1) this.editStep-- }
-            }"
+        <div @click.self="openEdit = false" @keydown.escape.stop="openEdit = false" data-ui-modal role="dialog" aria-modal="true" tabindex="-1" x-cloak x-show="openEdit" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-data="customerWizard('openEdit')"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
            >
 
-            <div @click.away="openEdit = false; editStep = 1" x-show="openEdit"
-                x-transition:enter="transition ease-out duration-300 delay-100"
+            <div x-cloak x-show="openEdit"
+                x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 translate-y-full sm:scale-95 sm:translate-y-8"
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100 sm:translate-y-0"
                 class="bg-white w-full max-w-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[95vh] overflow-y-auto">
@@ -394,39 +369,39 @@
                     <div class="relative flex items-center justify-between max-w-md mx-auto">
                         <div class="absolute top-5 left-0 w-full h-[2px] bg-slate-200 -z-0">
                             <div class="h-full transition-all duration-700 bg-blue-500"
-                                :class="editStep === 1 ? 'w-0' : 'w-full'"></div>
+                                :class="step === 1 ? 'w-0' : 'w-full'"></div>
                         </div>
 
                         <div class="relative z-10 flex flex-col items-center">
-                            <div :class="editStep >= 1 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' :
+                            <div :class="step >= 1 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' :
                                 'bg-white border-slate-200 text-slate-400'"
-                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 bg-white border-2 rounded-2xl">
-                                <template x-if="editStep > 1"><i class="text-xs fa-solid fa-check"></i></template>
-                                <template x-if="editStep === 1"><span class="text-xs font-black">01</span></template>
+                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 border-2 rounded-2xl">
+                                <template x-if="step > 1"><i class="text-xs fa-solid fa-check"></i></template>
+                                <template x-if="step === 1"><span class="text-xs font-black">01</span></template>
                             </div>
                         </div>
 
                         <div class="relative z-10 flex flex-col items-center">
-                            <div :class="editStep >= 2 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' :
+                            <div :class="step >= 2 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' :
                                 'bg-white border-slate-200 text-slate-400'"
-                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 bg-white border-2 rounded-2xl">
+                                class="flex items-center justify-center w-10 h-10 transition-all duration-500 border-2 rounded-2xl">
                                 <span class="text-xs font-black">02</span>
                             </div>
                         </div>
                     </div>
                     <div class="mt-4 text-center">
                         <h4 class="text-lg font-black text-slate-800"
-                            x-text="editStep === 1 ? 'Update Company Info' : 'Update Contact Details'"></h4>
+                            x-text="step === 1 ? 'Update Company Info' : 'Update Contact Details'"></h4>
                         <p class="text-xs font-medium text-slate-400">Modify the fields you wish to change</p>
                     </div>
                 </div>
 
-                <form :action="`/admin/customerList/${selectedCustomer.id}`" method="POST" class="px-6 pb-10 md:px-10">
+                <form :action="`/admin/customerList/${selectedCustomer.id}`" method="POST" x-ref="wizardForm" novalidate @submit="validateSubmission($event)" class="px-6 pb-10 md:px-10">
                     @csrf
                     @method('PUT')
 
                     {{-- STEP 1: COMPANY --}}
-                    <div x-show="editStep === 1" x-transition:enter="transition duration-300" class="mt-6 space-y-5">
+                    <div x-cloak x-show="step === 1" data-wizard-step="1" x-transition:enter="transition duration-200" class="mt-6 space-y-5">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Company
                                 Name</label>
@@ -451,13 +426,13 @@
                             <label
                                 class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Address</label>
                             <textarea name="address_line" required rows="3"
-                                x-model="selectedCustomer.addresses && selectedCustomer.addresses.length > 0 ? selectedCustomer.addresses[0].address_line : ''"
+                                x-model="selectedCustomer.address_line"
                                 class="w-full px-5 py-3.5 text-sm font-semibold bg-slate-50 border-transparent rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 border focus:bg-white outline-none transition-all"></textarea>
                         </div>
                     </div>
 
                     {{-- STEP 2: PIC (Update ini agar sinkron dengan Controller updateAdmin) --}}
-                    <div x-show="editStep === 2" x-transition:enter="transition duration-300"
+                    <div x-cloak x-show="step === 2" data-wizard-step="2" x-transition:enter="transition duration-200"
                         class="mt-6 space-y-5 text-left">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">PIC
@@ -493,22 +468,22 @@
 
                     {{-- FOOTER BUTTONS --}}
                     <div class="flex items-center justify-between pt-6 mt-10 border-t border-slate-50">
-                        <button type="button" x-show="editStep > 1" @click="prevStep()"
+                        <button type="button" x-cloak x-show="step > 1" @click="prevStep()"
                             class="flex items-center gap-2 px-4 py-2 text-sm font-bold transition-colors text-slate-400 hover:text-slate-800">
                             <i class="fa-solid fa-arrow-left"></i> Back
                         </button>
-                        <div x-show="editStep === 1"></div>
+                        <div x-cloak x-show="step === 1"></div>
 
                         <div class="flex items-center gap-3">
-                            <button type="button" @click="openEdit = false; editStep = 1"
+                            <button type="button" @click="openEdit = false"
                                 class="px-5 py-2.5 text-sm font-bold text-slate-400 hover:text-rose-500 transition-colors">Discard</button>
 
-                            <button type="button" x-show="editStep < totalSteps" @click="validateAndNext()"
+                            <button type="button" x-cloak x-show="step < totalSteps" @click="validateAndNext()"
                                 class="px-8 py-3.5 text-xs font-black tracking-widest text-white uppercase bg-slate-900 rounded-2xl hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-200">
                                 Next Step
                             </button>
 
-                            <button type="submit" x-show="editStep === totalSteps"
+                            <button type="submit" x-cloak x-show="step === totalSteps"
                                 class="px-8 py-3.5 text-xs font-black tracking-widest text-white uppercase bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200">
                                 Save Changes
                             </button>
@@ -519,14 +494,12 @@
         </div>
 
         {{-- MODAL DELETE CONFIRMATION --}}
-        <div x-show="openDelete" x-transition:enter="transition ease-out duration-300"
+        <div @click.self="openDelete = false" @keydown.escape.stop="openDelete = false" data-ui-modal role="dialog" aria-modal="true" tabindex="-1" x-cloak x-show="openDelete" x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
 
-            <div @click.away="openDelete = false" x-show="openDelete"
-                x-transition:enter="transition ease-out duration-300 transform"
+            <div x-cloak x-show="openDelete"
+                x-transition:enter="transition ease-out duration-200 transform"
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-8 text-center">
 
@@ -540,7 +513,7 @@
                 <p class="mb-8 text-sm font-medium leading-relaxed text-slate-500">
                     Are you sure you want to delete <span class="font-bold text-slate-800"
                         x-text="selectedCustomer.company_name"></span>?
-                    This action cannot be undone and all associated data will be removed.
+                    Customers with operational history cannot be deleted.
                 </p>
 
                 {{-- ACTIONS --}}
@@ -550,7 +523,7 @@
                         Keep Customer
                     </button>
 
-                    <form :action="`/admin/customerList/${selectedCustomer.id}`" method="POST" class="flex-1">
+                    <form :action="`/admin/customerList/${selectedCustomer.id}`" method="POST" class="flex-1" data-delete-confirmed="true">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
@@ -564,54 +537,4 @@
 
     </div> {{-- AKHIR DARI DIV X-DATA UTAMA --}}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('search-input');
-            const container = document.getElementById('customer-data-container');
-
-            const fetchCustomers = (searchValue = '', url = "{{ route('admin.customerList.index') }}") => {
-                const fetchUrl = new URL(url);
-                if (searchValue) fetchUrl.searchParams.set('search', searchValue);
-
-                container.style.opacity = '0.5';
-
-                fetch(fetchUrl, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.text())
-                    .then(html => {
-                        container.innerHTML = html;
-                        container.style.opacity = '1';
-
-                        // RE-INITIALIZE ALPINE
-                        if (window.Alpine) {
-                            window.Alpine.discoverUninitializedComponents((el) => {
-                                window.Alpine.initializeComponent(el);
-                            });
-                        }
-                        window.history.pushState({}, '', fetchUrl);
-                    });
-            };
-
-            let timeout = null;
-            searchInput.addEventListener('input', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => fetchCustomers(this.value), 500);
-            });
-
-            container.addEventListener('click', function(e) {
-                const link = e.target.closest('.pagination a, [role="navigation"] a');
-                if (link) {
-                    e.preventDefault();
-                    fetchCustomers(searchInput.value, link.href);
-                    container.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
 @endsection

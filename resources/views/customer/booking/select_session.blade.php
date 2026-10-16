@@ -5,13 +5,13 @@
 
         {{-- STEP INDICATOR --}}
         <div class="flex items-center justify-center gap-4 mb-8">
-            {{-- Step 1: Selesai --}}
+            {{-- Step 1: Completed --}}
             <div class="flex items-center gap-2">
                 <span
                     class="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full shadow-lg bg-emerald-500 shadow-emerald-100">
                     <i class="fa-solid fa-check text-[10px]"></i>
                 </span>
-                <span class="text-sm font-bold text-gray-400">Pilih Tanggal</span>
+                <span class="text-sm font-bold text-gray-400">Select Tanggal</span>
             </div>
 
             <div class="w-12 h-px bg-emerald-200"></div>
@@ -20,7 +20,7 @@
             <div class="flex items-center gap-2">
                 <span
                     class="flex items-center justify-center w-8 h-8 text-sm font-bold text-white bg-blue-600 rounded-full shadow-lg shadow-blue-200">2</span>
-                <span class="text-sm font-bold text-gray-900">Pilih Sesi</span>
+                <span class="text-sm font-bold text-gray-900">Select Sesi</span>
             </div>
 
             <div class="w-12 h-px bg-gray-200"></div>
@@ -40,7 +40,7 @@
                 <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
                         <h2 class="text-2xl font-black tracking-tight text-gray-900">
-                            Pilih Sesi Sterilisasi
+                            Select Sesi Sterilisasi
                         </h2>
                         <p class="mt-1 text-sm font-medium text-gray-400">
                             Tersedia untuk tanggal:
@@ -109,7 +109,7 @@
                             <div class="flex items-center justify-center w-20 h-20 mb-4 rounded-full bg-gray-50">
                                 <i class="text-3xl text-gray-200 fa-solid fa-hourglass-empty"></i>
                             </div>
-                            <p class="font-bold text-gray-400">Tidak ada sesi tersedia untuk tanggal ini</p>
+                            <p class="font-bold text-gray-400">No sesi tersedia untuk tanggal ini</p>
                         </div>
                     </div>
                 @endif

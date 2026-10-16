@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Mendaftarkan alias middleware agar bisa dipanggil di web.php
         $middleware->alias([
             'nocache' => NoCache::class,
+            'confirm.delete' => \App\Http\Middleware\ConfirmDeletion::class,
             'role' => CheckAdminRole::class,
             'customer.only' => EnsureCustomerAccount::class,
         ]);

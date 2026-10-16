@@ -62,7 +62,7 @@ class AdminProductionLineController extends Controller
             'name' => $request->name,
         ]);
 
-        return back()->with('success', 'Mesin produksi berhasil ditambahkan.');
+        return back()->with('success', 'Production unit added.');
     }
 
     /**
@@ -91,7 +91,7 @@ class AdminProductionLineController extends Controller
             'name' => $request->name,
         ]);
 
-        return back()->with('success', 'Mesin produksi berhasil diperbarui.');
+        return back()->with('success', 'Production unit updated.');
     }
 
     /**
@@ -114,17 +114,17 @@ class AdminProductionLineController extends Controller
      */
     public function destroy(ProductionLine $productionLine)
     {
-        // Cek apakah mesin sedang digunakan oleh batch yang belum selesai
-        $activeBatches = $productionLine->batches()
-            ->whereNotIn('status', ['done'])
-            ->count();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($productionLine) {
+            $line = ProductionLine::whereKey($productionLine->id)->lockForUpdate()->firstOrFail();
+            if ($line->batches()->exists()
+                || \App\Models\ProductTest::where('production_line_id', $line->id)->exists()
+                || \Illuminate\Support\Facades\DB::table('production_parameter_templates')->where('production_line_id', $line->id)->exists()
+                || \Illuminate\Support\Facades\DB::table('irradiation_sessions')->where('production_line_id', $line->id)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['machine' => 'This production unit is referenced by operational records and cannot be deleted.']);
+            }
+            $line->delete();
+        }, 3);
 
-        if ($activeBatches > 0) {
-            return back()->with('error', 'Tidak bisa menghapus mesin yang sedang digunakan oleh batch aktif.');
-        }
-
-        $productionLine->delete();
-
-        return back()->with('success', 'Mesin produksi berhasil dihapus.');
+        return back()->with('success', 'Production unit deleted.');
     }
 }

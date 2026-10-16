@@ -153,8 +153,7 @@
                                 title="Edit process parameter"><i class="fa-solid fa-sliders"></i></a>
                         @endif
                         @if (auth('admin')->user()?->role === 'superadmin')
-                            <form method="POST" action="{{ route('admin.testing.destroy', $test) }}"
-                                onsubmit="return confirm('Delete this product test?')">@csrf @method('DELETE')<button
+                            <form method="POST" action="{{ route('admin.testing.destroy', $test) }}">@csrf @method('DELETE')<button
                                     class="inline-flex items-center justify-center text-xs transition bg-white border h-11 w-11 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                                     title="Delete"><i class="fa-solid fa-trash"></i></button></form>
                         @endif

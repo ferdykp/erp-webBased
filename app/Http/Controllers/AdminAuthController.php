@@ -22,17 +22,12 @@ class AdminAuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
 
-        if (!Admin::where('email', $credentials['email'])->exists()) {
+        if (!Auth::guard('admin')->attempt(collect($credentials)->except('remember')->all(), $request->boolean('remember'))) {
             return back()->withErrors([
-                'email' => 'Account not registered. Please contact the System Admin.',
-            ])->onlyInput('email');
-        }
-
-        if (!Auth::guard('admin')->attempt($credentials)) {
-            return back()->withErrors([
-                'password' => 'Invalid password. Please try again.',
+                'email' => 'Unable to sign in with these credentials.',
             ])->onlyInput('email');
         }
 

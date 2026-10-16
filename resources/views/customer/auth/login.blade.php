@@ -8,8 +8,8 @@
             <div class="relative flex-col justify-center hidden w-1/2 p-12 overflow-hidden text-white bg-blue-600 md:flex">
                 <div class="absolute top-0 right-0 w-64 h-64 -mt-20 -mr-20 bg-blue-500 rounded-full opacity-50"></div>
                 <div class="relative z-10">
-                    <h1 class="text-4xl font-bold leading-tight">Book Your<br>Session Easily.</h1>
-                    <p class="mt-4 text-blue-100">Join our community and manage your bookings with just a few clicks.</p>
+                    <h1 class="text-4xl font-bold leading-tight">Manage Your<br>Bookings.</h1>
+                    <p class="mt-4 text-blue-100">Submit and track irradiation service requests securely.</p>
                 </div>
                 <div class="absolute bottom-10 left-12">
                     <img src="{{ asset('img/logo-txt-removebg.png') }}" class="h-10 brightness-0 invert opacity-80"
@@ -32,7 +32,7 @@
                         <div class="p-4 mb-6 text-sm text-red-700 bg-red-100 border border-red-200 rounded-2xl">
                             <div class="flex items-center">
                                 <i class="mr-2 fa-solid fa-circle-exclamation"></i>
-                                <span class="font-bold">Login Gagal!</span>
+                                <span class="font-bold">Sign-in unsuccessful</span>
                             </div>
                             <ul class="mt-1 ml-6 list-disc">
                                 @foreach ($errors->all() as $error)
@@ -73,9 +73,10 @@
                             @enderror
                         </div>
 
-                        <button type="submit"
+                        <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" name="remember" value="1" @checked(old('remember')) class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span>Remember this device</span></label><a href="{{ route('customer.password.request') }}" class="block mt-2 text-sm font-semibold text-blue-700 hover:underline">Forgot password?</a>
+                    <button type="submit"
                             class="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-blue-300 transition-all active:scale-[0.98]">
-                            Sign In to Dashboard
+                            Sign in to customer portal
                         </button>
                     </form>
                 </div>

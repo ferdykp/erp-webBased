@@ -19,7 +19,7 @@
         <section class="mb-6 grid grid-cols-1 gap-5 text-sm sm:grid-cols-2">
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 print:bg-white">
                 <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Customer Info</p>
-                <p class="mt-2 font-semibold text-slate-800">{{ $booking->customer->contacts->first()->name }}</p>
+                <p class="mt-2 font-semibold text-slate-800">{{ ($booking->customer?->contacts->first()?->name ?? '-') }}</p>
                 <p class="mt-1 text-xs text-slate-500">Booking Date: {{ $booking->created_at->format('d/m/Y') }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left print:bg-white sm:text-right">

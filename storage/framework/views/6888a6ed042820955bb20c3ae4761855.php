@@ -16,6 +16,7 @@
             }).format(number);
         };
     </script>
+    <style>[x-cloak]{display:none!important}@media(max-width:1023px){[data-app-sidebar]:not(.sidebar-visible){visibility:hidden;transform:translateX(-100%)}}</style>
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     <link rel="icon" href="<?php echo e(asset('img/logo.png')); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">

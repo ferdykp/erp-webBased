@@ -13,21 +13,8 @@ class CustomListSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::beginTransaction();
-
-        try {
-
-            // 🔥 Disable FK biar aman truncate
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-            DB::table('customer_contacts')->truncate();
-            DB::table('customer_addresses')->truncate();
-            DB::table('bookings')->truncate();
-            DB::table('customers')->truncate();
-            DB::table('users')->truncate();
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
+        // Demo data only. Never truncate existing production records.
+        DB::transaction(function () {
             for ($i = 1; $i <= 15; $i++) {
 
                 $companyName = "PT Company $i";
@@ -37,18 +24,20 @@ class CustomListSeeder extends Seeder
                 /**
                  * 1. USER
                  */
-                $user = User::create([
-                    'username' => strtolower(Str::slug($picName)) . rand(10, 99),
-                    'email'    => $email,
+                $user = User::firstOrCreate([
+                    'email' => $email,
+                ], [
+                    'username' => strtolower(Str::slug($picName)) . '-demo-' . $i,
                     'password' => Hash::make('12345678'),
-                    // 'role'     => 'customer',
+                    'role'     => 'customer',
                 ]);
 
                 /**
                  * 2. CUSTOMER (TANPA NAME ❗)
                  */
-                $customer = Customer::create([
-                    'user_id'           => $user->id,
+                $customer = Customer::firstOrCreate([
+                    'user_id' => $user->id,
+                ], [
                     'company_name'      => $companyName,
                     'industry'          => ['Technology', 'Logistik', 'Retail'][rand(0, 2)],
                     'email'             => $email,
@@ -59,8 +48,9 @@ class CustomListSeeder extends Seeder
                 /**
                  * 3. ADDRESS
                  */
-                $customer->addresses()->create([
-                    'type'         => 'office',
+                $customer->addresses()->firstOrCreate([
+                    'type' => 'office',
+                ], [
                     'address_line' => "Jl. Sudirman No.$i",
                     'city'         => ['Jakarta', 'Bandung', 'Surabaya'][rand(0, 2)],
                     'country'      => 'Indonesia',
@@ -69,20 +59,17 @@ class CustomListSeeder extends Seeder
                 /**
                  * 4. CONTACT (PIC DI SINI ✅)
                  */
-                $customer->contacts()->create([
+                $customer->contacts()->firstOrCreate([
+                    'email' => $email,
+                ], [
                     'name'       => $picName,
                     'phone'      => '08' . rand(1111111111, 9999999999),
-                    'email'      => $email,
                     'is_primary' => true
                 ]);
             }
 
-            DB::commit();
+        });
 
-            echo "Seeder berhasil dijalankan ✅\n";
-        } catch (\Exception $e) {
-            DB::rollBack();
-            dd($e->getMessage());
-        }
+        $this->command?->info('Data contoh pelanggan ditambahkan tanpa menghapus data lama.');
     }
 }

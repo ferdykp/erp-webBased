@@ -177,7 +177,7 @@
     </div>
 
     {{-- MODAL DETAIL BOOKING --}}
-    <div id="detailModal"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="detailModal"
         class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500 p-4">
         <div id="detailCard"
             class="relative w-full max-w-5xl max-h-[95vh] overflow-hidden bg-white shadow-2xl rounded-[3.5rem] transform scale-95 opacity-0 transition-all duration-500 flex flex-col">
@@ -263,7 +263,7 @@
                             <div>
                                 <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Production
                                     Distribution</p>
-                                <h4 class="text-sm font-black text-slate-800">Detail Hasil Pembagian Batch & Produk</h4>
+                                <h4 class="text-sm font-black text-slate-800">Detail Hasil Pembagian Batch & Product</h4>
                             </div>
                         </div>
                         <span id="batch_count_badge"

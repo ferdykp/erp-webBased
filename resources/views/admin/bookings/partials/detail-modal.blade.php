@@ -1,5 +1,5 @@
 {{-- MODAL DETAIL BOOKING --}}
-<div id="modal-detail-{{ $booking->id }}"
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="modal-detail-{{ $booking->id }}"
     class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500 p-4">
 
     <div
@@ -14,7 +14,7 @@
                         class="px-3 py-1 text-[10px] font-black tracking-widest text-blue-600 bg-blue-50 rounded-lg uppercase">
                         #{{ $booking->booking_code }}
                     </span>
-                    <x-status-badge :status="$booking->status" />
+                    <x-status-badge :status="$booking->status" :received="$booking->arrival_time !== null || $booking->placementDetails->isNotEmpty()" />
                 </div>
             </div>
             <button onclick="toggleDetailModal('{{ $booking->id }}', false)"
@@ -152,7 +152,7 @@
                     @endphp
 
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                        {{-- Ringkasan Statistik Dosimetri --}}
+                        {{-- Overview Statistik Dosimetry --}}
                         <div
                             class="flex flex-col justify-between p-6 space-y-4 border bg-slate-50 border-slate-100 rounded-3xl">
                             <div>
@@ -285,7 +285,7 @@
                                                 class="flex items-center justify-center w-12 h-12 mb-3 bg-slate-50 rounded-2xl text-slate-300">
                                                 <i class="text-xl fa-solid fa-layer-group"></i>
                                             </div>
-                                            <p class="text-xs font-bold text-slate-400">Belum ada pembagian batch
+                                            <p class="text-xs font-bold text-slate-400">No batches planned
                                                 produksi.</p>
                                             <p
                                                 class="text-[10px] font-medium text-slate-300 uppercase tracking-tighter mt-1">

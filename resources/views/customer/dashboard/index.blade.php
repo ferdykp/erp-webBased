@@ -60,50 +60,100 @@
             </div>
 
             {{-- TABLE AREA --}}
-            <div id="table-container">
+            <div id="table-container" data-async-table="{{ route('customer.dashboard') }}" data-search-input="search">
                 @include('customer.dashboard.table', ['data' => $data])
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            let timeout = null;
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="detailModal"
+    class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all duration-300">
+    <div class="w-full max-w-2xl bg-white shadow-2xl rounded-[2.5rem] overflow-hidden transform transition-all scale-95 opacity-0"
+        id="modalContainer">
 
-            function fetchBookings(query = '') {
-                $.ajax({
-                    url: "{{ route('customer.dashboard') }}",
-                    type: "GET",
-                    data: {
-                        'search': query
-                    },
-                    // Header ini wajib supaya Laravel mendeteksi $request->ajax()
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    beforeSend: function() {
-                        $('#table-container').css('opacity', '0.5');
-                    },
-                    success: function(response) {
-                        // response hanya berisi HTML dari table.blade.php
-                        $('#table-container').html(response);
-                        $('#table-container').css('opacity', '1');
-                    },
-                    error: function(xhr) {
-                        console.log("Error: ", xhr.responseText);
-                    }
-                });
-            }
+        <div class="flex items-center justify-between p-8 border-b border-gray-50">
+            <div>
+                <h3 class="text-xl font-black text-gray-900">Booking Summary</h3>
+                {{-- <p class="mt-1 text-xs font-bold tracking-widest text-gray-400 uppercase" id="modalTicketCode">Ticket:
+                    Loading...</p> --}}
+            </div>
+            <button onclick="closeModal()"
+                class="flex items-center justify-center w-10 h-10 text-gray-400 transition-colors rounded-full bg-gray-50 hover:text-red-500">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
-            $('#search').on('keyup', function() {
-                clearTimeout(timeout);
-                let query = $(this).val();
+        <div id="modalContent" class="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            {{-- Content from AJAX --}}
+        </div>
 
-                timeout = setTimeout(function() {
-                    fetchBookings(query);
-                }, 300); // Debounce 300ms agar tidak spam request
+        <div class="flex items-center justify-between p-8 bg-gray-50">
+            <button onclick="closeModal()" class="text-sm font-bold text-gray-500 hover:text-gray-700">Close
+                Window</button>
+            <a id="printBtn" href="#" target="_blank"
+                class="flex items-center gap-2 px-8 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">
+                <i class="fa-solid fa-print"></i>
+                Download Ticket
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let detailRequest;
+    let closeTimer;
+    function openModal(id) {
+        clearTimeout(closeTimer);
+        detailRequest?.abort();
+        const request = detailRequest = new AbortController();
+        const modal = document.getElementById('detailModal');
+        const container = document.getElementById('modalContainer');
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Modal Animation
+        setTimeout(() => {
+            container.classList.remove('scale-95', 'opacity-0');
+            container.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        const content = document.getElementById('modalContent');
+        const print = document.getElementById('printBtn');
+        content.textContent = 'Loading...';
+        print.classList.add('hidden');
+        fetch(`/customer/booking/${id}`, { signal: request.signal })
+            .then(res => {
+                if (!res.ok || res.redirected) throw new Error('Request failed');
+                return res.text();
+            })
+            .then(html => {
+                if (request.signal.aborted) return;
+                content.innerHTML = html;
+                print.classList.remove('hidden');
+                document.getElementById('printBtn').href = `/customer/booking/${id}/print`;
+                // If you want to show the ticket code in title
+                // document.getElementById('modalTicketCode').innerText = 'Ticket: ' + code;
+            }).catch(error => {
+                if (error.name !== 'AbortError' && !request.signal.aborted) {
+                    content.textContent = 'Detail gagal dimuat. Tutup dan coba lagi.';
+                }
             });
-        });
-    </script>
+    }
+
+    function closeModal() {
+        detailRequest?.abort();
+        const modal = document.getElementById('detailModal');
+        const container = document.getElementById('modalContainer');
+
+        container.classList.add('scale-95', 'opacity-0');
+        container.classList.remove('scale-100', 'opacity-100');
+
+        closeTimer = setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+</script>
+
 @endsection

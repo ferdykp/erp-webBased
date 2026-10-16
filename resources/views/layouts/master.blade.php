@@ -3,7 +3,7 @@
 @include('layouts.head')
 @stack('head')
 
-<body class="min-h-[100dvh] font-sans antialiased text-slate-900" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+<body data-app-ui="{{ request()->routeIs('customer.booking.create') ? 'protected' : 'standard' }}" class="min-h-[100dvh] font-sans antialiased text-slate-900" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
     @php $plainPage = request()->routeIs(['landing', 'customer.login', 'customer.register', 'admin.login']); @endphp
 
     @if($plainPage)
@@ -13,7 +13,7 @@
             @include('layouts.aside')
             <div class="flex min-w-0 flex-1 flex-col lg:h-[100dvh] lg:overflow-hidden">
                 @include('layouts.navbar')
-                <main class="relative flex-1 overflow-y-auto">
+                <main data-app-scroll class="relative flex-1 overflow-y-auto">
                     <div class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)]">
                         @yield('content')
                     </div>
@@ -22,7 +22,7 @@
                     </footer>
                 </main>
             </div>
-            <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[2px] lg:hidden"></div>
+            <div x-cloak x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[2px] lg:hidden"></div>
         </div>
     @endif
 

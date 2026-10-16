@@ -81,15 +81,34 @@ class ReportController extends Controller
 
     public function index(Request $request)
     {
-        $reports = $this->regularBookings()->paginate(10);
-
+        $family = $request->query('family');
+        $type = $request->query('type');
+        $definition = null;
+        $available = ['nuctech' => self::NUCTECH_REPORTS, 'jts' => self::JTS_REPORTS];
+        if ($family !== null || $type !== null) {
+            abort_unless(is_string($family) && is_string($type) && isset($available[$family][$type]), 404);
+            $this->authorizeReportFamily($family);
+            $definition = $available[$family][$type];
+        }
+        $query = $this->regularBookings();
+        if ($request->filled('search')) {
+            $term = trim((string) $request->query('search'));
+            $query->where(function ($q) use ($term) {
+                $q->where('booking_code', 'like', "%{$term}%")
+                    ->orWhereHas('customer', fn ($customer) => $customer->where('company_name', 'like', "%{$term}%"));
+            });
+        }
         return view('admin.report.index', [
-            'reports' => $reports,
+            'reports' => $query->paginate(15)->withQueryString(),
             'totalBookings' => Booking::where('booking_type', 'regular')->count(),
             'completedBookings' => Booking::where('booking_type', 'regular')->where('status', 'completed')->count(),
             'totalCustomers' => Customer::count(),
             'nuctechReports' => self::NUCTECH_REPORTS,
             'jtsReports' => self::JTS_REPORTS,
+            'category' => $definition ? $family : null,
+            'pageTitle' => $definition['title'] ?? 'Documents',
+            'activeType' => $type,
+            'activeExportType' => $definition['export'] ?? null,
         ]);
     }
 

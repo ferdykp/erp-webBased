@@ -1,4 +1,4 @@
-<div id="orderDetailModal"
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="orderDetailModal"
     class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
     <div
         class="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
@@ -65,7 +65,7 @@
 
                 <div id="content_step1" class="space-y-8">
                     <div class="p-6 md:p-8 bg-blue-50/40 border border-blue-100 rounded-[2.5rem]">
-                        <h4 class="mb-6 text-sm font-black tracking-widest uppercase text-slate-800">Data Ringkasan</h4>
+                        <h4 class="mb-6 text-sm font-black tracking-widest uppercase text-slate-800">Data Overview</h4>
                         <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-4 md:gap-6">
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Product</p>
@@ -234,7 +234,7 @@
                         <button type="button" onclick="toStep1()"
                             class="flex-1 py-4 font-bold tracking-widest uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">Kembali</button>
                         <button type="submit"
-                            class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all">Simpan
+                            class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all">Save
                             Order Sekarang</button>
                     </div>
                 </div>
@@ -289,7 +289,7 @@
         const qtyInput = document.getElementById('in_qty');
 
         if (!customer.value || !prodName.value || !qtyInput.value) {
-            alert("Harap isi Nama Customer, Nama Produk, dan Quantity.");
+            alert("Enter the customer, product name and quantity.");
             return;
         }
 
@@ -315,7 +315,7 @@
         const net_total = val.net_pcs * val.qty;
         const gross_total = val.gross_pcs * val.qty;
 
-        // Tampilkan Ringkasan
+        // Tampilkan Overview
         document.getElementById('check_product_name').innerText = val.product;
         document.getElementById('check_qty').innerText = formatNum(val.qty, 0);
         document.getElementById('check_unit').innerText = val.unit;

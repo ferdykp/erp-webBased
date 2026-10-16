@@ -13,7 +13,7 @@
             {{-- SEARCH/FILTER (Optional) --}}
             <div class="relative">
                 <i class="absolute text-sm text-gray-400 -translate-y-1/2 fa-solid fa-magnifying-glass left-4 top-1/2"></i>
-                <input type="text" placeholder="Cari Kode Booking..."
+                <input type="text" placeholder="Search Kode Booking..."
                     class="w-full py-3 pr-5 text-sm font-bold text-gray-700 transition-all bg-white border border-gray-100 shadow-sm outline-none pl-11 rounded-2xl focus:ring-4 focus:ring-blue-100 md:w-64">
             </div>
         </div>
@@ -58,7 +58,7 @@
                                         @if ($item->customer && $item->customer->contacts->isNotEmpty())
                                             {{-- Mengambil nama dari kontak pertama milik customer --}}
                                             <span class="text-sm font-bold text-gray-700">
-                                                {{ $item->customer->contacts->first()->name }}
+                                                {{ $item->customer?->contacts->first()?->name ?? '-' }}
                                             </span>
                                         @else
                                             <span class="text-sm font-bold text-gray-400">No PIC Detail</span>
@@ -78,7 +78,7 @@
                                                 </span>
                                             @endforeach <span
                                                 class="text-sm font-bold text-gray-700">{{ $item->products->count() }}
-                                                Produk</span>
+                                                Product</span>
                                             <span
                                                 class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">E-Beam
                                                 Sterilization</span>

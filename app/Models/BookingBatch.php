@@ -15,6 +15,7 @@ class BookingBatch extends Model
 {
     protected $fillable = [
         'booking_id',
+        'booking_product_id',
         'porter_name',
         'batch_number',
         'quantity',

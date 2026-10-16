@@ -113,7 +113,7 @@
                                             fn($item) => [
                                                 'id' => $item->id,
                                                 'qty' => $item->quantity,
-                                                'loc' => "Line {$item->pallet->line} - Petak {$item->pallet->slot_section}",
+                                                'loc' => "Line {$item->pallet->line} - Slot {$item->pallet->slot_section}",
                                             ],
                                         );
                                 @endphp
@@ -169,7 +169,7 @@
                                     <td class="px-6 py-4 text-right align-middle">
                                         <div class="flex items-center justify-end gap-1.5">
                                             <button type="button"
-                                                onclick="openRelocationModal('{{ $batch->batch_number }}', {{ json_encode($palletData) }})"
+                                                onclick="window.location.href='{{ route('admin.enhancements.warehouse') }}'"
                                                 class="inline-flex items-center justify-center w-8 h-8 transition-colors rounded-lg text-amber-500 hover:bg-amber-50"
                                                 title="Kelola Relokasi Pallet">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
@@ -231,7 +231,7 @@
                                     fn($item) => [
                                         'id' => $item->id,
                                         'qty' => $item->quantity,
-                                        'loc' => "Line {$item->pallet->line} - Petak {$item->pallet->slot_section}",
+                                        'loc' => "Line {$item->pallet->line} - Slot {$item->pallet->slot_section}",
                                     ],
                                 );
                         @endphp
@@ -280,7 +280,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button type="button"
-                                    onclick="openRelocationModal('{{ $batch->batch_number }}', {{ json_encode($palletData) }})"
+                                    onclick="window.location.href='{{ route('admin.enhancements.warehouse') }}'"
                                     class="flex items-center justify-center flex-1 gap-2 px-4 text-xs font-medium transition-colors border rounded-lg h-9 text-amber-600 bg-amber-50 border-amber-100 hover:bg-amber-100">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
                                         viewBox="0 0 24 24">
@@ -333,7 +333,7 @@
 
 
     {{-- ═══ DETAIL & EDIT MODAL ═══ --}}
-    <div id="finishDetailModal"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="finishDetailModal"
         class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
         <div id="modalContent"
             class="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]">
@@ -367,7 +367,7 @@
             </div>
 
             {{-- Form Wrapper Utama --}}
-            <form action="{{ route('admin.production.update-duration') }}" method="POST"
+            <form @submit.prevent
                 class="flex flex-col flex-1 overflow-hidden">
                 @csrf
                 <input type="hidden" name="batch_id" id="formBatchId">
@@ -383,20 +383,19 @@
                             <div class="p-5 space-y-4 border border-emerald-100 bg-emerald-50/20 rounded-2xl">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <p class="text-xs font-bold tracking-wider uppercase text-emerald-800">Adjustment of
-                                        Work Time and Duration</p>
+                                    <p class="text-xs font-bold tracking-wider uppercase text-emerald-800">Recorded Run Times and Duration</p>
                                 </div>
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div>
                                         <label class="text-[11px] font-semibold text-gray-500 block mb-1">Entry Time
                                             (Offline / Start)</label>
-                                        <input type="datetime-local" id="editOfflineAt" name="offline_at" step="1"
+                                        <input type="datetime-local" id="editOfflineAt" readonly name="offline_at" step="1"
                                             class="w-full px-3 py-2 text-xs transition-all bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400">
                                     </div>
                                     <div>
                                         <label class="text-[11px] font-semibold text-gray-500 block mb-1">Finish Time
                                             (Finished / End)</label>
-                                        <input type="datetime-local" id="editFinishedAt" name="finished_at"
+                                        <input type="datetime-local" id="editFinishedAt" readonly name="finished_at"
                                             step="1"
                                             class="w-full px-3 py-2 text-xs transition-all bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400">
                                     </div>
@@ -575,18 +574,11 @@
                 {{-- Footer Modal Action --}}
                 <div
                     class="flex flex-col gap-3 px-6 py-5 border-t border-gray-100 sm:flex-row sm:items-center sm:justify-between bg-gray-50/60">
-                    <p class="text-xs text-gray-400">Changes to the time data will immediately update the production
-                        database.</p>
+                    <p class="text-xs text-gray-400">Actual times come from recorded irradiation runs. Completed history is locked.</p>
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="closeFinishDetailModal()"
                             class="px-5 text-xs font-medium text-gray-500 transition-colors rounded-lg h-9 hover:text-gray-800 hover:bg-gray-100">
                             Cancel
-                        </button>
-
-                        {{-- Button Simpan Perubahan Form --}}
-                        <button type="submit"
-                            class="h-9 px-5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors active:scale-[0.98]">
-                            Save Changes
                         </button>
 
                         {{-- Link Cetak Sertifikat --}}
@@ -605,7 +597,7 @@
     </div>
 
     {{-- ═══ MODAL RELOKASI PALLET ═══ --}}
-    <div id="relocationModal"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="relocationModal"
         class="fixed inset-0 z-50 items-center justify-center hidden p-4 bg-gray-900/50 backdrop-blur-sm">
         <div class="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
@@ -684,7 +676,7 @@
                                 class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 outline-none transition-all">
                                 <option value="">-- Choose Target Slot --</option>
                                 @foreach ($allLocations ?? [] as $loc)
-                                    <option value="{{ $loc->id }}">Line {{ $loc->line }} | Petak
+                                    <option value="{{ $loc->id }}">Line {{ $loc->line }} | Slot
                                         {{ $loc->slot_section }} ({{ $loc->filled_boxes }} box)</option>
                                 @endforeach
                             </select>
@@ -701,7 +693,7 @@
     </div>
 
     {{-- Form khusus untuk update status billing/payment agar terpisah --}}
-    <form id="updatePaymentForm" method="POST" class="hidden">
+    <form id="updatePaymentForm" data-confirm-action="Confirm this order has been paid?" method="POST" class="hidden">
         @csrf
         @method('PUT')
         <input type="hidden" name="payment_status" id="payment_status_input">
@@ -752,7 +744,7 @@
                 });
             } else {
                 bulkBtn.classList.add('hidden');
-                container.innerHTML = '<p class="py-4 text-xs text-center text-gray-400">Tidak ada pallet aktif</p>';
+                container.innerHTML = '<p class="py-4 text-xs text-center text-gray-400">No active stored goods</p>';
             }
 
             document.getElementById('relocationForm').classList.add('hidden');
@@ -776,15 +768,15 @@
             document.getElementById('relocate_content_id').value = id;
             document.getElementById('relocate_is_bulk').value = "0";
 
-            document.getElementById('selected_card_label').innerText = "Pallet Dipilih";
+            document.getElementById('selected_card_label').innerText = "Selected Pallet";
             document.getElementById('selected_card_label').className =
                 "text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2";
             document.getElementById('selected_pallet_card').className =
                 "p-4 border bg-emerald-50 border-emerald-100 rounded-xl";
             document.getElementById('selected_pallet_loc').innerText = loc;
-            document.getElementById('selected_pallet_loc_sub').innerText = "Lokasi saat ini";
+            document.getElementById('selected_pallet_loc_sub').innerText = "Current Location";
             document.getElementById('selected_pallet_qty').innerText = qty + ' Boxes';
-            document.getElementById('btn_submit_relocation').innerText = "Pindahkan Pallet";
+            document.getElementById('btn_submit_relocation').innerText = "Move Stored Goods";
             document.getElementById('btn_submit_relocation').className =
                 "w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]";
         }
@@ -810,7 +802,7 @@
             document.getElementById('selected_pallet_loc').innerText = "KOSONGKAN & SET SUDAH DIKIRIM";
             document.getElementById('selected_pallet_loc_sub').innerText = "Pallet asal: " + locations;
             document.getElementById('selected_pallet_qty').innerText = totalQty + ' Boxes';
-            document.getElementById('btn_submit_relocation').innerText = "Konfirmasi Barang Sudah Dikirim (Kosongkan Rak)";
+            document.getElementById('btn_submit_relocation').innerText = "Open Dispatch";
             document.getElementById('btn_submit_relocation').className =
                 "w-full h-10 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors active:scale-[0.98]";
         }
@@ -869,17 +861,17 @@
             document.getElementById('editFinishedAt').value = rawFinished ? rawFinished.replace(' ', 'T').substring(0, 19) :
                 '';
 
-            // Set durasi kerja tersimpan, jika kosong bantu hitung menitnya secara asinkron
+            // Set durasi kerja tersimpan, jika kosong bantu hitung minutesnya secara asinkron
             const durationField = document.getElementById('editTotalDuration');
             if (savedDuration && savedDuration !== 'null' && savedDuration !== '') {
                 durationField.value = savedDuration;
             } else {
-                calculateAutoMinutes();
+                durationField.value = '';
             }
 
-            // Pasang Listener: Jika penanggalan digeser manual, kalkulator menit mendeteksi otomatis otomatis
-            document.getElementById('editOfflineAt').addEventListener('change', calculateAutoMinutes);
-            document.getElementById('editFinishedAt').addEventListener('change', calculateAutoMinutes);
+            // Pasang Listener: Jika penanggalan digeser manual, kalkulator minutes mendeteksi otomatis otomatis
+
+
 
             // ═══ VALIDASI PAYMENT & LINK DOWNLOAD SERTIFIKAT ═══
             const isTest = d.bookingType === 'test';
@@ -941,25 +933,6 @@
             }, 10);
         }
 
-        function calculateAutoMinutes() {
-            const startVal = document.getElementById('editOfflineAt').value;
-            const endVal = document.getElementById('editFinishedAt').value;
-            const durationInput = document.getElementById('editTotalDuration');
-
-            if (startVal && endVal) {
-                const startTime = new Date(startVal);
-                const endTime = new Date(endVal);
-                const diffMs = endTime - startTime;
-
-                if (diffMs > 0) {
-                    const diffMins = Math.floor(diffMs / 1000 / 60);
-                    durationInput.value = diffMins;
-                } else {
-                    durationInput.value = 0;
-                }
-            }
-        }
-
         function closeFinishDetailModal() {
             const modal = document.getElementById('finishDetailModal');
             const content = document.getElementById('modalContent');
@@ -970,15 +943,10 @@
 
         function triggerPaymentUpdate(selectElement) {
             if (selectElement.value === 'paid') {
-                if (confirm(
-                        'Apakah Anda yakin ingin memverifikasi pembayaran ini secara manual? Setelah diubah ke PAID, status tidak dapat dikembalikan ke UNPAID dari halaman ini.'
-                    )) {
-                    const form = document.getElementById('updatePaymentForm');
-                    document.getElementById('payment_status_input').value = 'paid';
-                    form.submit();
-                } else {
-                    selectElement.value = 'unpaid';
-                }
+                const form = document.getElementById('updatePaymentForm');
+                document.getElementById('payment_status_input').value = 'paid';
+                form.requestSubmit();
+                selectElement.value = 'unpaid';
             }
         }
     </script>

@@ -36,16 +36,16 @@
                     </td>
                     <td class="px-6 py-5 text-right md:px-8">
                         <div class="flex justify-end gap-2">
-                            <button @click="openProfile = true; selectedCustomer = {{ json_encode($customer) }}"
+                            <button aria-label="View {{ $customer->company_name }}" @click="openProfile = true; selectedCustomer = {{ json_encode($customer) }}"
                                 class="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                             @if (in_array(auth('admin')->user()->role, ['superadmin']))
-                                <button @click="openEdit = true; selectedCustomer = {{ json_encode($customer) }}"
+                                <button aria-label="Edit {{ $customer->company_name }}" @click="selectedCustomer = {{ json_encode($customer) }}; selectedCustomer.address_line = selectedCustomer.addresses?.find(address => address.type === 'office')?.address_line ?? selectedCustomer.addresses?.[0]?.address_line ?? ''; openEdit = true"
                                     class="p-2.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-                                <button @click="selectedCustomer = {{ json_encode($customer) }}; openDelete = true"
+                                <button aria-label="Delete {{ $customer->company_name }}" @click="selectedCustomer = {{ json_encode($customer) }}; openDelete = true"
                                     class="p-2.5 transition-all bg-white rounded-xl text-slate-400 border-slate-200 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50">
                                     <i class="text-md fa-solid fa-trash-can"></i>
                                 </button>

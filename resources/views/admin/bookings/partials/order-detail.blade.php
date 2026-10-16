@@ -1,4 +1,4 @@
-<div id="orderDetailModal"
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="orderDetailModal"
     class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
     <div
         class="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
@@ -33,13 +33,16 @@
             </div>
         </div>
 
-        {{-- <form action="{{ route('admin.bookings.store') }}" method="POST" id="finalForm"
+        {{-- <form action="{{ route('admin.bookings.store') }}" method="POST" enctype="multipart/form-data" id="finalForm"
             class="flex flex-col flex-1 overflow-hidden">
             @csrf --}}
 
+        {{-- <form
+            action="{{ isset($booking) ? route('admin.bookings.update', $booking->id) : route('admin.bookings.store') }}"
+            method="POST" id="finalForm" class="flex flex-col flex-1 overflow-hidden"> --}}
         <form
             action="{{ isset($booking) ? route('admin.bookings.update', $booking->id) : route('admin.bookings.store') }}"
-            method="POST" id="finalForm" class="flex flex-col flex-1 overflow-hidden">
+            method="POST" enctype="multipart/form-data" id="finalForm" class="flex flex-col flex-1 overflow-hidden">
             @csrf
             @if (isset($booking))
                 @method('PUT')
@@ -86,7 +89,8 @@
                         </h4>
                         <div class="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-4 md:gap-6">
                             <div>
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Product</p>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Product
+                                </p>
                                 <p id="check_product_name" class="font-bold text-slate-800">-</p>
                             </div>
                             <div>
@@ -100,7 +104,8 @@
                                         id="check_dmax"></span> kGy</p>
                             </div>
                             <div>
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dimension</p>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dimension
+                                </p>
                                 <p id="check_dimension" class="font-bold text-slate-700">-</p>
                             </div>
                         </div>
@@ -132,12 +137,14 @@
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Density Gross</label>
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Density
+                                Gross</label>
                             <input type="text" id="mod_density_gross" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Density Nett</label>
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Density
+                                Nett</label>
                             <input type="text" id="mod_density_nett" readonly
                                 class="w-full px-4 py-3 font-bold border-none bg-slate-50 rounded-xl text-slate-600 focus:ring-0">
                         </div>
@@ -162,29 +169,34 @@
                         <div class="flex items-center justify-between px-8 py-4 border-b bg-slate-50 border-slate-100">
                             <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Detail
                                 Price</span>
-                            <span class="text-[10px] font-bold py-1 px-3 bg-blue-100 text-blue-700 rounded-full">Rp 500
+                            <span class="text-[10px] font-bold py-1 px-3 bg-blue-100 text-blue-700 rounded-full">Rp
+                                500
                                 / dose*kg</span>
                         </div>
 
                         <div class="p-8 space-y-4">
                             <div class="flex items-start justify-between text-slate-600">
                                 <div>
-                                    <p class="text-xs font-bold tracking-tighter uppercase">Base Price (Subtotal)</p>
+                                    <p class="text-xs font-bold tracking-tighter uppercase">Base Price (Subtotal)
+                                    </p>
                                     <p class="text-[10px] text-slate-400 italic">500 × <span id="calc_qty">0</span>
-                                        qty × <span id="calc_nett">0</span> kg × <span id="calc_dmin">0</span> kGy</p>
+                                        qty × <span id="calc_nett">0</span> kg × <span id="calc_dmin">0</span> kGy
+                                    </p>
                                 </div>
                                 <span class="font-bold" id="display_subtotal">Rp 0</span>
                             </div>
 
                             <div class="flex items-center justify-between text-slate-600">
-                                <p class="text-xs font-bold tracking-tighter uppercase text-slate-400">Tax (PPN 11%)
+                                <p class="text-xs font-bold tracking-tighter uppercase text-slate-400">Tax (PPN
+                                    11%)
                                 </p>
                                 <span class="font-bold text-slate-400" id="display_tax">Rp 0</span>
                             </div>
 
                             <div
                                 class="flex items-center justify-between pt-4 border-t-2 border-dashed border-slate-100">
-                                <p class="text-sm font-black tracking-widest uppercase text-slate-800">Total Price</p>
+                                <p class="text-sm font-black tracking-widest uppercase text-slate-800">Total Price
+                                </p>
                                 <h4 class="text-3xl font-black text-blue-600" id="display_total_price">Rp 0</h4>
                             </div>
                         </div>
@@ -240,7 +252,8 @@
                                     class="absolute opacity-0">
                                 <i class="fa-solid fa-check-double text-slate-400"></i>
                                 <div class="flex flex-col">
-                                    <span class="font-black text-slate-800 uppercase text-[10px]">Payment Done</span>
+                                    <span class="font-black text-slate-800 uppercase text-[10px]">Payment
+                                        Done</span>
                                     <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Paid
                                         Off</span>
                                 </div>
@@ -310,7 +323,7 @@
         const qtyInput = document.getElementById('in_qty');
 
         if (!customer.value || !prodName.value || !qtyInput.value) {
-            alert("Harap isi Nama Customer, Nama Produk, dan Quantity.");
+            alert("Enter the customer, product name and quantity.");
             return;
         }
 
@@ -336,7 +349,7 @@
         const net_total = val.net_pcs * val.qty;
         const gross_total = val.gross_pcs * val.qty;
 
-        // Tampilkan Ringkasan
+        // Tampilkan Overview
         document.getElementById('check_product_name').innerText = val.product;
         document.getElementById('check_qty').innerText = formatNum(val.qty, 0);
         document.getElementById('check_unit').innerText = val.unit;

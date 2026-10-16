@@ -25,7 +25,7 @@ class EnsureCustomerAccount
 
             return redirect()
                 ->route('customer.login')
-                ->withErrors(['email' => 'Silakan login menggunakan akun customer.']);
+                ->withErrors(['email' => 'Sign in with a customer account to continue.']);
         }
 
         return $next($request);

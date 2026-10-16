@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide Alpine-controlled content until Alpine initializes. */
+[x-cloak] { display: none !important; }
+
+/* Shared application rhythm. Printed reports and protected order forms retain their styles. */
+@layer base {
+    body[data-app-ui="standard"] {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        text-rendering: optimizeLegibility;
+    }
+    body[data-app-ui="standard"] main :is(h1, h2, h3) {
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        overflow-wrap: anywhere;
+    }
+    body[data-app-ui="standard"] main :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    body[data-app-ui="standard"] :is(button, a, input, select, textarea):focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 3px;
+    }
+}
+
+@media screen {
+    body[data-app-ui="standard"] main { padding: clamp(1rem, 2vw, 2rem); }
+    body[data-app-ui="standard"] main .text-xs { font-size: 0.8125rem; line-height: 1.5; }
+    body[data-app-ui="standard"] main .text-\[10px\],
+    body[data-app-ui="standard"] main .text-\[11px\] { font-size: 0.75rem; line-height: 1.5; }
+    body[data-app-ui="standard"] main th { line-height: 1.5; }
+    [data-ui-modal] { z-index: 200; overflow-y: auto; overscroll-behavior: contain; }
+    [data-ui-modal] > :is(div, section) { max-height: calc(100dvh - 2rem); min-width: 0; overscroll-behavior: contain; }
+    .modal-open, .modal-open body, .modal-open [data-app-scroll] { overflow: hidden !important; }
+    [data-ui-modal] :is(input, select, textarea) { font-size: max(1rem, 16px); }
+    @media (max-width: 639px) {
+        [data-ui-modal] { padding: 0.75rem; align-items: center; }
+        [data-ui-modal] > :is(div, section) { max-height: calc(100dvh - 1.5rem); border-radius: 1.25rem; overflow-y: auto; }
+        [data-ui-modal] .modal-card > div { padding-left: 1.25rem; padding-right: 1.25rem; }
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-ui-modal], [data-ui-modal] *, [data-async-table] { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+[data-navigation-pending] { cursor: wait; opacity: 0.65; }
+@media screen {
+    body[data-app-ui="standard"] main :is(label, th, p).text-slate-400 { color: #64748b; }
+}

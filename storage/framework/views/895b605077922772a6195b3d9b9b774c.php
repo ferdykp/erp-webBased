@@ -374,6 +374,7 @@
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startPush('scripts'); ?>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="<?php echo e(asset('js/admin/checkin.js')); ?>"></script>
     <script>
         function handleManualInput() {

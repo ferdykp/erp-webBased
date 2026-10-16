@@ -17,6 +17,7 @@ class BookingProduct extends Model
         'dmin',
         'dmax',
         'dimension_pack',
+        'photo_path',
         'gross_weight_per_pcs',
         'expect_temp',
         'vol_per_pcs',

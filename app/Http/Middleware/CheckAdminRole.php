@@ -35,12 +35,12 @@ class CheckAdminRole
         // diubah menjadi array bersih: ['superadmin', 'manager']
         $allowedRoles = [];
         foreach ($roles as $role) {
-            $allowedRoles = array_merge($allowedRoles, explode('|', $role));
+            $allowedRoles = array_merge($allowedRoles, array_map('trim', explode('|', $role)));
         }
 
         // Cek apakah role admin termasuk dalam daftar role yang diizinkan
-        if (!in_array($admin->role, $allowedRoles)) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        if (!in_array($admin->role, $allowedRoles, true)) {
+            abort(403, 'You do not have permission to access this resource.');
         }
 
         return $next($request);

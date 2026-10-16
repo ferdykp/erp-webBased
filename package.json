@@ -3,8 +3,9 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "build": "npm run build:error-css && vite build",
+        "dev": "vite",
+        "build:error-css": "tailwindcss -i ./resources/css/error.css -o ./public/css/error-tailwind.css -c ./tailwind.error.config.js --minify"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.24",

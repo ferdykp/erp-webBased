@@ -1,6 +1,6 @@
 @extends('admin.layout.app')
 
-@section('title', isset($category) ? ($pageTitle ?? 'Report') : 'Report Center')
+@section('title', isset($category) ? ($pageTitle ?? 'Report') : 'Document Center')
 
 @section('content')
     @php
@@ -17,35 +17,35 @@
                         <i class="fa-solid fa-file-lines"></i>
                         Reporting
                     </span>
-                    @isset($category)
+                    @if($category !== null)
                         <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
                             {{ $category === 'nuctech' ? 'Technical · Nuctech' : 'Logistics · JTS' }}
                         </span>
-                    @endisset
+                    @endif
                 </div>
 
                 <h1 class="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
-                    {{ $pageTitle ?? 'Report Center' }}
+                    {{ $pageTitle ?? 'Document Center' }}
                 </h1>
                 <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                    @isset($category)
-                        Pilih order yang akan dibuatkan dokumen, kemudian download report dalam format Excel.
+                    @if($category !== null)
+                        Select an order and download the required operational document in Excel format.
                     @else
-                        Pilih jenis laporan operasional yang dibutuhkan. Laporan technical Nuctech dan logistics JTS tetap menggunakan data order regular yang sama.
-                    @endisset
+                        Select a document type below to generate operational records from existing orders.
+                    @endif
                 </p>
             </div>
 
-            @isset($category)
+            @if($category !== null)
                 <a href="{{ route('admin.report.index') }}"
                     class="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 xl:self-auto">
                     <i class="fa-solid fa-arrow-left"></i>
-                    Report Center
+                    Documents
                 </a>
-            @endisset
+            @endif
         </section>
 
-        @if(!isset($category))
+        @if($category === null)
             <section class="grid gap-3 sm:grid-cols-3">
                 <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div class="flex items-center justify-between gap-4">
@@ -95,14 +95,14 @@
                                 <div>
                                     <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-indigo-500">Technical</p>
                                     <h2 class="mt-1 text-lg font-black text-slate-900">Nuctech Operational Reports</h2>
-                                    <p class="mt-1 text-xs leading-5 text-slate-500">Dokumen proses, jadwal, delivery, dan pencatatan operasi equipment.</p>
+                                    <p class="mt-1 text-xs leading-5 text-slate-500">Processing, scheduling, delivery, and equipment-operation records.</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="divide-y divide-slate-100">
                             @foreach($nuctechReports as $slug => $definition)
-                                <a href="{{ route('admin.report.nuctech', $slug) }}"
+                                <a href="{{ route('admin.report.index', ['family'=>'nuctech','type'=>$slug]) }}"
                                     class="group flex items-center gap-4 px-5 py-4 transition hover:bg-slate-50 sm:px-6">
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-black text-slate-400 transition group-hover:border-indigo-200 group-hover:text-indigo-600">
                                         {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
@@ -135,7 +135,7 @@
 
                         <div class="divide-y divide-slate-100">
                             @foreach($jtsReports as $slug => $definition)
-                                <a href="{{ route('admin.report.jts', $slug) }}"
+                                <a href="{{ route('admin.report.index', ['family'=>'jts','type'=>$slug]) }}"
                                     class="group flex items-center gap-4 px-5 py-4 transition hover:bg-slate-50 sm:px-6">
                                     <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-black text-slate-400 transition group-hover:border-emerald-200 group-hover:text-emerald-600">
                                         {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
@@ -164,6 +164,11 @@
                     </span>
                 </div>
 
+                <form method="GET" action="{{ route('admin.report.index') }}" class="flex flex-wrap gap-3 border-b border-slate-100 px-5 py-4">
+                    <input type="hidden" name="family" value="{{ $category }}"><input type="hidden" name="type" value="{{ $activeType }}">
+                    <input name="search" value="{{ request('search') }}" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm" placeholder="Search order or customer..." aria-label="Search documents by order">
+                    <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Search</button>
+                </form>
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[860px] text-left">
                         <thead>

@@ -1,68 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="id" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo $__env->yieldContent('title'); ?> - Beam Admin</title>
-    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css']); ?>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+    <meta name="robots" content="noindex,nofollow">
+    <title><?php echo $__env->yieldContent('code', 'Error'); ?> — BeamCustom</title>
+    
+    <?php if(file_exists(public_path('css/error-tailwind.css'))): ?>
+        <link rel="stylesheet" href="<?php echo e(asset('css/error-tailwind.css')); ?>">
+    <?php elseif(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))): ?>
+        <?php echo app('Illuminate\Foundation\Vite')('resources/css/app.css'); ?>
+    <?php endif; ?>
 </head>
-
-<body class="flex items-center justify-center min-h-screen p-4 font-sans antialiased bg-slate-50">
-
-    <div class="max-w-md w-full bg-white border border-slate-100 shadow-2xl rounded-[2rem] p-8 text-center space-y-6">
-
-        
-        <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-2xl">
-            <?php switch(trim($__env->yieldContent('code'))):
-                case ('404'): ?>
-                    <div class="flex items-center justify-center w-16 h-16 text-blue-600 bg-blue-50 rounded-2xl animate-bounce">
-                        <i class="text-2xl fa-solid fa-compass"></i>
-                    </div>
-                <?php break; ?>
-
-                <?php case ('403'): ?>
-                <?php case ('401'): ?>
-                    <div class="flex items-center justify-center w-16 h-16 bg-amber-50 rounded-2xl text-amber-500">
-                        <i class="text-2xl fa-solid fa-user-shield"></i>
-                    </div>
-                <?php break; ?>
-
-                <?php case ('419'): ?>
-                    <div class="flex items-center justify-center w-16 h-16 text-orange-500 bg-orange-50 rounded-2xl">
-                        <i class="text-2xl fa-solid fa-clock-rotate-left"></i>
-                    </div>
-                <?php break; ?>
-
-                <?php default: ?>
-                    <div class="flex items-center justify-center w-16 h-16 bg-rose-50 rounded-2xl text-rose-500">
-                        <i class="text-2xl fa-solid fa-triangle-exclamation"></i>
-                    </div>
-            <?php endswitch; ?>
-        </div>
-
-        
-        <div class="space-y-2">
-            <h1 class="text-6xl font-black tracking-tight text-slate-800"><?php echo $__env->yieldContent('code'); ?></h1>
-            <h2 class="text-xl font-extrabold text-slate-700"><?php echo $__env->yieldContent('title'); ?></h2>
-
-            <p class="px-2 text-sm font-medium leading-relaxed text-slate-400">
-                <?php if (! empty(trim($__env->yieldContent('custom_message')))): ?>
-                    <?php echo $__env->yieldContent('custom_message'); ?>
-                <?php else: ?>
-                    <?php echo $__env->yieldContent('message'); ?>. Please verify the action or return to the main operational control dashboard.
-                <?php endif; ?>
-            </p>
-        </div>
-
-        
-        
-    </div>
-
+<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+    <main role="main" class="flex min-h-screen items-center justify-center px-5 py-8">
+        <section class="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
+            <div class="text-base font-bold tracking-tight text-slate-900">BeamCustom <span class="font-normal text-slate-500">· Operations</span></div>
+            <h1 class="mt-6 text-6xl font-bold tracking-tight text-slate-900"><?php echo $__env->yieldContent('code', 'Error'); ?></h1>
+            <p class="mt-3 text-sm leading-7 text-slate-600"><?php echo $__env->yieldContent('message', 'Halaman tidak dapat ditampilkan. Silakan coba kembali.'); ?></p>
+            <div class="mt-7 flex flex-wrap gap-3">
+                <button class="cursor-pointer rounded-lg border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500" type="button" onclick="window.location.reload()">Coba Lagi</button>
+                <a class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500" href="<?php echo e(url('/')); ?>">Kembali ke Beranda</a>
+            </div>
+        </section>
+    </main>
 </body>
-
 </html>
 <?php /**PATH /Users/ferdy/project-fl/beamCustom/resources/views/errors/minimal.blade.php ENDPATH**/ ?>

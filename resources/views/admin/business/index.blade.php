@@ -78,13 +78,13 @@
         </div>
 
         {{-- MODAL DETAIL (Responsive Design) --}}
-        <div x-show="openModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        <div @click.self="openModal = false" @keydown.escape.stop="openModal = false" data-ui-modal role="dialog" aria-modal="true" tabindex="-1" x-cloak x-show="openModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             class="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
            >
 
-            <div @click.away="openModal = false" x-show="openModal"
-                x-transition:enter="transition ease-out duration-300 transform"
+            <div x-cloak x-show="openModal"
+                x-transition:enter="transition ease-out duration-200 transform"
                 x-transition:enter-start="translate-y-full sm:translate-y-0 sm:scale-95"
                 x-transition:enter-end="translate-y-0 sm:scale-100"
                 class="bg-slate-50 w-full max-w-5xl h-[90vh] sm:h-auto max-h-[95vh] overflow-y-auto rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl border-t sm:border border-white">

@@ -17,8 +17,8 @@
             System Online
         </div>
 
-        <div x-data="{ open: false }" class="relative">
-            <button @click="open = !open" @click.outside="open = false"
+        <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative">
+            <button type="button" @click.stop="open = !open" :aria-expanded="open.toString()" aria-haspopup="menu"
                 class="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-slate-100">
                 <div class="flex h-9 w-9 items-center 3xl:h-10 3xl:w-10 justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm">
                     <?php echo e(strtoupper(substr(auth('admin')->user()->name, 0, 1))); ?>
@@ -31,7 +31,7 @@
                 <i class="fa-solid fa-chevron-down hidden text-[9px] text-slate-400 transition-transform sm:block" :class="open ? 'rotate-180' : ''"></i>
             </button>
 
-            <div x-show="open" x-transition.origin.top.right
+            <div x-show="open" x-cloak x-transition.origin.top.right
                 class="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-200/60">
                 <div class="border-b border-slate-100 px-3 py-2.5">
                     <p class="text-[10px] uppercase tracking-wider text-slate-400">Signed in as</p>

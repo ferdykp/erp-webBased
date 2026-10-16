@@ -28,9 +28,8 @@
                         <img src="<?php echo e(asset('img/logo-txt-removebg.png')); ?>" alt="Post Image"
                             class="object-cover px-8 transition-transform duration-500 ease-in-out group-hover:scale-110" />
                     </a>
-                    <h2 class="text-xl font-black tracking-tight sm:text-2xl text-slate-950">Admin Console</h2>
-                    <p class="text-[10px] sm:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-[0.15em]">Security
-                        Gate</p>
+                    <h2 class="text-xl font-black tracking-tight sm:text-2xl text-slate-950">Staff Sign In</h2>
+                    <p class="text-[10px] sm:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-[0.15em]">Secure Staff Access</p>
                 </div>
 
                 
@@ -103,9 +102,10 @@
 
                     
                     <div class="pt-2">
-                        <button type="submit"
+                        <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" name="remember" value="1" <?php if(old('remember')): echo 'checked'; endif; ?> class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span>Remember this device</span></label><a href="<?php echo e(route('admin.password.request')); ?>" class="block mt-2 text-sm font-semibold text-blue-700 hover:underline">Forgot password?</a>
+                    <button type="submit"
                             class="w-full py-3.5 sm:py-4 bg-slate-950 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-indigo-100 hover:bg-indigo-600 transition-all active:scale-[0.97]">
-                            Verify & Authenticate
+                            Sign in to workspace
                         </button>
                     </div>
                 </form>

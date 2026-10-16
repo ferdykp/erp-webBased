@@ -14,13 +14,13 @@
                 <h2 class="text-2xl font-black tracking-tighter md:text-3xl text-slate-800">Order
                     #{{ $booking->booking_code }}</h2>
                 <p class="mt-1 text-xs font-medium text-slate-500">
-                    PIC: <span class="font-bold text-slate-700">{{ $booking->customer->contacts->first()->name }}</span>
+                    PIC: <span class="font-bold text-slate-700">{{ ($booking->customer?->contacts->first()?->name ?? '-') }}</span>
                     • {{ $booking->created_at->format('d M Y') }}
                 </p>
             </div>
 
             <div class="flex justify-center md:block">
-                <x-status-badge :status="$booking->status" />
+                <x-status-badge :status="$booking->status" :received="$booking->arrival_time !== null || $booking->placementDetails->isNotEmpty()" />
             </div>
         </div>
 
@@ -108,39 +108,7 @@
                 <div class="p-8 bg-slate-900 rounded-[2.5rem] shadow-2xl text-white relative overflow-hidden">
                     <div class="absolute w-32 h-32 rounded-full -top-10 -left-10 bg-indigo-500/10 blur-2xl"></div>
 
-                    <h4 class="text-xs font-black uppercase tracking-[0.2em] mb-8 text-slate-500 text-center">Admin Approval
-                        Center</h4>
-
-                    @if ($booking->status == 'pending')
-                        <div class="space-y-4">
-                            <form action="{{ route('admin.business.approve', $booking->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <button type="submit"
-                                    class="w-full py-4 text-[11px] font-black tracking-[0.15em] uppercase transition-all shadow-xl bg-emerald-500 hover:bg-emerald-600 rounded-2xl shadow-emerald-500/20 active:scale-95">
-                                    Approve & Process
-                                </button>
-                            </form>
-
-                            <button
-                                class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
-                                Request Revision
-                            </button>
-                        </div>
-                        <p class="mt-6 text-[10px] text-center text-slate-500 font-medium leading-relaxed italic">
-                            Approving will forward this order to the warehouse operational team.
-                        </p>
-                    @else
-                        <div class="py-10 text-center border border-white/5 rounded-[2rem] bg-white/5">
-                            <div
-                                class="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/20">
-                                <i class="text-xl fa-solid fa-check text-emerald-400"></i>
-                            </div>
-                            <p class="mb-1 text-xs font-black tracking-widest uppercase">Process Completed</p>
-                            <p class="text-[10px] text-slate-500 uppercase tracking-tighter">Order status is
-                                {{ $booking->status }}</p>
-                        </div>
-                    @endif
+                    <h4 class="text-xs font-bold uppercase text-slate-500">Production Access</h4><p class="mt-4 text-sm text-slate-300">Received orders can enter production immediately. No administrative approval is required.</p><a href="{{ route('admin.workspace.show', ['booking'=>$booking, 'stage'=>'preparation']) }}" class="mt-4 inline-block rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white">Open Production Setup</a>
                 </div>
 
                 {{-- CUSTOMER CARD --}}
@@ -149,9 +117,9 @@
                     <h4 class="mb-6 text-[10px] font-black tracking-widest uppercase text-slate-400">Requestor Entity</h4>
                     <div
                         class="flex items-center justify-center w-16 h-16 mb-4 text-xl font-black rounded-[1.5rem] bg-indigo-50 text-indigo-600 shadow-inner">
-                        {{ substr($booking->customer->contacts->first()->name, 0, 1) }}
+                        {{ substr(($booking->customer?->contacts->first()?->name ?? '-'), 0, 1) }}
                     </div>
-                    <p class="font-black leading-tight text-slate-800">{{ $booking->customer->contacts->first()->name }}
+                    <p class="font-black leading-tight text-slate-800">{{ ($booking->customer?->contacts->first()?->name ?? '-') }}
                     </p>
                     <p class="mt-1 text-xs font-bold text-slate-400">
                         {{ $booking->customer->company_name ?? 'Individual Entity' }}</p>

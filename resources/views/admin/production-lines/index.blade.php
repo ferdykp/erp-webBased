@@ -27,7 +27,7 @@
                         <tr class="text-[10px] font-black tracking-[0.2em] text-slate-600 uppercase">
                             <th class="px-8 py-4">#</th>
                             <th class="px-6 py-4">Nama Mesin</th>
-                            <th class="px-6 py-4 text-center">Dibuat</th>
+                            <th class="px-6 py-4 text-center">Created</th>
                             <th class="px-8 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -61,8 +61,7 @@
                                         </button>
 
                                         {{-- Delete Button --}}
-                                        <form action="{{ route('admin.production-lines.destroy', $line) }}" method="POST"
-                                            onsubmit="return confirm('Yakin ingin menghapus mesin ini?')">
+                                        <form action="{{ route('admin.production-lines.destroy', $line) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -80,7 +79,7 @@
                                         <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100">
                                             <i class="text-2xl fa-solid fa-gear text-slate-300"></i>
                                         </div>
-                                        <p class="text-sm font-bold text-slate-400">Belum ada data mesin.</p>
+                                        <p class="text-sm font-bold text-slate-400">No production units yet.</p>
                                         <p class="text-xs text-slate-400">Klik tombol "Tambah Mesin" untuk memulai.</p>
                                     </div>
                                 </td>
@@ -93,7 +92,7 @@
     </div>
 
     {{-- ═══ CREATE MODAL ═══ --}}
-    <div id="createModal"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="createModal"
         class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
         <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10">
             <h3 class="mb-6 text-2xl font-black text-slate-800">Tambah Mesin Baru</h3>
@@ -108,11 +107,11 @@
                     <button type="button"
                         onclick="document.getElementById('createModal').classList.replace('flex','hidden')"
                         class="flex-1 py-4 text-sm font-black bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit"
                         class="flex-1 py-4 text-sm font-black text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
-                        Simpan
+                        Save
                     </button>
                 </div>
             </form>
@@ -120,7 +119,7 @@
     </div>
 
     {{-- ═══ EDIT MODAL ═══ --}}
-    <div id="editModal"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="editModal"
         class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
         <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10">
             <h3 class="mb-6 text-2xl font-black text-slate-800">Edit Mesin</h3>
@@ -135,7 +134,7 @@
                 <div class="flex gap-3">
                     <button type="button" onclick="document.getElementById('editModal').classList.replace('flex','hidden')"
                         class="flex-1 py-4 text-sm font-black bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit"
                         class="flex-1 py-4 text-sm font-black text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">

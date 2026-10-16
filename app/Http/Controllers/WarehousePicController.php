@@ -33,10 +33,10 @@ class WarehousePicController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'shift' => $request->shift,
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('admin.warehouse-pics.index')->with('success', 'PIC Warehouse berhasil ditambahkan.');
+        return redirect()->route('admin.warehouse-pics.index')->with('success', 'Warehouse PIC added.');
     }
 
     public function edit(WarehousePic $warehousePic)
@@ -59,15 +59,21 @@ class WarehousePicController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'shift' => $request->shift,
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('admin.warehouse-pics.index')->with('success', 'Data PIC Warehouse berhasil diperbarui.');
+        return redirect()->route('admin.warehouse-pics.index')->with('success', 'Warehouse PIC updated.');
     }
 
     public function destroy(WarehousePic $warehousePic)
     {
-        $warehousePic->delete();
-        return redirect()->route('admin.warehouse-pics.index')->with('success', 'PIC Warehouse berhasil dihapus.');
+        \Illuminate\Support\Facades\DB::transaction(function () use ($warehousePic) {
+            $warehousePic = WarehousePic::whereKey($warehousePic->id)->lockForUpdate()->firstOrFail();
+            if (\App\Models\Booking::where('pic_warehouse', $warehousePic->name)->orWhere('pic_warehouse', (string) $warehousePic->id)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['warehouse_pic' => 'This PIC is referenced by operational records. Deactivate the account instead.']);
+            }
+            $warehousePic->delete();
+        });
+        return redirect()->route('admin.warehouse-pics.index')->with('success', 'Warehouse PIC deleted.');
     }
 }

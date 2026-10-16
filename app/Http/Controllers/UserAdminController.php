@@ -34,9 +34,9 @@ class UserAdminController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255',
-            'password' => 'required|min:8|confirmed',
-            'role' => 'nullable|string'
+            'email' => 'required|email|max:255|unique:admins,email',
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'role' => 'required|in:superadmin,manager,production,cargo_admin'
         ]);
 
         Admin::create([
@@ -85,14 +85,25 @@ class UserAdminController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Password berhasil diubah!');
+        return back()->with('success', 'Password updated.');
     }
 
     public function destroy(int $id)
     {
         $admin = Admin::findOrFail($id);
+        if ((int) $admin->id === (int) Auth::guard('admin')->id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+        if ($admin->role === 'superadmin' && Admin::where('role', 'superadmin')->count() <= 1) {
+            return back()->with('error', 'The last superadmin account cannot be deleted.');
+        }
+        foreach (['operational_audit_events' => 'admin_id', 'irradiation_sessions' => 'recorded_by', 'order_dispatches' => 'dispatched_by', 'quality_reviews' => 'reviewed_by'] as $table => $column) {
+            if (\Illuminate\Support\Facades\DB::table($table)->where($column, $id)->exists()) {
+                return back()->with('error', 'This staff account is referenced by operational history and cannot be deleted.');
+            }
+        }
         $admin->delete();
 
-        return redirect()->route('admin.profile.profileList')->with('success', 'Admin Berhasil Dihapus');
+        return redirect()->route('admin.profile.profileList')->with('success', 'Staff account deleted.');
     }
 }

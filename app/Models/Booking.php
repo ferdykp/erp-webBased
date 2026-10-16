@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Booking extends Model
@@ -38,9 +39,10 @@ class Booking extends Model
         return $this->hasMany(BookingProduct::class, 'booking_id');
     }
 
-    public function pallets(): HasMany
+    public function pallets(): BelongsToMany
     {
-        return $this->hasMany(Pallet::class, 'current_booking_id');
+        // Keanggotaan pallet berasal dari isi aktif, bukan current_booking_id tunggal.
+        return $this->belongsToMany(Pallet::class, 'pallet_contents', 'booking_id', 'pallet_id')->distinct();
     }
 
     public function batches(): HasMany

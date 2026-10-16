@@ -1,3 +1,13 @@
+{{-- Foto produk tidak mengubah data atau laporan teknis. --}}
+@foreach($booking->products as $photoProduct)
+    @if($photoProduct->photo_path)
+        <div class="rounded-xl border border-slate-200 bg-white p-4 mb-4">
+            <p class="mb-2 text-sm font-semibold">Foto produk: {{ $photoProduct->product_name }}</p>
+            <img class="max-h-64 max-w-full rounded-lg object-contain" alt="Foto produk"
+                 src="{{ route('admin.products.photo', $photoProduct->id) }}">
+        </div>
+    @endif
+@endforeach
 @php
     $product = $booking->products->first();
     $contact = $booking->customer?->contacts?->first();

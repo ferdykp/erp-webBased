@@ -5,7 +5,7 @@
 @section('content')
 
     {{-- Root wrapper dengan Alpine.js untuk kontrol modal --}}
-    <div class="w-full pb-10 space-y-6 md:space-y-8" x-data="{ confirmModal: false, batchAction: '', batchInfo: '' }">
+    <div class="w-full pb-10 space-y-6 md:space-y-8" >
 
         {{-- HEADER --}}
         <div class="flex flex-col gap-4 px-2 md:flex-row md:items-center md:justify-between">
@@ -16,8 +16,8 @@
                     <span class="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                     Step 2 of 4
                 </div>
-                <h2 class="text-3xl font-black tracking-tighter md:text-4xl text-slate-800">Queue Task</h2>
-                <p class="mt-1 text-xs font-medium md:text-sm text-slate-500">List Batch Ready for Irradiation</p>
+                <h2 class="text-3xl font-black tracking-tighter md:text-4xl text-slate-800">Batch Queue</h2>
+                <p class="mt-1 text-xs font-medium md:text-sm text-slate-500">Batches ready to start</p>
             </div>
         </div>
 
@@ -57,7 +57,7 @@
                         <div class="flex flex-wrap items-center gap-4 md:gap-8 lg:justify-end">
                             <div class="flex-1 min-w-[100px] lg:flex-none lg:text-right">
                                 <p class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                                    Produk</p>
+                                    Product</p>
                                 <p class="text-xs md:text-sm font-bold text-slate-700 truncate max-w-[150px]">
                                     {{ $product->product_name ?? '-' }}</p>
                             </div>
@@ -80,7 +80,7 @@
                     </div>
 
                     {{-- Expanded Content --}}
-                    <div x-show="expanded" x-transition.opacity.duration.150ms>
+                    <div x-cloak x-show="expanded" x-transition.opacity.duration.150ms>
                         <div class="px-6 pb-6 space-y-4 md:px-8 md:pb-8">
 
                             <div class="p-5 border bg-slate-50/50 border-slate-100 rounded-[1.5rem] md:rounded-2xl">
@@ -131,12 +131,11 @@
                                                 </span>
 
                                                 {{-- Trigger Modal Konfirmasi --}}
-                                                <button type="button"
-                                                    @click="confirmModal = true; batchAction = '{{ route('admin.production.batches.start', $batch->id) }}'; batchInfo = 'Batch #{{ $batch->batch_number }} ({{ \App\Support\NumberFormatter::integer($batch->quantity) }} {{ $batch->unit }})'"
+                                                <a href="{{ route('admin.workspace.production-board', ['search' => $batch->booking?->booking_code]) }}"
                                                     class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-100 transition-all">
                                                     <i class="fa-solid fa-play text-[8px]"></i>
-                                                    <span>Start Irradiation</span>
-                                                </button>
+                                                    <span>Open Production Center</span>
+                                                </a>
                                             </div>
                                         </div>
                                     @endif
@@ -157,43 +156,7 @@
             @endforelse
         </div>
 
-        {{-- ═══ MODAL CONFIRMATION (START IRRADIATION) ═══ --}}
-        <div x-show="confirmModal" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-90"
-            class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
 
-            <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-8 text-center space-y-6"
-                @click.away="confirmModal = false">
-                <div class="flex items-center justify-center w-20 h-20 mx-auto bg-blue-50 rounded-3xl">
-                    <i class="text-3xl text-blue-600 fa-solid fa-play"></i>
-                </div>
-
-                <div class="space-y-2">
-                    <h3 class="text-xl font-black text-slate-800">Irradiation Confirmation</h3>
-                    <p class="text-sm font-medium text-slate-500">
-                        Are you sure you want to start the irradiation process for <span class="font-black text-blue-600"
-                            x-text="batchInfo"></span>?
-                    </p>
-                </div>
-
-                <div class="flex flex-col gap-3 pt-4 sm:flex-row">
-                    <button type="button" @click="confirmModal = false"
-                        class="flex-1 py-4 text-xs font-black uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
-                        Cancel
-                    </button>
-
-                    <form :action="batchAction" method="POST" class="flex-1">
-                        @csrf @method('PUT')
-                        <button type="submit"
-                            class="w-full py-4 text-xs font-black text-white uppercase transition-all bg-blue-600 shadow-xl shadow-blue-100 rounded-2xl hover:bg-blue-700">
-                            Yes, Start now
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 
 @endsection

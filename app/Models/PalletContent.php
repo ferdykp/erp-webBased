@@ -10,6 +10,8 @@ class PalletContent extends Model
     protected $fillable = [
         'pallet_id',
         'booking_id',
+        'booking_product_id',
+        'unit',
         'product_name',
         'quantity'
     ];

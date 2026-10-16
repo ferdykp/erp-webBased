@@ -3,7 +3,7 @@
 @section('title', 'Dosimeter Queue List')
 
 @section('content')
-    <div class="mx-auto w-full max-w-none rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 md:p-8 2xl:p-10">
+    <div class="w-full p-4 mx-auto bg-white border border-gray-200 shadow-sm max-w-none rounded-2xl sm:p-6 md:p-8 2xl:p-10">
 
         {{-- Header & Search Section --}}
         <div class="flex flex-col gap-4 pb-4 mb-6 border-b border-gray-200 md:flex-row md:items-center md:justify-between">
@@ -26,95 +26,10 @@
         </div>
 
         {{-- Container Tabel Utama (Akan Diperbarui oleh AJAX) --}}
-        <div id="dosimeter-table-container">
+        <div id="dosimeter-table-container" data-async-table="{{ route('admin.dosimeter.index') }}"
+            data-search-input="search-input">
             @include('admin.dosimeter.table')
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const searchInput = document.getElementById('search-input');
-                const tableContainer = document.getElementById('dosimeter-table-container');
-                const searchIcon = document.getElementById('search-icon');
-                let debounceTimer;
-
-                // Fungsi utama untuk mengambil data via AJAX Fetch
-                function fetchDosimeterData(keyword = '', page = 1) {
-                    if (searchIcon) {
-                        searchIcon.className = 'fa-solid fa-spinner fa-spin text-blue-500';
-                    }
-
-                    const url = new URL("{{ route('admin.dosimeter.index') }}");
-                    url.searchParams.append('search', keyword);
-                    url.searchParams.append('page', page);
-
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.text();
-                        })
-                        .then(html => {
-                            // Perbarui isi container tabel dengan HTML baru dari server
-                            tableContainer.innerHTML = html;
-
-                            if (searchIcon) {
-                                searchIcon.className = 'fa-solid fa-magnifying-glass text-gray-400';
-                            }
-
-                            // Inisialisasi ulang event listener untuk pagination link yang baru di-render
-                            bindPaginationLinks(keyword);
-                        })
-                        .catch(error => {
-                            console.error('AJAX Error:', error);
-                            if (searchIcon) {
-                                searchIcon.className = 'fa-solid fa-magnifying-glass text-gray-400';
-                            }
-                        });
-                }
-
-                // Mengikat event click pada seluruh tag <a> di dalam pagination container
-                function bindPaginationLinks(keyword) {
-                    // PERBAIKAN: Selector menargetkan tag 'a' di dalam .pagination-container atau elemen nav bawaan Laravel
-                    const paginationLinks = tableContainer.querySelectorAll('.pagination-container a, nav a');
-
-                    paginationLinks.forEach(link => {
-                        link.addEventListener('click', function(e) {
-                            e.preventDefault();
-
-                            // Ambil query parameter 'page' dari atribut href link tersebut
-                            try {
-                                const urlObj = new URL(this.getAttribute('href'));
-                                const page = urlObj.searchParams.get('page') || 1;
-                                fetchDosimeterData(keyword, page);
-                            } catch (err) {
-                                // Fallback jika href berupa relative path bawaan server tertentu
-                                const urlParams = new URLSearchParams(this.getAttribute('href').split(
-                                    '?')[1]);
-                                const page = urlParams.get('page') || 1;
-                                fetchDosimeterData(keyword, page);
-                            }
-                        });
-                    });
-                }
-
-                // Event Listener ketika pengguna mengetik (Debounce 400ms)
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    const keyword = this.value;
-
-                    debounceTimer = setTimeout(() => {
-                        fetchDosimeterData(keyword, 1); // Pencarian baru selalu reset ke page 1
-                    }, 400);
-                });
-
-                // Jalankan binding awal untuk halaman pertama saat pertama kali load
-                bindPaginationLinks(searchInput.value);
-            });
-        </script>
-    @endpush
 @endsection

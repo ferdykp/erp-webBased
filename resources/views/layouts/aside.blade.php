@@ -1,4 +1,4 @@
-<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+<aside data-app-sidebar :class="sidebarOpen ? 'translate-x-0 sidebar-visible' : '-translate-x-full lg:translate-x-0'"
     class="fixed inset-y-0 left-0 z-50 flex w-[min(288px,calc(100vw-16px))] flex-col border-r border-slate-200 bg-white shadow-2xl shadow-slate-900/10 transition-transform duration-300 print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[268px] lg:shrink-0 lg:shadow-none xl:w-[276px] 2xl:w-[288px] 3xl:w-[300px]">
     <div
         class="flex h-[68px] items-center justify-between border-b border-slate-200 px-4 sm:h-[72px] sm:px-5 lg:h-[76px] 2xl:h-[80px] 2xl:px-6">

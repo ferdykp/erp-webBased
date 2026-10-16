@@ -33,7 +33,7 @@
                             class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-blue-600">Full
                             Name</label>
                         <input type="text" name="name" value="{{ old('name') }}" required
-                            placeholder="Masukkan nama lengkap"
+                            placeholder="Enter full name"
                             class="w-full px-5 py-4 mt-2 font-bold transition-all border-2 border-transparent outline-none text-slate-700 bg-slate-50 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100/50 focus:border-blue-600 placeholder:text-slate-300 placeholder:font-medium">
                         @error('name')
                             <p class="flex items-center gap-1 mt-2 ml-1 text-xs font-bold text-red-500">
@@ -82,15 +82,15 @@
                         <div class="relative">
                             <select name="role" required
                                 class="w-full px-5 py-4 mt-2 font-bold transition-all border-2 border-transparent outline-none appearance-none text-slate-700 bg-slate-50 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100/50 focus:border-blue-600">
-                                <option value="" disabled selected>Pilih Role Administrator</option>
+                                <option value="" disabled selected>Select staff role</option>
                                 <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin
                                     (Semua Akses)</option>
                                 <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Manager (Bisnis &
                                     Report)</option>
                                 <option value="cargo_admin" {{ old('role') == 'cargo_admin' ? 'selected' : '' }}>Admin Cargo
-                                    (Manajemen Order)</option>
+                                    (Order Management)</option>
                                 <option value="production" {{ old('role') == 'production' ? 'selected' : '' }}>Staff
-                                    Produksi (Operasional)</option>
+                                    Production (Operations)</option>
                             </select>
                             <div class="absolute inset-y-0 flex items-center mt-2 pointer-events-none right-5">
                                 <i class="text-xs fa-solid fa-chevron-down text-slate-400"></i>
@@ -108,7 +108,7 @@
                 <div class="flex flex-col-reverse gap-4 pt-10 sm:flex-row sm:items-center">
                     <a href="{{ route('admin.profile') }}"
                         class="flex items-center justify-center px-8 py-4 text-sm font-black tracking-widest uppercase transition-all text-slate-400 hover:text-slate-600">
-                        Batal
+                        Cancel
                     </a>
                     <button type="submit"
                         class="flex-1 px-10 py-4 text-sm font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-xl sm:flex-none shadow-blue-100 rounded-2xl hover:bg-blue-700 active:scale-95">

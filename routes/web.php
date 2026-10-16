@@ -43,6 +43,16 @@ Route::get('/', function () {
 })->name('landing');
 
 
+// Password recovery uses separate brokers and token tables for staff and customers.
+foreach (['admin', 'customer'] as $portal) {
+    Route::prefix($portal)->middleware(['nocache', 'throttle:6,1'])->group(function () use ($portal) {
+        Route::get('/forgot-password', [\App\Http\Controllers\PasswordRecoveryController::class, 'requestForm'])->defaults('portal', $portal)->name($portal . '.password.request');
+        Route::post('/forgot-password', [\App\Http\Controllers\PasswordRecoveryController::class, 'sendLink'])->defaults('portal', $portal)->name($portal . '.password.email');
+        Route::get('/reset-password/{token}', [\App\Http\Controllers\PasswordRecoveryController::class, 'resetForm'])->defaults('portal', $portal)->name($portal . '.password.reset');
+        Route::post('/reset-password', [\App\Http\Controllers\PasswordRecoveryController::class, 'reset'])->defaults('portal', $portal)->name($portal . '.password.update');
+    });
+}
+
 /*
 |--------------------------------------------------------------------------
 | 2. CUSTOMER ROUTES (GUEST & AUTHENTICATED)
@@ -98,9 +108,41 @@ Route::prefix('admin')->middleware('nocache')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
-    ->middleware(['auth:admin', 'nocache'])
+    ->middleware(['auth:admin', 'nocache', 'confirm.delete'])
     ->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+        // Assisted operations: dedicated permissions enforced in controller, plus admin guard.
+        Route::get('/orders/{booking}/quality-review', [\App\Http\Controllers\OperationsEnhancementController::class, 'quality'])->name('admin.enhancements.quality');
+        Route::post('/orders/{booking}/quality-review', [\App\Http\Controllers\OperationsEnhancementController::class, 'qualityReview'])->name('admin.enhancements.quality.review');
+        Route::get('/orders/{booking}/document-drafts', [\App\Http\Controllers\OperationsEnhancementController::class, 'documents'])->name('admin.enhancements.documents');
+        Route::post('/orders/{booking}/document-drafts', [\App\Http\Controllers\OperationsEnhancementController::class, 'generateDraft'])->name('admin.enhancements.documents.generate');
+        Route::get('/parameter-templates', [\App\Http\Controllers\OperationsEnhancementController::class, 'templateIndex'])->name('admin.enhancements.templates');
+        Route::post('/parameter-templates', [\App\Http\Controllers\OperationsEnhancementController::class, 'storeTemplate'])->name('admin.enhancements.templates.store');
+        Route::post('/parameter-templates/{id}/review', [\App\Http\Controllers\OperationsEnhancementController::class, 'approveTemplate'])->whereNumber('id')->name('admin.enhancements.templates.approve');
+        Route::post('/batches/{batch}/apply-template', [\App\Http\Controllers\OperationsEnhancementController::class, 'applyTemplate'])->name('admin.enhancements.templates.apply');
+        Route::get('/warehouse-movements', [\App\Http\Controllers\OperationsEnhancementController::class, 'warehouse'])->name('admin.enhancements.warehouse');
+        Route::post('/warehouse-movements', [\App\Http\Controllers\OperationsEnhancementController::class, 'relocateFromForm'])->name('admin.enhancements.warehouse.relocate');
+        Route::get('/operational-audit', [\App\Http\Controllers\OperationsEnhancementController::class, 'auditIndex'])->name('admin.enhancements.audit');
+        // Hybrid Workspace: safe, consolidated read views backed by existing data.
+        Route::get('/orders', [\App\Http\Controllers\OrderWorkspaceController::class, 'index'])->name('admin.workspace.orders');
+        Route::get('/orders/{booking}/process-report.pdf', [\App\Http\Controllers\OrderProcessReportController::class, 'download'])->middleware('role:superadmin|manager|cargo_admin|production')->name('admin.orders.report.pdf');
+        Route::get(
+            '/orders/{booking}/process-report/print',
+            [\App\Http\Controllers\OrderProcessReportController::class, 'printPreview']
+        )
+            ->middleware('role:superadmin|manager|cargo_admin|production')
+            ->name('admin.orders.report.print');
+        // Physical dispatch is deliberately separate from production completion.
+        Route::get('/orders/{booking}/dispatch', [\App\Http\Controllers\OrderDispatchController::class, 'show'])->middleware('role:superadmin|manager|cargo_admin')->name('admin.dispatch.show');
+        Route::post('/orders/{booking}/dispatch/confirm', [\App\Http\Controllers\OrderDispatchController::class, 'confirm'])->middleware('role:superadmin|cargo_admin')->name('admin.dispatch.confirm');
+        Route::get('/products/{id}/photo', [AdminBookingController::class, 'productPhoto'])->name('admin.products.photo');
+        Route::get('/orders/{booking}/receive', [\App\Http\Controllers\AssistedOperationsController::class, 'receive'])->middleware('role:superadmin|cargo_admin')->name('admin.smart.receive');
+        Route::get('/orders/{booking}/batch-plan', [\App\Http\Controllers\AssistedOperationsController::class, 'batchPlan'])->middleware('role:superadmin|production')->name('admin.smart.batch-plan');
+        Route::get('/orders/{booking}', [\App\Http\Controllers\OrderWorkspaceController::class, 'show'])->whereNumber('booking')->name('admin.workspace.show');
+        Route::get('/tasks', [\App\Http\Controllers\OrderWorkspaceController::class, 'tasks'])->name('admin.workspace.tasks');
+        Route::get('/workspace-settings', [\App\Http\Controllers\UnifiedWorkspaceController::class, 'settings'])->name('admin.unified.settings');
+        Route::get('/production-board', [\App\Http\Controllers\OrderWorkspaceController::class, 'productionBoard'])->middleware('role:superadmin|manager|production')->name('admin.workspace.production-board');
+
 
         /*
         |------------------------------------------------------------------
@@ -126,6 +168,12 @@ Route::prefix('admin')
             Route::get('/dosimeter/show/{booking_id}', [DosimeterController::class, 'show'])->name('admin.dosimeter.show');
             Route::post('/dosimeter/store-quantity', [DosimeterController::class, 'storeQuantity'])->name('admin.dosimeter.store-quantity');
             Route::post('/dosimeter/store-absorbance/{record_id}', [DosimeterController::class, 'storeAbsorbance'])->name('admin.dosimeter.store-absorbance');
+            Route::delete(
+                '/dosimeter/details/{detail}',
+                [DosimeterController::class, 'destroyDetail']
+            )
+                ->whereNumber('detail')
+                ->name('admin.dosimeter.details.destroy');
 
             // Step 1 – Process Parameter Setting
             Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])->name('admin.production.parameter');
@@ -137,6 +185,8 @@ Route::prefix('admin')
             Route::get('/production/batch-queue', [AdminProductionController::class, 'batchQueue'])->name('admin.production.batch-queue');
             Route::post('/production/batches', [AdminProductionController::class, 'storeBatch'])->name('admin.production.batches.store');
             Route::put('/production/batches/{batch}/start', [AdminProductionController::class, 'startIrradiation'])->name('admin.production.batches.start');
+            Route::post('/production/batches/{batch}/sessions/{session}/void', [\App\Http\Controllers\IrradiationSessionController::class, 'void'])->whereNumber('session')->name('admin.production.sessions.void');
+            Route::post('/production/batches/{batch}/sessions', [\App\Http\Controllers\IrradiationSessionController::class, 'store'])->name('admin.production.sessions.store');
             Route::get('/production/offline', [AdminProductionController::class, 'offline'])->name('admin.production.offline');
 
             // Step 3 – Product Finish & Certificate
@@ -157,7 +207,7 @@ Route::prefix('admin')
         Route::middleware(['role:superadmin|manager|cargo_admin|production'])->group(function () {
             // Customer Management CRUD
             Route::get('/customerList', [CustomerProfileController::class, 'index'])->name('admin.customerList.index');
-            // Route::post('/customerList/create', [CustomerProfileController::class, 'create'])->name('admin.customerList.create');
+            // Route::post('/customerList/create', [CustomerProfileController::class, 'store'])->name('admin.customerList.create');
             // Route::post('/customerList/store', [CustomerProfileController::class, 'store'])->name('admin.customerList.store');
             // Route::put('/customerList/{id}', [CustomerProfileController::class, 'updateAdmin'])->name('admin.customerList.update');
             // Route::delete('/customerList/{id}', [CustomerProfileController::class, 'destroy'])->name('admin.customerList.destroy');
@@ -169,21 +219,21 @@ Route::prefix('admin')
             Route::get('/bookings/status/{status}', [AdminBookingController::class, 'statusPage'])->name('admin.bookings.status');
 
             // Product Testing is a dedicated technical workflow. It does not use customer booking/check-in.
-            Route::get('/product-testing', [ProductTestingController::class, 'index'])->name('admin.testing.index');
-            Route::get('/product-testing/create', [ProductTestingController::class, 'create'])->name('admin.testing.create');
-            Route::post('/product-testing', [ProductTestingController::class, 'store'])->name('admin.testing.store');
-            Route::get('/product-testing/{test}/edit', [ProductTestingController::class, 'edit'])->name('admin.testing.edit');
-            Route::put('/product-testing/{test}', [ProductTestingController::class, 'update'])->name('admin.testing.update');
-            Route::get('/product-testing/{test}/parameters', [ProductTestingController::class, 'parameters'])->name('admin.testing.parameters');
-            Route::put('/product-testing/{test}/parameters', [ProductTestingController::class, 'storeParameters'])->name('admin.testing.parameters.update');
-            Route::get('/product-testing/{test}/report', [ProductTestingController::class, 'report'])->name('admin.testing.report');
-            Route::put('/product-testing/{test}/dosimeters', [ProductTestingController::class, 'storeDosimeters'])->name('admin.testing.dosimeters.update');
+            Route::get('/product-testing', [ProductTestingController::class, 'index'])->middleware('role:superadmin|manager|production')->name('admin.testing.index');
+            Route::get('/product-testing/create', [ProductTestingController::class, 'create'])->middleware('role:superadmin|production')->name('admin.testing.create');
+            Route::post('/product-testing', [ProductTestingController::class, 'store'])->middleware('role:superadmin|production')->name('admin.testing.store');
+            Route::get('/product-testing/{test}/edit', [ProductTestingController::class, 'edit'])->middleware('role:superadmin|production')->name('admin.testing.edit');
+            Route::put('/product-testing/{test}', [ProductTestingController::class, 'update'])->middleware('role:superadmin|production')->name('admin.testing.update');
+            Route::get('/product-testing/{test}/parameters', [ProductTestingController::class, 'parameters'])->middleware('role:superadmin|production')->name('admin.testing.parameters');
+            Route::put('/product-testing/{test}/parameters', [ProductTestingController::class, 'storeParameters'])->middleware('role:superadmin|production')->name('admin.testing.parameters.update');
+            Route::get('/product-testing/{test}/report', [ProductTestingController::class, 'report'])->middleware('role:superadmin|manager|production')->name('admin.testing.report');
+            Route::put('/product-testing/{test}/dosimeters', [ProductTestingController::class, 'storeDosimeters'])->middleware('role:superadmin|production')->name('admin.testing.dosimeters.update');
 
             // Warehouse check-in is an operational action and is available to cargo/production staff.
-            Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
-            Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->name('admin.bookings.storePlacement');
+            Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->middleware('role:superadmin|cargo_admin')->name('admin.bookings.checkin');
+            Route::post('/bookings/{id}/placement', [AdminBookingController::class, 'storePlacement'])->middleware('role:superadmin|cargo_admin')->name('admin.bookings.storePlacement');
             // Route::post('/bookings/store', [AdminBookingController::class, 'store'])->name('admin.bookings.store');
-            // Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->name('admin.bookings.checkin');
+            // Route::post('/bookings/checkin', [AdminBookingController::class, 'checkIn'])->middleware('role:superadmin|cargo_admin')->name('admin.bookings.checkin');
             // Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.update-status');
             // Route::get('/bookings/{id}/invoice', [AdminBookingController::class, 'previewInvoice'])->name('admin.bookings.invoice');
             // Route::put('/bookings/{id}/payment-status', [AdminProductionController::class, 'updatePaymentStatus'])->name('admin.bookings.paymentStatus');
@@ -191,22 +241,22 @@ Route::prefix('admin')
             // Route::put('/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
 
             // Relokasi Produksi
-            Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->name('admin.production.relocate-pallet');
+            Route::post('/production/relocate', [AdminBookingController::class, 'relocatePallet'])->middleware('role:superadmin|cargo_admin')->name('admin.production.relocate-pallet');
 
             // Pallet Gudang Management
             Route::get('/pallets', [AdminBookingController::class, 'palletIndex'])->name('admin.pallets.index');
-            Route::post('/pallets/store', [AdminBookingController::class, 'palletStore'])->name('admin.pallets.store');
-            Route::post('/pallets/generate', [AdminBookingController::class, 'palletGenerate'])->name('admin.pallets.generate');
-            Route::post('/pallets/add-layout', [AdminBookingController::class, 'addLayout'])->name('admin.pallets.add-layout');
+            Route::post('/pallets/store', [AdminBookingController::class, 'palletStore'])->middleware('role:superadmin|cargo_admin')->name('admin.pallets.store');
+            Route::post('/pallets/generate', [AdminBookingController::class, 'palletGenerate'])->middleware('role:superadmin|cargo_admin')->name('admin.pallets.generate');
+            Route::post('/pallets/add-layout', [AdminBookingController::class, 'addLayout'])->middleware('role:superadmin|cargo_admin')->name('admin.pallets.add-layout');
 
             // Master Data Resources (Porter & PIC)
-            Route::resource('porters', PorterController::class)->names('admin.porter');
-            Route::resource('warehouse-pics', WarehousePicController::class)->names('admin.warehouse-pics');
+            Route::resource('porters', PorterController::class)->except('show')->middleware('role:superadmin|manager|cargo_admin')->names('admin.porter');
+            Route::resource('warehouse-pics', WarehousePicController::class)->except('show')->middleware('role:superadmin|manager|cargo_admin')->names('admin.warehouse-pics');
 
             // Laporan Logistik & Umum
             // Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
             // Route::get('/report/jts/{type}', [ReportController::class, 'jtsView'])->name('admin.report.jts');
-            // Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->name('admin.report.export-excel');
+            // Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->whereNumber('id')->name('admin.report.export-excel');
         });
 
         /*
@@ -218,7 +268,7 @@ Route::prefix('admin')
         */
         Route::middleware(['role:superadmin|manager|production|cargo_admin'])->group(function () {
             Route::get('/report', [ReportController::class, 'index'])->name('admin.report.index');
-            Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->name('admin.report.export-excel');
+            Route::get('/report/export/{id}/{type}', [ReportController::class, 'exportExcel'])->whereNumber('id')->name('admin.report.export-excel');
         });
 
         Route::middleware(['role:superadmin|manager|production'])->group(function () {
@@ -238,7 +288,6 @@ Route::prefix('admin')
             // Monitor Bisnis & Approval
             Route::get('/business', [AdminBookingController::class, 'businessIndex'])->name('admin.business.index');
             Route::get('/business/{id}/detail', [AdminBookingController::class, 'businessDetail'])->name('admin.business.detail');
-            Route::put('/business/{id}/approve', [AdminBookingController::class, 'businessApprove'])->name('admin.business.approve');
 
             // Manajemen Akun Staf Admin Internal
             Route::get('/profile/list', [UserAdminController::class, 'profileList'])->name('admin.profile.profileList');
@@ -256,8 +305,8 @@ Route::prefix('admin')
         | E. ROLE: SUPERADMIN ONLY (Keamanan Tinggi & Tindakan Destruktif)
         |------------------------------------------------------------------
         */
-        Route::middleware(['role:superadmin|production'])->group(function () {
-            Route::post('/customerList/create', [CustomerProfileController::class, 'create'])->name('admin.customerList.create');
+        Route::middleware(['role:superadmin'])->group(function () {
+            Route::post('/customerList/create', [CustomerProfileController::class, 'store'])->name('admin.customerList.create');
             Route::post('/customerList/store', [CustomerProfileController::class, 'store'])->name('admin.customerList.store');
             Route::put('/customerList/{id}', [CustomerProfileController::class, 'updateAdmin'])->name('admin.customerList.update');
             Route::delete('/customerList/{id}', [CustomerProfileController::class, 'destroy'])->name('admin.customerList.destroy');
@@ -282,6 +331,7 @@ Route::prefix('admin')
 
             Route::delete('/bookings/{id}', [AdminBookingController::class, 'destroy'])->name('admin.bookings.destroy');
             Route::delete('/product-testing/{test}', [ProductTestingController::class, 'destroy'])->middleware('role:superadmin')->name('admin.testing.destroy');
+            Route::delete('/pallets/line/{line}', [AdminBookingController::class, 'deleteLine'])->name('admin.pallets.delete-line');
             Route::delete('/pallets/{id}', [AdminBookingController::class, 'palletDestroy'])->name('admin.pallets.destroy');
         });
 
@@ -292,6 +342,8 @@ Route::prefix('admin')
         | Sengaja ditaruh di paling bawah agar tidak menabrak route statis
         | seperti '/profile/create' atau '/profile/list'.
         */
-        Route::get('/profile/{id}/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');
-        Route::put('/profile/{id}/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
+        Route::middleware('role:superadmin')->group(function () {
+            Route::get('/profile/{id}/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');
+            Route::put('/profile/{id}/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
+        });
     });

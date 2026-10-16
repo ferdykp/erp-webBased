@@ -15,11 +15,11 @@
                 <div class="flex gap-3">
                     <button type="button"
                         class="px-5 py-2 text-sm font-semibold text-gray-600 transition-all bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                        Batal
+                        Cancel
                     </button>
                     <button type="submit"
                         class="px-8 py-2 text-sm font-semibold text-white transition-all bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700">
-                        Simpan Perubahan
+                        Save Perubahan
                     </button>
                 </div>
             </div>
@@ -75,13 +75,13 @@
                     </div>
                 </div>
 
-                {{-- Kolom Kanan: Data Perusahaan --}}
+                {{-- Kolom Kanan: Data Company --}}
                 <div class="lg:col-span-2">
                     <div class="h-full p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
-                        <h2 class="mb-5 text-xs font-bold tracking-wider text-blue-600 uppercase">Data Perusahaan</h2>
+                        <h2 class="mb-5 text-xs font-bold tracking-wider text-blue-600 uppercase">Data Company</h2>
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-1">
-                                <label class="text-[11px] font-bold text-gray-400 uppercase">Nama Perusahaan</label>
+                                <label class="text-[11px] font-bold text-gray-400 uppercase">Nama Company</label>
                                 <input type="text" name="company_name"
                                     value="{{ old('company_name', $user->customer->company_name ?? '') }}"
                                     class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-500">
@@ -113,7 +113,7 @@
                         <div class="pt-6 mt-8 border-t border-gray-100">
                             <button type="button"
                                 class="text-xs font-semibold text-red-400 transition-colors hover:text-red-600">
-                                Hapus Akun?
+                                Delete Akun?
                             </button>
                         </div>
                     </div>

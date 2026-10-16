@@ -29,10 +29,10 @@ class PorterController extends Controller
         Porter::create([
             'name' => $request->name,
             'phone' => $request->phone,
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('admin.porter.index')->with('success', 'Porter berhasil ditambahkan.');
+        return redirect()->route('admin.porter.index')->with('success', 'Porter added.');
     }
 
     public function edit(Porter $porter)
@@ -51,15 +51,21 @@ class PorterController extends Controller
         $porter->update([
             'name' => $request->name,
             'phone' => $request->phone,
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('admin.porter.index')->with('success', 'Porter berhasil diperbarui.');
+        return redirect()->route('admin.porter.index')->with('success', 'Porter updated.');
     }
 
     public function destroy(Porter $porter)
     {
-        $porter->delete();
-        return redirect()->route('admin.porter.index')->with('success', 'Porter berhasil dihapus.');
+        \Illuminate\Support\Facades\DB::transaction(function () use ($porter) {
+            $porter = Porter::whereKey($porter->id)->lockForUpdate()->firstOrFail();
+            if (\App\Models\Booking::where('porter_name', $porter->name)->exists() || \App\Models\BookingBatch::where('porter_name', $porter->name)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['porter' => 'This porter is referenced by operational records. Deactivate the account instead.']);
+            }
+            $porter->delete();
+        });
+        return redirect()->route('admin.porter.index')->with('success', 'Porter deleted.');
     }
 }

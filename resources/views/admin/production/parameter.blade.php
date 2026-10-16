@@ -47,8 +47,7 @@
                                 class="w-7 h-7 flex items-center justify-center text-amber-600 bg-amber-50 rounded-lg hover:bg-amber-600 hover:text-white transition-all text-[10px]">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <form action="{{ route('admin.production-lines.destroy', $line) }}" method="POST"
-                                onsubmit="return confirm('Delete machine {{ $line->name }}?')" class="inline-block m-0">
+                            <form action="{{ route('admin.production-lines.destroy', $line) }}" method="POST" class="inline-block m-0">
                                 @csrf @method('DELETE')
                                 <button type="submit"
                                     class="w-7 h-7 flex items-center justify-center text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-all text-[10px]">
@@ -201,7 +200,7 @@
     {{-- ═══ MODAL WRAPPER (COMMON) ═══ --}}
     {{-- Create & Edit Machine Modal --}}
     @foreach (['create' => 'Add New Machine', 'edit' => 'Edit Machine'] as $key => $title)
-        <div id="{{ $key }}MachineModal"
+        <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="{{ $key }}MachineModal"
             class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-6 md:p-10">
                 <h3 class="mb-6 text-xl font-black md:text-2xl text-slate-800">{{ $title }}</h3>
@@ -233,7 +232,7 @@
     @endforeach
 
     {{-- ═══ UPDATE PROCESS MODAL ═══ --}}
-    <div id="updateProcessModal"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="updateProcessModal"
         class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
             {{-- Scrollable Content --}}
@@ -385,7 +384,7 @@
                     class="flex items-center justify-center w-full h-10 px-4 text-xs font-bold text-red-500 transition-all sm:w-auto bg-red-50 rounded-xl hover:bg-red-500 hover:text-white">
                     <i class="mr-2 fa-solid fa-trash-can sm:mr-0"></i> <span class="sm:hidden">Remove Batch</span>
                 </button>
-                <input type="hidden" name="batch_porters[]" value="-">
+
             `;
             container.appendChild(div);
             updateBatchTotal();

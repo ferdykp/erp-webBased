@@ -14,7 +14,7 @@
                         List <span class="text-blue-600">Admin</span>
                     </h2>
                     <p class="mt-1 text-xs font-bold tracking-widest uppercase text-slate-400">
-                        Manajemen Hak Akses Pengguna
+                        Staff Roles and Access
                     </p>
                 </div>
                 @if (in_array(auth('admin')->user()->role, ['superadmin']))
@@ -98,8 +98,7 @@
                                                 </a>
 
                                                 <form action="{{ route('admin.profile.destroy', $user->id) }}"
-                                                    method="POST"
-                                                    onsubmit="return confirm('Apakah Anda Yakin Ingin Menghapus Admin Ini?');">
+                                                    method="POST">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
@@ -119,7 +118,7 @@
                                         class="px-4 py-12 text-center border border-dashed border-slate-100 rounded-3xl">
                                         <div class="flex flex-col items-center">
                                             <i class="mb-3 text-4xl text-slate-200 fa-solid fa-user-slash"></i>
-                                            <p class="text-sm font-bold tracking-widest uppercase text-slate-400">Tidak ada
+                                            <p class="text-sm font-bold tracking-widest uppercase text-slate-400">No
                                                 user yang terdaftar</p>
                                         </div>
                                     </td>

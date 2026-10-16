@@ -203,7 +203,7 @@
     </div>
 
     {{-- ═══ MULTISTEP MODAL (Finish Process) ═══ --}}
-    <div id="batchDetailModal" x-data="{ step: 1, hasDamage: 'no' }"
+    <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="batchDetailModal" x-data="{ step: 1, hasDamage: 'no' }"
         class="fixed inset-0 z-[160] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
 
         <div id="modalContent"
@@ -248,7 +248,7 @@
                 <div class="flex-1 p-6 overflow-y-auto md:p-8">
 
                     {{-- STEP 1: REVIEW --}}
-                    <div x-show="step === 1" x-transition:enter="transition ease-out duration-300"
+                    <div x-cloak x-show="step === 1" x-transition:enter="transition ease-out duration-300"
                         x-transition:enter-start="opacity-0 translate-x-4"
                         x-transition:enter-end="opacity-100 translate-x-0" class="space-y-6">
 
@@ -323,7 +323,7 @@
                     </div>
 
                     {{-- STEP 2: QA FORM (Sudah cukup rapi, hanya sedikit spacing tweak) --}}
-                    <div x-show="step === 2" x-transition:enter="transition ease-out duration-300"
+                    <div x-cloak x-show="step === 2" x-transition:enter="transition ease-out duration-300"
                         x-transition:enter-start="opacity-0 translate-x-4"
                         x-transition:enter-end="opacity-100 translate-x-0" class="space-y-5">
                         <div class="p-4 mb-6 border bg-emerald-50/30 rounded-2xl border-emerald-100">
@@ -376,7 +376,7 @@
                                 </label>
                             </div>
 
-                            <div x-show="hasDamage === 'yes'" x-transition.opacity.duration.150ms
+                            <div x-cloak x-show="hasDamage === 'yes'" x-transition.opacity.duration.150ms
                                 class="grid grid-cols-4 gap-3 pt-5 mt-5 border-t border-slate-200">
                                 <div class="col-span-1">
                                     <label class="block mb-1.5 text-[9px] font-black uppercase text-red-500">Qty</label>
@@ -404,24 +404,24 @@
 
                 {{-- Footer Buttons --}}
                 <div class="flex items-center justify-between p-6 border-t md:p-8 bg-slate-50 shrink-0 border-slate-100">
-                    <div x-show="step === 1">
+                    <div x-cloak x-show="step === 1">
                         <button type="button" onclick="closeBatchDetailModal()"
                             class="px-5 py-3 text-xs font-black uppercase transition-all text-slate-400 hover:text-red-500">Cancel</button>
                     </div>
-                    <div x-show="step === 2">
+                    <div x-cloak x-show="step === 2">
                         <button type="button" @click="step = 1"
                             class="flex items-center gap-2 px-5 py-3 text-xs font-black uppercase transition-all text-slate-400 hover:text-slate-600">
                             <i class="fa-solid fa-arrow-left"></i> Parameters
                         </button>
                     </div>
 
-                    <div x-show="step === 1">
+                    <div x-cloak x-show="step === 1">
                         <button type="button" @click="step = 2"
                             class="flex items-center gap-2 px-8 py-4 text-xs font-black text-white uppercase transition-all shadow-xl bg-slate-900 rounded-2xl hover:bg-blue-600 active:scale-95 shadow-slate-200">
                             Open QA Form <i class="fa-solid fa-chevron-right text-[8px]"></i>
                         </button>
                     </div>
-                    <div x-show="step === 2">
+                    <div x-cloak x-show="step === 2">
                         <button type="submit"
                             class="flex items-center gap-2 px-8 py-4 text-xs font-black text-white uppercase transition-all shadow-xl bg-emerald-600 rounded-2xl hover:bg-emerald-700 active:scale-95 shadow-emerald-100">
                             <i class="fa-solid fa-circle-check"></i> Complete Process
@@ -472,7 +472,7 @@
                     const now = new Date().getTime();
                     const distance = now - startTime;
 
-                    // Hitung jam, menit, detik
+                    // Hitung jam, minutes, detik
                     const hours = Math.floor(distance / (1000 * 60 * 60));
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((distance % (1000 * 60)) / 1000);

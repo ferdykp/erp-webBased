@@ -8,13 +8,13 @@
             <div class="flex items-center gap-2">
                 <span
                     class="flex items-center justify-center w-8 h-8 text-sm font-bold text-white bg-blue-600 rounded-full shadow-lg shadow-blue-200">1</span>
-                <span class="text-sm font-bold text-gray-900">Pilih Tanggal</span>
+                <span class="text-sm font-bold text-gray-900">Select Tanggal</span>
             </div>
             <div class="w-12 h-px bg-gray-200"></div>
             <div class="flex items-center gap-2">
                 <span
                     class="flex items-center justify-center w-8 h-8 text-sm font-bold text-gray-400 bg-gray-100 rounded-full">2</span>
-                <span class="text-sm font-bold text-gray-400">Pilih Sesi</span>
+                <span class="text-sm font-bold text-gray-400">Select Sesi</span>
             </div>
             <div class="w-12 h-px bg-gray-200"></div>
             <div class="flex items-center gap-2">
@@ -31,7 +31,7 @@
                 <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                     <div>
                         <h2 class="text-2xl font-black tracking-tight text-gray-900">
-                            Pilih Tanggal Booking
+                            Select Tanggal Booking
                         </h2>
                         <p class="mt-1 text-sm font-medium text-gray-400">
                             Silahkan pilih tanggal yang tersedia untuk sterilisasi E-Beam
@@ -72,7 +72,7 @@
 
                                 <div
                                     class="mt-4 py-2 px-3 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 group-hover:bg-blue-600 group-hover:text-white transition-all uppercase tracking-wider">
-                                    Pilih Tanggal
+                                    Select Tanggal
                                 </div>
                             </a>
                         @endforeach

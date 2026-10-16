@@ -69,9 +69,10 @@ class CustomerBookingController extends Controller
         $grossPerPcs = (float) $validated['gross_weight_per_pcs'];
         $totalNet = $netPerPcs * $quantity;
         $totalGross = $grossPerPcs * $quantity;
-        $dimension = rtrim(rtrim((string) $validated['dim_length'], '0'), '.') . 'x' .
-            rtrim(rtrim((string) $validated['dim_width'], '0'), '.') . 'x' .
-            rtrim(rtrim((string) $validated['dim_height'], '0'), '.');
+        $dimension = implode('x', array_map(
+            fn ($value) => \App\Support\NumberFormatter::smart($value),
+            [$validated['dim_length'], $validated['dim_width'], $validated['dim_height']]
+        ));
 
         $booking = DB::transaction(function () use ($user, $validated, $quantity, $volumePerPcs, $volumeTotal, $netPerPcs, $grossPerPcs, $totalNet, $totalGross, $dimension) {
             $booking = Booking::create([

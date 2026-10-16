@@ -92,7 +92,7 @@
                 @csrf
 
                 {{-- STEP 1: COMPANY DATA & ADDRESS --}}
-                <div x-show="step === 1" id="step-1" x-transition:enter="transition ease-out duration-500"
+                <div x-cloak x-show="step === 1" id="step-1" x-transition:enter="transition ease-out duration-500"
                     x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0"
                     class="space-y-6">
 
@@ -154,7 +154,7 @@
                 </div>
 
                 {{-- STEP 2: PIC & CONTACT --}}
-                <div x-show="step === 2" id="step-2" x-transition:enter="transition ease-out duration-500"
+                <div x-cloak x-show="step === 2" id="step-2" x-transition:enter="transition ease-out duration-500"
                     x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0"
                     class="space-y-6">
 
@@ -201,21 +201,21 @@
 
                 {{-- BUTTONS --}}
                 <div class="flex items-center justify-between mt-12">
-                    <button type="button" x-show="step > 1" @click="step--"
+                    <button type="button" x-cloak x-show="step > 1" @click="step--"
                         class="flex items-center gap-2 px-6 py-3 text-sm font-bold transition-all text-slate-400 hover:text-slate-800 group">
                         <i
                             class="fa-solid fa-chevron-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
                         Back
                     </button>
-                    <div x-show="step === 1"></div>
+                    <div x-cloak x-show="step === 1"></div>
 
                     <div class="flex items-center gap-3">
-                        <button type="button" x-show="step < totalSteps" @click="validateAndNext()"
+                        <button type="button" x-cloak x-show="step < totalSteps" @click="validateAndNext()"
                             class="px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all shadow-xl bg-slate-900 rounded-2xl hover:bg-blue-600 hover:shadow-blue-200 active:scale-95">
                             Next Step
                         </button>
 
-                        <button type="submit" x-show="step === totalSteps"
+                        <button type="submit" x-cloak x-show="step === totalSteps"
                             class="px-10 py-4 text-xs font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-xl rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">
                             Save & Complete
                         </button>

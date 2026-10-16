@@ -1,7 +1,7 @@
 <?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
 
 $__newAttributes = [];
-$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['status']));
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames((['status', 'received' => false]));
 
 foreach ($attributes->all() as $__key => $__value) {
     if (in_array($__key, $__propNames)) {
@@ -16,7 +16,7 @@ $attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
 unset($__propNames);
 unset($__newAttributes);
 
-foreach (array_filter((['status']), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
+foreach (array_filter((['status', 'received' => false]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
 }
 
@@ -34,13 +34,13 @@ unset($__defined_vars, $__key, $__value); ?>
             'bg' => 'bg-amber-50',
             'text' => 'text-amber-600',
             'dot' => 'bg-amber-500',
-            'label' => 'Unarrived',
+            'label' => $received ? 'Ready for Production' : 'Awaiting Goods',
         ],
         'approved' => [
             'bg' => 'bg-emerald-50',
             'text' => 'text-emerald-600',
             'dot' => 'bg-emerald-500',
-            'label' => 'Arrived',
+            'label' => $received ? 'Ready for Production' : 'Awaiting Goods',
         ],
         'processing' => [
             'bg' => 'bg-blue-50',

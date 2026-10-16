@@ -51,7 +51,9 @@ class CustomerProfileController extends Controller
     {
         $request->validate([
             'company_name' => 'required|string|max:255',
-            'email'        => 'required|email|unique:users,email',
+            'email' => 'required|email|max:255|unique:users,email|unique:customers,email',
+            'industry' => 'nullable|string|max:255',
+            'npwp' => 'nullable|string|max:255',
             'name'         => 'required|string|max:255',
             'address_line' => 'required|string',
             'contact_phone' => 'nullable|string', // Pastikan divalidasi juga
@@ -64,7 +66,7 @@ class CustomerProfileController extends Controller
             $user = User::create([
                 'username' => strtolower(str_replace(' ', '', $request->name)) . rand(10, 99),
                 'email'    => $request->email,
-                'password' => Hash::make('12345678'),
+                'password' => Hash::make(\Illuminate\Support\Str::random(48)),
                 'role'     => 'customer',
             ]);
 
@@ -74,6 +76,7 @@ class CustomerProfileController extends Controller
                 'name'              => $request->name,
                 'company_name'      => $request->company_name,
                 'industry'          => $request->industry ?? '-',
+                'npwp' => $request->npwp,
                 'email'             => $request->email,
                 'status'            => 'active',
                 'profile_completed' => true
@@ -96,12 +99,12 @@ class CustomerProfileController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('admin.customerList.index')->with('success', 'Customer & Akun berhasil dibuat');
+            return redirect()->route('admin.customerList.index')->with('success', 'Customer account created. Use Forgot Password on the customer login page to set the account password.');
         } catch (\Exception $e) {
             DB::rollBack();
             // Gunakan \Log untuk melihat detail error di storage/logs/laravel.log jika masih gagal
             \Log::error($e->getMessage());
-            return back()->withErrors(['error' => 'Gagal: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Unable to create the customer. Please try again.'])->withInput();
         }
     }
 
@@ -276,17 +279,23 @@ class CustomerProfileController extends Controller
         $customer = Customer::with(['contacts', 'addresses', 'user'])->findOrFail($id);
 
         $request->validate([
-            'company_name' => 'required',
-            'email'        => 'required|email',
-            'contact_name' => 'required',
-            'contact_phone' => 'required',
-            'address_line' => 'required',
+            'company_name' => 'required|string|max:255',
+            'email' => ['required', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($customer->user_id), \Illuminate\Validation\Rule::unique('customers', 'email')->ignore($customer->id)],
+            'contact_name' => 'required|string|max:255',
+            'contact_phone' => 'required|string|max:30',
+            'address_line' => 'required|string|max:1000',
+            'industry' => 'nullable|string|max:255',
+            'npwp' => 'nullable|string|max:255',
         ]);
 
         try {
             DB::beginTransaction();
 
             // Update user
+            $customer = Customer::whereKey($id)->lockForUpdate()->firstOrFail();
+            if (!$customer->user) {
+                throw new \RuntimeException('The customer account is missing. Restore the linked account before editing.');
+            }
             $customer->user->update([
                 'email' => $request->email
             ]);
@@ -295,6 +304,7 @@ class CustomerProfileController extends Controller
             $customer->update([
                 'company_name' => $request->company_name,
                 'industry'     => $request->industry,
+                'npwp' => $request->npwp,
                 'email'        => $request->email,
             ]);
 
@@ -322,7 +332,8 @@ class CustomerProfileController extends Controller
             return back()->with('success', 'Customer updated!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors($e->getMessage());
+            \Log::error('Customer update failed', ['customer_id' => $id, 'exception' => $e]);
+            return back()->withErrors(['customer' => 'Unable to update the customer. Check the linked account and try again.'])->withInput();
         }
     }
 
@@ -331,7 +342,10 @@ class CustomerProfileController extends Controller
         try {
             DB::beginTransaction();
 
-            $customer = Customer::findOrFail($id);
+            $customer = Customer::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($customer->bookings()->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['customer' => 'This customer has order history and cannot be deleted.']);
+            }
 
             // Hapus User terkait jika ada (opsional, tergantung logic Anda)
             if ($customer->user_id) {
@@ -346,9 +360,12 @@ class CustomerProfileController extends Controller
 
             DB::commit();
             return back()->with('success', 'Customer deleted successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to delete: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'This customer cannot be deleted because related records exist.']);
         }
     }
 }

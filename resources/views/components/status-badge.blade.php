@@ -1,4 +1,4 @@
-@props(['status'])
+@props(['status', 'received' => false])
 
 @php
     $config = [
@@ -6,13 +6,13 @@
             'bg' => 'bg-amber-50',
             'text' => 'text-amber-600',
             'dot' => 'bg-amber-500',
-            'label' => 'Unarrived',
+            'label' => $received ? 'Ready for Production' : 'Awaiting Goods',
         ],
         'approved' => [
             'bg' => 'bg-emerald-50',
             'text' => 'text-emerald-600',
             'dot' => 'bg-emerald-500',
-            'label' => 'Arrived',
+            'label' => $received ? 'Ready for Production' : 'Awaiting Goods',
         ],
         'processing' => [
             'bg' => 'bg-blue-50',

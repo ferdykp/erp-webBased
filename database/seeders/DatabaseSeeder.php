@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             // CustomSeeder::class,
             // PalletSeeder::class,
             PorterSeeder::class,
-            // CustomListSeeder::class,
+            // CustomListSeeder is intentionally excluded: demo data is opt-in.
         ]);
     }
 }

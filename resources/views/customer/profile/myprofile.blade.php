@@ -11,7 +11,7 @@
                         <div class="w-32 h-32 bg-white p-2 rounded-[2rem] shadow-xl">
                             <div
                                 class="w-full h-full bg-blue-100 rounded-[1.5rem] flex items-center justify-center text-4xl font-black text-blue-600">
-                                {{-- Perbaikan: Hapus ('customer') dan gunakan null-safe operator --}}
+                                {{-- Perbaikan: Delete ('customer') dan gunakan null-safe operator --}}
                                 {{ substr(auth('customer')->user()->username ?? 'U', 0, 1) }}
                                 {{-- {{ auth('customer')->user()->username ?? '-' }} --}}
                             </div>
@@ -25,7 +25,7 @@
                 </div>
 
                 <div>
-                    {{-- Perbaikan: Hapus ('customer') --}}
+                    {{-- Perbaikan: Delete ('customer') --}}
                     <h2 class="text-3xl font-black tracking-tight text-gray-900">{{ auth('customer')->user()->username ?? '-' }}</h2>
                     <p class="italic font-medium text-gray-400">Customer ID:
                         #{{ str_pad(auth('customer')->id(), 5, '0', STR_PAD_LEFT) }}</p>
@@ -42,12 +42,12 @@
                 <div class="space-y-4">
                     <div>
                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</label>
-                        {{-- Perbaikan: Hapus ('customer') --}}
+                        {{-- Perbaikan: Delete ('customer') --}}
                         <p class="mt-1 font-bold text-gray-800">{{ auth('customer')->user()->email ?? '-' }}</p>
                     </div>
                     <div>
                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</label>
-                        {{-- Perbaikan: Hapus ('customer') --}}
+                        {{-- Perbaikan: Delete ('customer') --}}
                         <p class="mt-1 font-bold text-gray-800">{{ auth('customer')->user()->phone ?? '+62 812-3456-7890' }}
                         </p>
                     </div>

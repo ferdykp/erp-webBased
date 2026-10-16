@@ -1,10 +1,10 @@
-<div id="qcModal"
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="qcModal"
     class="fixed inset-0 z-[200] hidden items-start justify-center bg-slate-900/60 backdrop-blur-sm p-4 md:p-10 overflow-y-auto custom-scrollbar">
 
     <div
         class="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 my-auto shadow-blue-900/20">
 
-        {{-- Header: Dibuat Sticky agar tetap terlihat saat scroll --}}
+        {{-- Header: Created Sticky agar tetap terlihat saat scroll --}}
         <div class="sticky top-0 z-10 p-6 text-center border-b border-slate-100 bg-white/80 backdrop-blur-md">
             <button type="button" onclick="closeQCModal()"
                 class="absolute transition-colors right-8 top-6 text-slate-400 hover:text-slate-600">
@@ -135,13 +135,13 @@
                             class="w-5 h-5 mt-1 text-blue-600 transition-all rounded-md border-slate-200 focus:ring-blue-500">
                         <span
                             class="text-[10px] leading-relaxed font-bold text-slate-500 group-hover:text-slate-700 transition-colors italic">
-                            Produk layak diproses di Irradiation (Rad-Room).
+                            Product layak diproses di Irradiation (Rad-Room).
                         </span>
                     </label>
                 </div>
             </div>
 
-            {{-- Footer: Dibuat Sticky di Bawah --}}
+            {{-- Footer: Created Sticky di Bawah --}}
             <div class="sticky bottom-0 flex gap-3 p-6 bg-white border-t border-slate-100">
                 <button type="button" onclick="closeQCModal()"
                     class="flex-1 py-4 text-[11px] font-black uppercase text-slate-400 hover:text-slate-600 transition-colors">

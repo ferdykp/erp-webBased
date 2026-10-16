@@ -9,6 +9,8 @@ class PlacementDetail extends Model
 {
     protected $fillable = [
         'booking_id',
+        'booking_product_id',
+        'unit',
         'sequence',    // 1, 2, 3...
         // 'pallet_use',
         'quantity',    // 30, 30, 14...

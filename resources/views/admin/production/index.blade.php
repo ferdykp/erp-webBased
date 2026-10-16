@@ -51,7 +51,7 @@
                     <span
                         class="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase rounded-md bg-amber-100 text-amber-700">Step
                         2</span>
-                    <h4 class="mt-2 text-xs font-black text-slate-800">2. Queue Task</h4>
+                    <h4 class="mt-2 text-xs font-black text-slate-800">2. Batch Queue</h4>
                     <p class="mt-1 text-[11px] font-medium leading-relaxed text-slate-500">
                         The holding bay queue. Review pending jobs and click <strong class="text-blue-600">"Start
                             Irradiation"</strong> once pallets are physically staged to dispatch them.

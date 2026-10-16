@@ -141,7 +141,8 @@
                                 class="text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest ml-1">
                                 Quantity <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" min="1" step="1" id="in_qty" value="{{ old('quantity') }}"
+                            <input type="number" min="1" step="1" id="in_qty"
+                                value="{{ old('quantity') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
                         </div>
                         <div class="space-y-2">
@@ -163,6 +164,31 @@
                             </label>
                             <input type="text" id="in_temp" placeholder="None" value="{{ old('expect_temp') }}"
                                 class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold">
+                        </div>
+                    </div>
+
+                    {{-- OPTIONAL PRODUCT PHOTO --}}
+                    <div class="space-y-3">
+                        <label for="product_photo_file"
+                            class="block ml-1 text-[10px] md:text-[11px] font-black text-gray-700 uppercase tracking-widest">
+                            Product Photo
+                            <span class="ml-1 font-medium text-gray-400 normal-case">(Optional)</span>
+                        </label>
+
+                        <div class="p-5 border border-gray-200 bg-gray-50 rounded-2xl">
+                            <input type="file" id="product_photo_file" name="product_photo"
+                                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                class="block w-full text-sm text-gray-600
+                   file:mr-4 file:rounded-xl file:border-0
+                   file:bg-blue-100 file:px-4 file:py-2.5
+                   file:font-bold file:text-blue-700
+                   hover:file:bg-blue-200">
+
+                            <p class="mt-2 text-xs text-gray-400">
+                                JPG, JPEG, PNG, or WebP. Maximum 5 MB.
+                            </p>
+
+                            <div id="product_photo_preview" class="mt-3"></div>
                         </div>
                     </div>
 
@@ -223,6 +249,23 @@
         </div>
     </div>
 
+    {{-- Tambahan independen: foto opsional, tidak memengaruhi spesifikasi atau perhitungan. --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('product_photo_file');
+            const preview = document.getElementById('product_photo_preview');
+            if (input && preview) input.addEventListener('change', function() {
+                preview.replaceChildren();
+                if (!input.files?.[0]) return;
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(input.files[0]);
+                img.alt = 'Pratinjau foto produk';
+                img.className = 'max-h-36 rounded-xl object-contain';
+                img.onload = () => URL.revokeObjectURL(img.src);
+                preview.appendChild(img);
+            });
+        });
+    </script>
     @include('admin.bookings.partials.order-detail')
 
     <script>
@@ -358,5 +401,22 @@
                 console.error("Error modal:", error);
             }
         }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const finalForm = document.getElementById('finalForm');
+            const photoInput = document.getElementById('product_photo_file');
+
+            if (!finalForm || !photoInput) return;
+
+            finalForm.addEventListener('submit', function() {
+                // Input file awalnya berada di mainBookingForm.
+                // Pindahkan ke finalForm agar file ikut terkirim.
+                if (photoInput.form !== finalForm) {
+                    finalForm.appendChild(photoInput);
+                }
+            });
+        });
     </script>
 @endsection

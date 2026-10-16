@@ -20,7 +20,7 @@
                         <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">Process Parameter
                         </h1>
                         <p class="max-w-3xl mt-2 text-sm leading-6 text-slate-500">Masukkan actual irradiation setup untuk
-                            test ini. Tidak ada proses check-in, pallet, porter, atau warehouse placement.</p>
+                            test ini. No proses check-in, pallet, porter, atau warehouse placement.</p>
                     </div>
                 </div>
             </div>
@@ -171,7 +171,7 @@
                             </select>
                         </label>
 
-                        <label class="block min-w-0" x-show="loadingMode === 'custom'" x-transition.opacity>
+                        <label class="block min-w-0" x-cloak x-show="loadingMode === 'custom'" x-transition.opacity>
                             <span
                                 class="mb-2 block text-[10px] font-bold uppercase tracking-[0.11em] text-slate-500">Custom
                                 Loading Mode <em class="not-italic text-rose-500">*</em></span>

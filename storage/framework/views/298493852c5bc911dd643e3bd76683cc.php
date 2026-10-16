@@ -1,4 +1,4 @@
-<div id="qcModal"
+<div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="qcModal"
     class="fixed inset-0 z-[200] hidden items-start justify-center bg-slate-900/60 backdrop-blur-sm p-4 md:p-10 overflow-y-auto custom-scrollbar">
 
     <div
@@ -135,7 +135,7 @@
                             class="w-5 h-5 mt-1 text-blue-600 transition-all rounded-md border-slate-200 focus:ring-blue-500">
                         <span
                             class="text-[10px] leading-relaxed font-bold text-slate-500 group-hover:text-slate-700 transition-colors italic">
-                            Produk layak diproses di Irradiation (Rad-Room).
+                            Product layak diproses di Irradiation (Rad-Room).
                         </span>
                     </label>
                 </div>

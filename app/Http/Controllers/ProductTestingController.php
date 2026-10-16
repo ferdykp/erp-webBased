@@ -175,13 +175,19 @@ class ProductTestingController extends Controller
             ->values();
 
         DB::transaction(function () use ($test, $rows) {
-            $test->dosimeters()->delete();
+            $test = ProductTest::whereKey($test->id)->lockForUpdate()->firstOrFail();
+            $before = $test->dosimeters()->get()->toArray();
+            $tail = $test->dosimeters()->where('sequence', '>', $rows->count())->get();
+            if ($tail->contains(fn($row) => $row->absorbance !== null || filled($row->dosimeter_number))) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['readings' => 'Recorded dosimetry rows cannot be removed. Keep them and record a correction.']);
+            }
+            $test->dosimeters()->whereIn('id', $tail->pluck('id'))->delete();
 
             foreach ($rows as $index => $row) {
                 $absorbance = $row['absorbance'];
                 $dose = $absorbance === null ? null : $this->calculateDose($absorbance);
 
-                ProductTestDosimeter::create([
+                ProductTestDosimeter::updateOrCreate(['product_test_id' => $test->id, 'sequence' => $index + 1], [
                     'product_test_id' => $test->id,
                     'sequence' => $index + 1,
                     'dosimeter_number' => $row['dosimeter_number'],
@@ -190,6 +196,7 @@ class ProductTestingController extends Controller
                     'dose_kgy' => $dose,
                 ]);
             }
+            \App\Services\WarehouseInventory::audit('product_test.dosimetry_saved', 'product_test', $test->id, ['before' => $before, 'after' => $test->dosimeters()->get()->toArray()]);
         });
 
         return redirect()
@@ -199,6 +206,9 @@ class ProductTestingController extends Controller
 
     public function destroy(ProductTest $test)
     {
+        if ($test->status !== 'parameter_pending' || $test->processed_at || $test->dosimeters()->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['test' => 'Processed product tests and dosimetry evidence cannot be deleted.']);
+        }
         if ($test->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($test->image)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($test->image);
         }

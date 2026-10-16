@@ -34,15 +34,16 @@ class CustomerAuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
 
         // Authenticate ONLY against the customer guard. Never use the default
         // `web` guard here because admin and customer sessions must not mix.
         $customerCredentials = array_merge($credentials, ['role' => 'customer']);
 
-        if (!Auth::guard('customer')->attempt($customerCredentials)) {
+        if (!Auth::guard('customer')->attempt(collect($customerCredentials)->except('remember')->all(), $request->boolean('remember'))) {
             return back()
-                ->withErrors(['email' => 'Email atau Password salah.'])
+                ->withErrors(['email' => 'Unable to sign in with these credentials.'])
                 ->onlyInput('email');
         }
 
@@ -56,7 +57,7 @@ class CustomerAuthController extends Controller
             $request->session()->regenerateToken();
 
             return back()
-                ->withErrors(['email' => 'Ini bukan akun Customer.'])
+                ->withErrors(['email' => 'This account cannot access the customer portal.'])
                 ->onlyInput('email');
         }
 
