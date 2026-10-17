@@ -134,6 +134,9 @@
             @forelse ($lines as $line)
                 <div x-cloak x-show="activeLine === @js((string) $line)" x-transition:enter="transition ease-out duration-200"
                     class="p-6">
+                    @if(\App\Services\SuperadminAccess::isSuperadmin())
+                    <form method="POST" action="{{ route('admin.pallets.delete-line', $line) }}" data-record-name="Warehouse Line {{ $line }}" class="mb-4 flex justify-end">@csrf @method('DELETE')<button type="submit" class="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700">Delete Line {{ $line }}</button></form>
+                    @endif
 
                     {{-- Grid Layout Matrix --}}
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 4xl:grid-cols-7">
@@ -207,7 +210,7 @@
                                         Status: <strong
                                             class="{{ $totalBoxes > 0 ? 'text-blue-600' : 'text-slate-500' }}">{{ $totalBoxes > 0 ? 'Staged' : 'Ready' }}</strong>
                                     </span>
-                                    @if ($totalBoxes == 0)
+                                    @if (\App\Services\SuperadminAccess::isSuperadmin())
                                         <form action="{{ route('admin.pallets.destroy', $palletMaster->id ?? 0) }}"
                                             method="POST">
                                             @csrf @method('DELETE')

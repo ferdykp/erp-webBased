@@ -296,9 +296,14 @@ class CustomerProfileController extends Controller
             if (!$customer->user) {
                 throw new \RuntimeException('The customer account is missing. Restore the linked account before editing.');
             }
-            $customer->user->update([
-                'email' => $request->email
-            ]);
+            $accountChanges = ['email'=>$request->email];
+            if (\App\Services\SuperadminAccess::isSuperadmin() && $request->filled('password')) {
+                $password = $request->validate(['password'=>['required','confirmed',Password::defaults()]])['password'];
+                if (!\App\Services\SuperadminAccess::confirmedAccountChange()) throw \Illuminate\Validation\ValidationException::withMessages(['password'=>'Confirm the account change before resetting a customer password.']);
+                $accountChanges['password']=Hash::make($password);
+                $accountChanges['remember_token']=\Illuminate\Support\Str::random(60);
+            }
+            $customer->user->forceFill($accountChanges)->save();
 
             // Update customer
             $customer->update([
@@ -330,6 +335,9 @@ class CustomerProfileController extends Controller
             DB::commit();
 
             return back()->with('success', 'Customer updated!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Customer update failed', ['customer_id' => $id, 'exception' => $e]);
@@ -339,6 +347,14 @@ class CustomerProfileController extends Controller
 
     public function destroy($id)
     {
+        if (\App\Services\SuperadminAccess::overriding()) {
+            $customer = Customer::findOrFail($id);
+            $user = $customer->user;
+            app(\App\Services\AdminRecordHistory::class)->delete($customer);
+            if ($user && $user->fresh()) app(\App\Services\AdminRecordHistory::class)->delete($user);
+            return back()->with('success','Customer removed with a traceable audit snapshot.');
+        }
+
         try {
             DB::beginTransaction();
 
@@ -349,17 +365,16 @@ class CustomerProfileController extends Controller
 
             // Hapus User terkait jika ada (opsional, tergantung logic Anda)
             if ($customer->user_id) {
-                User::where('id', $customer->user_id)->delete();
+                $customer->user?->delete();
             }
 
             // Alamat dan Contact biasanya terhapus otomatis jika menggunakan onCascadeDelete di migration
             // Jika tidak, hapus manual:
-            $customer->addresses()->delete();
-            $customer->contacts()->delete();
+
             $customer->delete();
 
             DB::commit();
-            return back()->with('success', 'Customer deleted successfully!');
+            return back()->with('success', 'Customer moved to Trash.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             throw $e;

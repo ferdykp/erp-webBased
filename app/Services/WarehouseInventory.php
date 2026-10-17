@@ -37,9 +37,7 @@ class WarehouseInventory
     {
         DB::transaction(function () use ($bookingId, $allocations, $staff) {
             $booking = Booking::whereKey($bookingId)->lockForUpdate()->firstOrFail();
-            if ($booking->booking_type !== 'regular' || $booking->arrival_time
-                || !in_array($booking->status, ['pending', 'approved'], true)
-                || $booking->placementDetails()->exists() || PalletContent::where('booking_id', $bookingId)->exists()) {
+            if ($booking->booking_type !== 'regular' || !WorkflowState::canReceive($booking)) {
                 throw ValidationException::withMessages(['receiving' => 'This order has already been received or cannot receive goods.']);
             }
             $products = $booking->products()->lockForUpdate()->get()->keyBy('id');
@@ -52,10 +50,15 @@ class WarehouseInventory
                     throw ValidationException::withMessages(['allocations' => "Allocated quantity must match {$product->product_name}: {$product->quantity} {$product->unit}."]);
                 }
             }
-            $ids = collect($allocations)->pluck('pallet_id')->unique()->sort();
+            $previousSlots = SuperadminAccess::overriding() ? PalletContent::where('booking_id',$bookingId)->pluck('pallet_id') : collect();
+            $ids = collect($allocations)->pluck('pallet_id')->merge($previousSlots)->unique()->sort();
             $slots = Pallet::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             if ($slots->count() !== $ids->count()) throw ValidationException::withMessages(['allocations' => 'A selected warehouse location no longer exists.']);
-            foreach ($slots as $slot) self::assertConsistent($slot);
+            foreach ($slots as $slot) { if (SuperadminAccess::overriding()) self::sync($slot); self::assertConsistent($slot); }
+            if (SuperadminAccess::overriding()) {
+                PalletContent::where('booking_id',$bookingId)->delete();
+                PlacementDetail::where('booking_id',$bookingId)->where('status','placed')->delete();
+            }
             foreach ($allocations as $i => $allocation) {
                 $product = $products[$allocation['product_id']];
                 $slot = $slots[$allocation['pallet_id']];
@@ -67,6 +70,10 @@ class WarehouseInventory
             }
             foreach ($slots as $slot) self::sync($slot);
             $booking->update($staff + ['arrival_time' => now()]);
+            if (SuperadminAccess::overriding()) {
+                DB::table('order_dispatches')->where('booking_id',$bookingId)->where('status','dispatched')
+                    ->update(['status'=>'reopened','updated_at'=>now()]);
+            }
             self::audit('goods.received', 'booking', $bookingId, ['allocations' => $allocations]);
         }, 3);
     }

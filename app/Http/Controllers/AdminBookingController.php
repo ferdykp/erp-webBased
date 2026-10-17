@@ -4,6 +4,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SuperadminAccess;
+
 
 
 use App\Models\Booking;
@@ -99,7 +101,7 @@ class AdminBookingController extends Controller
             'progress' => (clone $base)->whereIn('status', ['pending', 'approved', 'processing'])->where(fn($q) => $q->whereNotNull('arrival_time')->orWhereHas('placementDetails'))->count(),
             'completed' => (clone $base)->where('status', 'completed')->count(),
         ];
-        $query = $base->with(['customer.contacts', 'products', 'batches', 'pallets', 'placementDetails']);
+        $query = $base->with(['customer.contacts', 'products', 'batches', 'pallets', 'placementDetails','dispatchRecord','palletContents']);
         if ($view === 'incoming') {
             $query->whereIn('status', ['pending', 'approved'])->whereNull('arrival_time')->whereDoesntHave('placementDetails');
         } elseif ($view === 'progress') {
@@ -178,7 +180,7 @@ class AdminBookingController extends Controller
 
             }
 
-            if (!in_array($target, $allowed[$booking->status] ?? [], true)) {
+            if ((!in_array($target, $allowed[$booking->status] ?? [], true)) && !SuperadminAccess::overriding()) {
 
                 throw \Illuminate\Validation\ValidationException::withMessages([
 
@@ -187,15 +189,11 @@ class AdminBookingController extends Controller
                 ]);
             }
 
-            if (
-
-                $booking->arrival_time || $booking->batches()->exists()
+            if (($booking->arrival_time || $booking->batches()->exists()
 
                 || PalletContent::where('booking_id', $booking->id)->exists()
 
-                || PlacementDetail::where('booking_id', $booking->id)->exists()
-
-            ) {
+                || PlacementDetail::where('booking_id', $booking->id)->exists()) && !SuperadminAccess::overriding()) {
 
                 throw \Illuminate\Validation\ValidationException::withMessages([
 
@@ -453,6 +451,7 @@ class AdminBookingController extends Controller
         try {
             DB::transaction(function () use ($id) {
                 $pallet = Pallet::whereKey($id)->lockForUpdate()->firstOrFail();
+                if (SuperadminAccess::overriding()) { app(\App\Services\AdminRecordHistory::class)->delete($pallet); return; }
                 $this->assertLocationDeletable($pallet);
                 $pallet->delete();
             }, 3);
@@ -467,6 +466,7 @@ class AdminBookingController extends Controller
         DB::transaction(function () use ($line) {
             $slots = Pallet::where('line', $line)->orderBy('id')->lockForUpdate()->get();
             abort_if($slots->isEmpty(), 404);
+            if (SuperadminAccess::overriding()) { foreach ($slots as $slot) app(\App\Services\AdminRecordHistory::class)->delete($slot); return; }
             foreach ($slots as $slot) $this->assertLocationDeletable($slot);
             foreach ($slots as $slot) $slot->delete();
         }, 3);
@@ -478,8 +478,7 @@ class AdminBookingController extends Controller
         if (
             (int) $pallet->filled_boxes !== 0 || $pallet->status !== 'empty' || $pallet->current_booking_id
             || $pallet->contents()->exists()
-            || PlacementDetail::where('line', $pallet->line)->where('slot_section', $pallet->slot_section)->exists()
-            || DB::table('pallet_movements')->where('pallet_id', $pallet->id)->exists()
+            || PlacementDetail::where('line', $pallet->line)->where('slot_section', $pallet->slot_section)->where('status','placed')->exists()
         ) {
             throw \Illuminate\Validation\ValidationException::withMessages(['location' => 'This location contains goods or is referenced by operational history and cannot be deleted.']);
         }
@@ -651,6 +650,7 @@ class AdminBookingController extends Controller
         // Load booking beserta relasi produknya
 
         $booking = Booking::with('products')->findOrFail($id);
+        abort_unless(\App\Services\WorkflowState::canEdit($booking),409,'This order is locked because its workflow has advanced.');
 
 
 
@@ -838,6 +838,8 @@ class AdminBookingController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            abort_unless(\App\Services\WorkflowState::canEdit($booking), 409, 'This order is locked because receiving has started.');
+
             $product = BookingProduct::query()
                 ->where('booking_id', $booking->id)
                 ->orderBy('id')
@@ -849,7 +851,7 @@ class AdminBookingController extends Controller
                 || PalletContent::where('booking_id', $booking->id)->exists()
                 || PlacementDetail::where('booking_id', $booking->id)->exists();
 
-            if ($operationallyLocked) {
+            if ($operationallyLocked && !SuperadminAccess::overriding()) {
                 // Do not silently discard attempted changes from the old edit form.
                 $unchangeable = [
                     'customer_id' => $booking->customer_id,
@@ -1227,41 +1229,15 @@ class AdminBookingController extends Controller
 
     public function destroy(int $id)
     {
-        abort_unless(auth('admin')->user()?->role === 'superadmin', 403);
-
-        try {
-            DB::transaction(function () use ($id) {
-                $booking = Booking::whereKey($id)->lockForUpdate()->firstOrFail();
-
-                // Order yang telah menyentuh warehouse, produksi, QA, atau pengiriman
-                // tidak boleh dihapus melalui CRUD biasa.
-                if (
-                    $booking->status !== 'pending'
-                    || $booking->arrival_time !== null
-                    || $booking->batches()->exists()
-                    || PalletContent::where('booking_id', $id)->exists()
-                    || PlacementDetail::where('booking_id', $id)->exists()
-                    || DB::table('order_dispatches')->where('booking_id', $id)->exists()
-                    || DB::table('dosimeter_records')->where('booking_id', $id)->exists()
-                    || DB::table('quality_reviews')->where('booking_id', $id)->exists()
-                    || DB::table('order_document_drafts')->where('booking_id', $id)->exists()
-                    || DB::table('operational_audit_events')->where('subject_type', 'booking')->where('subject_id', $id)->exists()
-                ) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'booking' => 'This order has operational history and cannot be deleted. Use an audited correction workflow.',
-                    ]);
-                }
-
-                $booking->delete();
-            }, 3);
-
-            return redirect()->route('admin.bookings')->with('success', 'Unprocessed order deleted.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Order deletion failed', ['booking_id' => $id, 'exception' => $e]);
-            return back()->with('error', 'This order cannot be deleted. Check related records or contact an administrator.');
-        }
+        abort_unless(auth('admin')->user()?->role === 'superadmin',403);
+        DB::transaction(function () use ($id) {
+            $booking=Booking::whereKey($id)->lockForUpdate()->firstOrFail();
+            if (!\App\Services\WorkflowState::canArchive($booking)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['booking'=>'Complete goods handover before moving an operational order to Trash. Active warehouse stock must remain visible.']);
+            }
+            $booking->delete();
+        },3);
+        return redirect()->route('admin.bookings')->with('success','Order moved to Trash. Its history and documents are retained.');
     }
 
     public function getBookingCodeByDate(Request $request)
@@ -1285,7 +1261,7 @@ class AdminBookingController extends Controller
 
 
 
-        $lastCode = Booking::where('booking_code', 'like', $prefix . '%')
+        $lastCode = Booking::withTrashed()->where('booking_code', 'like', $prefix . '%')
 
             ->orderByDesc('booking_code')
 

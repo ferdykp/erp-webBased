@@ -19,7 +19,7 @@ class EnsureCustomerAccount
     {
         $user = Auth::guard('customer')->user();
 
-        if (!$user || $user->role !== 'customer') {
+        if (!$user || $user->role !== 'customer' || \App\Models\Customer::onlyTrashed()->where('user_id',$user->id)->exists()) {
             Auth::guard('customer')->logout();
             $request->session()->forget('url.intended');
 

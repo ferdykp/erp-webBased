@@ -12,7 +12,7 @@
                         Code: <span id="display_booking_code" class="text-blue-600"></span>
                     </p>
                 </div>
-                <button onclick="closeWarehouseModal()"
+                <button type="button" data-modal-dismiss onclick="closeWarehouseModal()"
                     class="absolute p-3 transition-all top-6 right-6 md:static bg-slate-50 hover:bg-red-50 rounded-2xl group">
                     <i class="fa-solid fa-xmark text-slate-400 group-hover:text-red-500"></i>
                 </button>

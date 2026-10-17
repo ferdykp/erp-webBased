@@ -114,6 +114,11 @@ class AdminProductionLineController extends Controller
      */
     public function destroy(ProductionLine $productionLine)
     {
+        if (\App\Services\SuperadminAccess::overriding()) {
+            app(\App\Services\AdminRecordHistory::class)->delete($productionLine);
+            return back()->with('success','Record removed; its history was captured in the audit log.');
+        }
+
         \Illuminate\Support\Facades\DB::transaction(function () use ($productionLine) {
             $line = ProductionLine::whereKey($productionLine->id)->lockForUpdate()->firstOrFail();
             if ($line->batches()->exists()
@@ -125,6 +130,6 @@ class AdminProductionLineController extends Controller
             $line->delete();
         }, 3);
 
-        return back()->with('success', 'Production unit deleted.');
+        return back()->with('success', 'Production unit moved to Trash.');
     }
 }

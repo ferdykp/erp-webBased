@@ -72,7 +72,7 @@ class OperationalWorkflowTest extends TestCase
         $batch = $this->batch($booking, [(int)$booking->products->sum('quantity')]);
         $this->put(route('admin.production.batches.start', $batch->id))->assertSessionMissing('error');
         // Different orders use distinct physical machine time windows.
-        $date = \Carbon\Carbon::parse('2025-01-01')->addDays($booking->id)->format('Y-m-d');
+        $date = \Carbon\Carbon::parse('2025-01-01')->subDays($booking->id)->format('Y-m-d');
         $this->recordRun($batch, "{$date}T08:00", "{$date}T09:00")->assertSessionHasNoErrors();
         $this->put(route('admin.production.batches.finish', $batch->id), $this->checks())->assertSessionMissing('error');
         $record = DosimeterRecord::create(['booking_id'=>$booking->id,'tablet_quantity'=>1]);
@@ -352,8 +352,8 @@ class OperationalWorkflowTest extends TestCase
             ['dosimeter_number'=>'TEST-D1','position'=>'Top','absorbance'=>0.1],
         ]])->assertSessionHasNoErrors();
         $this->get(route('admin.testing.report',$test))->assertOk()->assertSee('TEST-D1');
-        $this->delete(route('admin.testing.destroy',$test),['confirmed'=>1])->assertSessionHasErrors('test');
-        $this->assertDatabaseHas('product_tests',['id'=>$test->id]);
+        $this->delete(route('admin.testing.destroy',$test),['confirmed'=>1])->assertSessionHasNoErrors();
+        $this->assertSoftDeleted('product_tests',['id'=>$test->id]);
     }
 
     public function test_safe_deletion_requires_confirmation_and_authorization(): void
@@ -362,12 +362,12 @@ class OperationalWorkflowTest extends TestCase
         $this->delete(route('admin.porter.destroy',$porter))->assertSessionHasErrors('confirmed');
         $this->assertDatabaseHas('porters',['id'=>$porter->id]);
         $this->delete(route('admin.porter.destroy',$porter),['confirmed'=>1])->assertRedirect()->assertSessionHasNoErrors();
-        $this->assertDatabaseMissing('porters',['id'=>$porter->id]);
+        $this->assertSoftDeleted('porters',['id'=>$porter->id]);
         $booking=$this->order();
         $manager=Admin::create(['name'=>'Manager','email'=>'manager@test.example','password'=>bcrypt('test-password'),'role'=>'manager']);
         $this->actingAs($manager,'admin')->delete(route('admin.bookings.destroy',$booking->id),['confirmed'=>1])->assertForbidden();
         $this->actingAs($this->operator,'admin')->delete(route('admin.bookings.destroy',$booking->id),['confirmed'=>1])->assertSessionHasNoErrors();
-        $this->assertDatabaseMissing('bookings',['id'=>$booking->id]);
+        $this->assertSoftDeleted('bookings',['id'=>$booking->id]);
     }
 
     public function test_dispatch_inventory_reconciliation_failure_rolls_back_every_change(): void
@@ -466,6 +466,7 @@ class OperationalWorkflowTest extends TestCase
         $booking=$this->order();$batch=$this->completed($booking);
         $other=$this->order();$foreign=$other->batches()->create(['batch_number'=>1,'quantity'=>100,'unit'=>'box','status'=>'done']);
         $record=DosimeterRecord::where('booking_id',$booking->id)->firstOrFail();
+        $record->details()->update(['absorbance'=>null,'dose_kgy'=>null]);
         $this->postJson(route('admin.dosimeter.store-absorbance',$record->id),[
             'dosimeter_number'=>[1=>'D-TEST'],'absorbance'=>[1=>0.1],'batch_id'=>[1=>$foreign->id],
         ])->assertUnprocessable()->assertJsonValidationErrors('batch_id');
@@ -477,11 +478,12 @@ class OperationalWorkflowTest extends TestCase
         $booking=$this->order(); $batch=$this->completed($booking);
         $booking->products()->create(['product_name'=>'Other product','product_type'=>'Food','quantity'=>5,'unit'=>'box','dmin'=>1,'dmax'=>5,'dimension_pack'=>'1x1x1','density_gross'=>1,'density_nett'=>1]);
         $record=DosimeterRecord::where('booking_id',$booking->id)->firstOrFail();
+        $record->details()->update(['absorbance'=>null,'dose_kgy'=>null]);
         $payload=['dosimeter_number'=>[1=>'D-OPTIONAL'],'absorbance'=>[1=>0.1]];
         $this->postJson(route('admin.dosimeter.store-absorbance',$record),$payload)->assertOk();
         $this->assertNull($record->details()->first()->booking_batch_id);
         $record->details()->first()->update(['booking_batch_id'=>$batch->id]);
-        $this->postJson(route('admin.dosimeter.store-absorbance',$record),$payload)->assertOk();
+        $this->postJson(route('admin.dosimeter.store-absorbance',$record),$payload)->assertUnprocessable();
         $this->assertEquals($batch->id,$record->details()->first()->booking_batch_id);
     }
 
@@ -500,14 +502,15 @@ class OperationalWorkflowTest extends TestCase
         $test=\App\Models\ProductTest::create(['test_code'=>'PT-POPULATED','sample_name'=>'Sample','status'=>'completed','production_line_id'=>$this->machine->id]);
         $porter=\App\Models\Porter::create(['name'=>'Fixture Porter','is_active'=>true]);
         $pic=\App\Models\WarehousePic::create(['name'=>'Fixture PIC','email'=>'pic@test.example','is_active'=>true]);
+        $this->machine->update(['name'=>"Unit O'Reilly \"A\"\nsecond line"]);
         $pages=[
             route('admin.workspace.production-board',['batch'=>$batch->id]), route('admin.workspace.show',$booking),
             route('admin.dispatch.show',$booking),route('admin.dosimeter.show',$booking->id),route('admin.pallets.index'),
             route('admin.bookings'),route('admin.business.detail',$booking->id),route('admin.enhancements.templates'),
             route('admin.enhancements.quality',$booking),route('admin.enhancements.documents',$booking),
             route('admin.porter.edit',$porter),route('admin.warehouse-pics.edit',$pic),route('admin.profile.edit',$this->operator->id),
-            route('admin.customerList.index'),route('admin.business.index'),
-            route('admin.testing.edit',$test),route('admin.testing.parameters',$test),route('admin.testing.report',$test),
+            route('admin.customerList.index'),route('admin.business.index'),route('admin.production-lines.index'),
+            route('admin.testing.report',$test),
         ];
         foreach($pages as $page) {
             $response=$this->get($page)->assertOk();
@@ -526,13 +529,53 @@ class OperationalWorkflowTest extends TestCase
         }
     }
 
+    public function test_dosimeter_row_correction_requires_both_confirmations_reindexes_and_retains_audit(): void
+    {
+        $booking=$this->order();$this->completed($booking);
+        $record=DosimeterRecord::where('booking_id',$booking->id)->firstOrFail();
+        $record->details()->update(['absorbance'=>null,'dose_kgy'=>null]);
+        $record->update(['tablet_quantity'=>2]);
+        $target=$record->details()->first();
+        $target->update(['image'=>'dosimeter_images/retained-evidence.png']);
+        $remaining=$record->details()->create(['tablet_number'=>2,'dosimeter_number'=>'KEPT','absorbance'=>0.1,'dose_kgy'=>2]);
+        $url=route('admin.dosimeter.details.destroy',$target);
+        $this->deleteJson($url,['confirm_delete'=>true])->assertUnprocessable()->assertJsonValidationErrors('confirmed');
+        $this->deleteJson($url,['confirmed'=>true,'confirm_delete'=>true])->assertOk()->assertJsonPath('tablet_quantity',1);
+        $this->assertSame(1,(int)$remaining->fresh()->tablet_number);
+        $this->assertSame('KEPT',$remaining->fresh()->dosimeter_number);
+        $event=DB::table('operational_audit_events')->where('action','dosimetry.detail_deleted')->first();
+        $snapshot=json_decode($event->details,true);
+        $this->assertSame($target->id,$snapshot['deleted_detail']['id']);
+        $this->assertSame('dosimeter_images/retained-evidence.png',$snapshot['deleted_detail']['image']);
+        $this->deleteJson(route('admin.dosimeter.details.destroy',$remaining),['confirmed'=>true,'confirm_delete'=>true])->assertUnprocessable()->assertJsonValidationErrors('dosimetry');
+        $this->dispatch($booking)->assertSessionHasNoErrors();
+        $this->deleteJson(route('admin.dosimeter.details.destroy',$remaining),['confirmed'=>true,'confirm_delete'=>true])->assertUnprocessable()->assertJsonValidationErrors('dosimetry');
+        $this->assertDatabaseHas('dosimeter_details',['id'=>$remaining->id]);
+    }
+
+    public function test_document_draft_preserves_all_dosimetry_sets_and_versions(): void
+    {
+        $booking=$this->order();$this->completed($booking);
+        $record=DosimeterRecord::create(['booking_id'=>$booking->id,'tablet_quantity'=>1]);
+        $record->details()->create(['tablet_number'=>1,'dosimeter_number'=>'SECOND-SET','absorbance'=>0.1,'dose_kgy'=>2]);
+        foreach([1,2] as $version) {
+            $this->post(route('admin.enhancements.documents.generate',$booking),['document_type'=>'quality_summary'])->assertRedirect()->assertSessionHasNoErrors()->assertSessionHas('success');
+            $draft=DB::table('order_document_drafts')->where('booking_id',$booking->id)->orderByDesc('id')->first();
+            $this->assertSame($version,(int)$draft->version);
+            $snapshot=json_decode($draft->snapshot,true);
+            $this->assertCount(2,$snapshot['dosimeters']);
+            $this->assertCount(2,$snapshot['dosimeter_sets']);
+            $this->assertSame('SECOND-SET',$snapshot['dosimeter_sets'][1]['details'][0]['dosimeter_number']);
+        }
+    }
+
     public function test_dosimetry_set_selection_cannot_modify_another_order(): void
     {
         $booking=$this->order();$this->completed($booking);
         $second=DosimeterRecord::create(['booking_id'=>$booking->id,'tablet_quantity'=>1]);
         $second->details()->create(['tablet_number'=>1]);
         $first=DosimeterRecord::where('booking_id',$booking->id)->orderBy('id')->first();
-        $this->get(route('admin.dosimeter.show',['booking_id'=>$booking->id,'record'=>$second->id]))->assertOk()->assertSee('Dosimetry Set #'.$second->id);
+        $this->get(route('admin.dosimeter.show',['booking_id'=>$booking->id,'record'=>$second->id]))->assertOk()->assertSee('Set #'.$second->id);
         $this->postJson(route('admin.dosimeter.store-quantity'),['booking_id'=>$booking->id,'record_id'=>$second->id,'tablet_quantity'=>2])->assertOk();
         $this->assertSame(1,(int)$first->fresh()->tablet_quantity);
         $other=$this->order();

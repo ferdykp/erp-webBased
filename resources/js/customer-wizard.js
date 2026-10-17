@@ -2,7 +2,12 @@ export default function customerWizard(openFlag) {
     return {
         step: 1,
         totalSteps: 2,
-        init() { this.$watch(openFlag, open => { if (open) { this.step = 1; this.focusStep(); } }); },
+        init() { this.$watch(openFlag, open => {
+            for (const input of this.$refs.wizardForm.querySelectorAll('input[type="password"], input[name="override_reason"], input[name="confirmed"]')) {
+                if (input.type === 'checkbox') input.checked = false; else input.value = '';
+            }
+            if (open) { this.step = 1; this.focusStep(); }
+        }); },
         focusStep() {
             this.$nextTick(() => this.$refs.wizardForm.querySelector(`[data-wizard-step="${this.step}"] input, [data-wizard-step="${this.step}"] textarea`)?.focus());
         },

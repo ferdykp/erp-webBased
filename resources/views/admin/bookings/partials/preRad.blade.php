@@ -6,7 +6,7 @@
 
         {{-- Header: Created Sticky agar tetap terlihat saat scroll --}}
         <div class="sticky top-0 z-10 p-6 text-center border-b border-slate-100 bg-white/80 backdrop-blur-md">
-            <button type="button" onclick="closeQCModal()"
+            <button data-modal-dismiss type="button" onclick="closeQCModal()"
                 class="absolute transition-colors right-8 top-6 text-slate-400 hover:text-slate-600">
                 <i class="text-xl fa-solid fa-xmark"></i>
             </button>
@@ -143,7 +143,7 @@
 
             {{-- Footer: Created Sticky di Bawah --}}
             <div class="sticky bottom-0 flex gap-3 p-6 bg-white border-t border-slate-100">
-                <button type="button" onclick="closeQCModal()"
+                <button data-modal-dismiss type="button" onclick="closeQCModal()"
                     class="flex-1 py-4 text-[11px] font-black uppercase text-slate-400 hover:text-slate-600 transition-colors">
                     Cancel
                 </button>

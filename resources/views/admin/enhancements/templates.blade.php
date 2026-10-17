@@ -45,7 +45,7 @@
                             class="text-sm text-gray-500">({{ $t->approval_status }})</span></p>
                     <p class="mt-2 text-sm">Dose: {{ $t->target_dose }} · Beam speed: {{ $t->beam_speed }} · Loading:
                         {{ $t->loading_mode }}</p>
-                    @if ($t->approval_status === 'approved' && in_array(auth('admin')->user()->role, ['superadmin', 'production']))
+                    @if (($t->approval_status === 'approved') && in_array(auth('admin')->user()->role, ['superadmin', 'production']))
                         <div class="p-3 mt-3 rounded-lg bg-slate-50">
                             <p class="mb-2 text-xs font-semibold">Prepare a batch using this approved template</p>
                             <form method="POST" id="template-apply-{{ $t->id }}"
@@ -66,7 +66,7 @@
                             </form>
                         </div>
                     @endif
-                    @if ($t->approval_status === 'draft' && in_array(auth('admin')->user()->role, ['superadmin', 'manager']))
+                    @if (($t->approval_status === 'draft') && in_array(auth('admin')->user()->role, ['superadmin', 'manager']))
                         <form method="POST" action="{{ route('admin.enhancements.templates.approve', $t->id) }}"
                             class="flex flex-wrap gap-2 mt-3">@csrf<select name="decision" required
                                 class="p-2 border rounded-lg">

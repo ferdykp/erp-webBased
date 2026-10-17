@@ -10,7 +10,7 @@
                     <p class="text-xs font-medium tracking-widest uppercase text-slate-500">Code: <span
                             id="display_booking_code" class="text-blue-600"></span></p>
                 </div>
-                <button type="button" onclick="closeOrderDetailModal()"
+                <button data-modal-dismiss type="button" onclick="closeOrderDetailModal()"
                     class="p-3 transition-all bg-slate-50 hover:bg-red-50 rounded-2xl">
                     <i class="fa-solid fa-xmark text-slate-400"></i>
                 </button>

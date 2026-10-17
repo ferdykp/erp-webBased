@@ -1,4 +1,5 @@
 {
   "resources/views/admin/bookings/process-report-pdf.blade.php": "9d7e01460406513ffcda34789bc0dabde1290a9bd8ec030c4861289d986e30f0",
-  "app/Http/Controllers/OrderProcessReportController.php": "cb12ac45e9a50c731c21a7f63ecfee8176007603961053f4424927d5c8fe57d7"
+  "app/Http/Controllers/OrderProcessReportController.php": "cb12ac45e9a50c731c21a7f63ecfee8176007603961053f4424927d5c8fe57d7",
+  "resources/views/admin/bookings/create.blade.php": "33477662428cfb9ca9bd60a2612a3041815d2239bebf4228f683a62a06c3d987"
 }

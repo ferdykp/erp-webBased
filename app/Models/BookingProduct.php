@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookingProduct extends Model
 {
+    protected static function booted(): void
+    {
+        static::addGlobalScope('active_booking', fn ($query) => $query->whereHas('booking'));
+    }
+
     protected $fillable = [
         'booking_id',
         'product_name',

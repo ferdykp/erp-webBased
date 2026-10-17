@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Customer extends Authenticatable
 
 {
+    use \App\Models\Concerns\Recoverable;
+
     // app/Models/Customer.php
     protected $fillable = [
         'user_id',           // Pastikan ini ada

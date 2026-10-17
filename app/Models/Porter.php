@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Porter extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     protected $fillable = ['name', 'phone', 'is_active'];
 
     // Relasi ke Booking (Sebagai PIC Utama)

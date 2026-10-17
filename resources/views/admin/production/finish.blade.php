@@ -358,7 +358,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="button" onclick="closeFinishDetailModal()"
+                <button data-modal-dismiss type="button" onclick="closeFinishDetailModal()"
                     class="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -576,7 +576,7 @@
                     class="flex flex-col gap-3 px-6 py-5 border-t border-gray-100 sm:flex-row sm:items-center sm:justify-between bg-gray-50/60">
                     <p class="text-xs text-gray-400">Actual times come from recorded irradiation runs. Completed history is locked.</p>
                     <div class="flex items-center gap-3">
-                        <button type="button" onclick="closeFinishDetailModal()"
+                        <button data-modal-dismiss type="button" onclick="closeFinishDetailModal()"
                             class="px-5 text-xs font-medium text-gray-500 transition-colors rounded-lg h-9 hover:text-gray-800 hover:bg-gray-100">
                             Cancel
                         </button>
@@ -605,7 +605,7 @@
                     <h3 class="text-sm font-semibold text-gray-800">Pallet Management</h3>
                     <p id="modal_batch_title" class="text-xs text-emerald-600 font-medium mt-0.5">BATCH #---</p>
                 </div>
-                <button onclick="closeRelocationModal()"
+                <button type="button" data-modal-dismiss onclick="closeRelocationModal()"
                     class="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors rounded-lg hover:bg-red-50 hover:text-red-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />

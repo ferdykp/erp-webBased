@@ -13,6 +13,8 @@
             \App\Models\PlacementDetail::where('booking_id', $booking->id)->exists() ||
             \App\Models\PalletContent::where('booking_id', $booking->id)->exists();
 
+        $isLocked = $isLocked;
+
         $dimensions = preg_split('/\s*[xX×]\s*/', (string) ($product?->dimension_pack ?? ''));
 
         $inputClass =

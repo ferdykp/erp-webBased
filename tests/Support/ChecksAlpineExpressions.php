@@ -14,7 +14,7 @@ trait ChecksAlpineExpressions
                 $value = trim($attribute->value);
                 if ($value === '') continue;
                 if (str_starts_with($name, 'x-model')) $body = "({$value}) = value;";
-                elseif (str_starts_with($name, '@') || str_starts_with($name, 'x-on:') || in_array($name, ['x-init', 'x-effect'])) $body = $value;
+                elseif (str_starts_with($name, 'on') || str_starts_with($name, '@') || str_starts_with($name, 'x-on:') || in_array($name, ['x-init', 'x-effect'])) $body = $value;
                 elseif (str_starts_with($name, ':') || str_starts_with($name, 'x-bind:') || in_array($name, ['x-data', 'x-show', 'x-text', 'x-html'])) $body = "return ({$value});";
                 else continue;
                 $expressions[] = ['attribute' => $name, 'body' => $body];

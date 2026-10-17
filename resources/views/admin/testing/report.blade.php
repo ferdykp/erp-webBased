@@ -805,6 +805,9 @@
             </div>
 
 
+            @php($measurementsLocked = $test->dosimeters->isNotEmpty() && !$test->dosimeters->contains(fn($d) => blank($d->dosimeter_number) || $d->absorbance === null || $d->dose_kgy === null))
+            @if($measurementsLocked)<p class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 print:hidden">Measurements are complete. This stage is read-only.</p>@endif
+            <fieldset @disabled($measurementsLocked) class="min-w-0">
             <form method="POST" action="{{ route('admin.testing.dosimeters.update', $test) }}">
 
                 @csrf
@@ -983,6 +986,7 @@
                 </div>
 
             </form>
+            </fieldset>
 
         </section>
 

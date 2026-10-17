@@ -225,7 +225,7 @@
                                 class="text-[10px] font-black tracking-widest text-blue-600 uppercase">Loading...</p>
                         </div>
                     </div>
-                    <button type="button" onclick="closeBatchDetailModal()"
+                    <button data-modal-dismiss type="button" onclick="closeBatchDetailModal()"
                         class="flex items-center justify-center w-8 h-8 transition-colors rounded-xl bg-slate-50 text-slate-400 hover:text-red-500">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -405,7 +405,7 @@
                 {{-- Footer Buttons --}}
                 <div class="flex items-center justify-between p-6 border-t md:p-8 bg-slate-50 shrink-0 border-slate-100">
                     <div x-cloak x-show="step === 1">
-                        <button type="button" onclick="closeBatchDetailModal()"
+                        <button data-modal-dismiss type="button" onclick="closeBatchDetailModal()"
                             class="px-5 py-3 text-xs font-black uppercase transition-all text-slate-400 hover:text-red-500">Cancel</button>
                     </div>
                     <div x-cloak x-show="step === 2">

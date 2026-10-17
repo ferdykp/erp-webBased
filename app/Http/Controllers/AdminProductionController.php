@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SuperadminAccess;
+
 use App\Models\Booking;
 use App\Models\BookingBatch;
 // use App\Models\BookingProduct;
@@ -23,7 +25,7 @@ class AdminProductionController extends Controller
 
         // 2. Ambil data booking yang aktif beserta relasinya (eager loading untuk mencegah N+1 query)
         $bookings = Booking::with(['customer.contacts', 'products', 'batches.productionLine'])
-            ->whereIn('status', ['pending', 'approved', 'processing'])->whereNotNull('arrival_time')
+            ->when(true, fn($q) => $q->whereIn('status', ['pending', 'approved', 'processing'])->whereNotNull('arrival_time'))
             ->latest()
             ->get();
 
@@ -36,7 +38,7 @@ class AdminProductionController extends Controller
     public function parameterSetting()
     {
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
-            ->whereIn('status', ['pending', 'approved', 'processing'])->whereNotNull('arrival_time')
+            ->when(true, fn($q) => $q->whereIn('status', ['pending', 'approved', 'processing'])->whereNotNull('arrival_time'))
             ->latest()
             ->get()
             ->filter(function ($booking) {
@@ -56,7 +58,7 @@ class AdminProductionController extends Controller
     public function storeParameter(Request $request, $batchId)
     {
         $data = $request->validate([
-            'production_line_id' => 'required|exists:production_lines,id',
+            'production_line_id' => 'required|exists:production_lines,id,deleted_at,NULL',
             'target_dose' => 'required|numeric|gt:0', 'beam_speed' => 'required|numeric|gt:0',
             'loading_mode' => 'required|in:single_side,double_side',
             'freq' => 'nullable|numeric|min:0', 'scan_gear' => 'nullable|numeric|min:0',
@@ -65,12 +67,12 @@ class AdminProductionController extends Controller
         DB::transaction(function () use ($batch, $data) {
             $booking = Booking::whereKey($batch->booking_id)->lockForUpdate()->firstOrFail();
             $locked = BookingBatch::whereKey($batch->id)->lockForUpdate()->firstOrFail();
-            if (!in_array($locked->status, ['pending', 'waiting'], true)
-                || DB::table('irradiation_sessions')->where('booking_batch_id', $locked->id)->exists()) {
+            if ((!in_array($locked->status, ['pending', 'waiting'], true)
+                || DB::table('irradiation_sessions')->where('booking_batch_id', $locked->id)->exists()) && !SuperadminAccess::overriding()) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['parameters' => 'Machine settings are locked after production starts.']);
             }
             $this->validateDose($booking, (float) $data['target_dose'], $locked->booking_product_id);
-            $locked->update($data + ['status' => 'waiting']);
+            $locked->update($data + ['status' => SuperadminAccess::overriding() ? $locked->status : 'waiting']);
             \App\Services\WarehouseInventory::audit('batch.parameters_updated', 'booking_batch', $locked->id, $data);
         }, 3);
         return back()->with('success', 'Machine settings saved.');
@@ -98,7 +100,7 @@ class AdminProductionController extends Controller
             'batch_quantities.*' => 'required|integer|min:1',
 
             // Machine parameters
-            'production_line_id' => 'required|exists:production_lines,id',
+            'production_line_id' => 'required|exists:production_lines,id,deleted_at,NULL',
             'target_dose' => 'required|numeric|gt:0',
             'beam_speed' => 'required|numeric|gt:0',
 
@@ -118,14 +120,14 @@ class AdminProductionController extends Controller
                     ->firstOrFail();
 
                 // Check-in is required. Manager approval is not required.
-                if (
+                if ((
                     ! $booking->arrival_time ||
                     ! in_array(
                         $booking->status,
                         ['pending', 'approved', 'processing'],
                         true
                     )
-                ) {
+                ) && !SuperadminAccess::overriding()) {
                     throw new \RuntimeException(
                         'Complete goods receiving before creating batches.'
                     );
@@ -243,7 +245,7 @@ class AdminProductionController extends Controller
     public function batchQueue()
     {
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
-            ->whereIn('status', ['pending', 'approved', 'processing'])->whereNotNull('arrival_time')
+            ->when(true, fn($q) => $q->whereIn('status', ['pending', 'approved', 'processing'])->whereNotNull('arrival_time'))
             ->whereHas('batches', function ($query) {
                 $query->where('status', 'waiting');
             })
@@ -265,7 +267,7 @@ class AdminProductionController extends Controller
         try {
             DB::transaction(function () use ($validated) {
                 $booking = Booking::with(['products', 'batches'])->lockForUpdate()->findOrFail($validated['booking_id']);
-                if (!$booking->arrival_time || !in_array($booking->status, ['pending', 'approved', 'processing'], true)) {
+                if ((!$booking->arrival_time || !in_array($booking->status, ['pending', 'approved', 'processing'], true)) && !SuperadminAccess::overriding()) {
                     throw new \RuntimeException('Receive goods before creating batches.');
                 }
 
@@ -308,10 +310,10 @@ class AdminProductionController extends Controller
                 $booking = Booking::whereKey($candidate->booking_id)->lockForUpdate()->firstOrFail();
                 $batch = BookingBatch::whereKey($batchId)->lockForUpdate()->firstOrFail();
 
-                if ($batch->status !== 'waiting') {
+                if (($batch->status !== 'waiting') && !SuperadminAccess::overriding()) {
                     throw new \RuntimeException('Only ready batches can be started.');
                 }
-                if (!$booking->arrival_time || !in_array($booking->status, ['pending', 'approved', 'processing'], true)) {
+                if ((!$booking->arrival_time || !in_array($booking->status, ['pending', 'approved', 'processing'], true)) && !SuperadminAccess::overriding()) {
                     throw new \RuntimeException('Complete goods receiving before starting production.');
                 }
                 $this->validateDose($booking, (float) $batch->target_dose, $batch->booking_product_id);
@@ -335,7 +337,7 @@ class AdminProductionController extends Controller
     public function offline()
     {
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
-            ->whereIn('status', ['processing'])
+            ->when(true, fn($q) => $q->whereIn('status', ['processing']))
             ->latest()
             ->get();
 
@@ -346,7 +348,7 @@ class AdminProductionController extends Controller
     public function finishPage()
     {
         $bookings = Booking::with(['customer', 'products', 'batches.productionLine'])
-            ->whereIn('status', ['processing', 'completed'])
+            ->when(true, fn($q) => $q->whereIn('status', ['processing', 'completed']))
             ->latest()
             ->get();
 
@@ -373,7 +375,7 @@ class AdminProductionController extends Controller
                 $candidate = BookingBatch::findOrFail($batchId);
                 $booking = Booking::whereKey($candidate->booking_id)->lockForUpdate()->firstOrFail();
                 $batch = BookingBatch::whereKey($batchId)->lockForUpdate()->firstOrFail();
-                if ($batch->status !== 'processing') {
+                if (($batch->status !== 'processing') && !SuperadminAccess::overriding()) {
                     throw new \RuntimeException('The batch must be in progress.');
                 }
                 $booking = Booking::whereKey($batch->booking_id)->lockForUpdate()->firstOrFail();
@@ -392,11 +394,11 @@ class AdminProductionController extends Controller
                     ]
                 );
                 // Data QA gagal tetap disimpan, tetapi batch tidak dapat dirilis.
-                if ($validated['visual_check'] !== 'pass' || $validated['indicator_check'] !== 'changed' || $validated['is_damaged'] === 'yes') {
+                if (!SuperadminAccess::overriding() && ($validated['visual_check'] !== 'pass' || $validated['indicator_check'] !== 'changed' || $validated['is_damaged'] === 'yes')) {
                     return;
                 }
                 $lastSessionEnd = DB::table('irradiation_sessions')->where('booking_batch_id', $batch->id)->whereNull('voided_at')->max('ended_at');
-                if (!$lastSessionEnd) {
+                if ((!$lastSessionEnd) && !SuperadminAccess::overriding()) {
                     throw new \RuntimeException('Record at least one completed irradiation run before finishing the batch.');
                 }
                 \App\Services\WarehouseInventory::audit('batch.finished', 'booking_batch', $batch->id, $validated);
@@ -413,9 +415,9 @@ class AdminProductionController extends Controller
                     $booking->update(['status' => 'completed']);
                 }
             });
-            $qaPassed = BookingBatch::findOrFail($batchId)->status === 'done' && $validated['visual_check'] === 'pass'
+            $qaPassed = BookingBatch::findOrFail($batchId)->status === 'done' && (SuperadminAccess::overriding() || ($validated['visual_check'] === 'pass'
                 && $validated['indicator_check'] === 'changed'
-                && $validated['is_damaged'] === 'no';
+                && $validated['is_damaged'] === 'no'));
             $completedBatch = BookingBatch::findOrFail($batchId);
             $product = $completedBatch->booking->products->firstWhere('id', $completedBatch->booking_product_id)
                 ?? ($completedBatch->booking->products->count() === 1 ? $completedBatch->booking->products->first() : null);
@@ -440,6 +442,11 @@ class AdminProductionController extends Controller
             'total_duration' => 'required|integer|min:0',
         ]);
 
+        if (SuperadminAccess::overriding()) {
+            $batch = BookingBatch::whereKey($validated['batch_id'])->lockForUpdate()->firstOrFail();
+            $batch->update(collect($validated)->except('batch_id')->all());
+            return back()->with('success', 'Production times corrected with an audit snapshot.');
+        }
         return back()->withErrors([
             'duration' => 'Direct edits to production timestamps are disabled. Record corrections using the authorized production review workflow.',
         ]);

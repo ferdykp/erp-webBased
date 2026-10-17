@@ -22,6 +22,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Gate::before(fn ($user) => $user instanceof Admin && $user->role === 'superadmin' ? true : null);
+        $this->app->scoped(\App\Services\AdminRecordHistory::class);
+        \Illuminate\Support\Facades\Event::listen('eloquent.created: *', function ($event, $payload) {
+            if (request()->attributes->has('superadmin.created') && ($payload[0] ?? null) instanceof \Illuminate\Database\Eloquent\Model) {
+                $models = request()->attributes->get('superadmin.created', []);
+                $models[] = $payload[0];
+                request()->attributes->set('superadmin.created', $models);
+            }
+        });
         ResetPassword::createUrlUsing(function ($user, string $token) {
             if ($user instanceof Admin) {
                 return route('admin.password.reset', ['token' => $token, 'email' => $user->email]);

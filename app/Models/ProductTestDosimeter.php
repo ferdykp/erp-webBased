@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductTestDosimeter extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     protected $fillable = [
         'product_test_id',
         'sequence',

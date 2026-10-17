@@ -59,6 +59,11 @@ class PorterController extends Controller
 
     public function destroy(Porter $porter)
     {
+        if (\App\Services\SuperadminAccess::overriding()) {
+            app(\App\Services\AdminRecordHistory::class)->delete($porter);
+            return redirect()->route('admin.porter.index')->with('success','Record removed; its history was captured in the audit log.');
+        }
+
         \Illuminate\Support\Facades\DB::transaction(function () use ($porter) {
             $porter = Porter::whereKey($porter->id)->lockForUpdate()->firstOrFail();
             if (\App\Models\Booking::where('porter_name', $porter->name)->exists() || \App\Models\BookingBatch::where('porter_name', $porter->name)->exists()) {
@@ -66,6 +71,6 @@ class PorterController extends Controller
             }
             $porter->delete();
         });
-        return redirect()->route('admin.porter.index')->with('success', 'Porter deleted.');
+        return redirect()->route('admin.porter.index')->with('success', 'Porter moved to Trash.');
     }
 }

@@ -464,6 +464,7 @@
                                     class="w-full px-5 py-3.5 text-sm font-semibold bg-slate-50 border-transparent rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 border focus:bg-white outline-none transition-all">
                             </div>
                         </div>
+                        <details class="rounded-xl border border-amber-200 p-4 text-sm"><summary class="cursor-pointer font-semibold">Reset Customer Password (Optional)</summary><p class="mt-2 text-slate-600">Requires confirmation and a reason. Leave blank to keep the password.</p><label class="mt-3 block">New Password<input name="password" type="password" autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border p-3"></label><label class="mt-3 block">Confirm New Password<input name="password_confirmation" type="password" autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border p-3"></label><div class="mt-4 space-y-3 rounded-xl border border-amber-200 p-3 text-sm"><label class="block">Reason for account or role change<input name="override_reason" maxlength="2000" class="mt-1 w-full rounded-lg border p-3"></label><label class="flex items-start gap-2"><input type="checkbox" name="confirmed" value="1" class="mt-1">I confirm this account change.</label></div></details>
                     </div>
 
                     {{-- FOOTER BUTTONS --}}

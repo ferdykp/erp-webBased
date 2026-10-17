@@ -32,6 +32,7 @@
             <main class="w-full flex-1 px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)] print:p-0">
                 <div class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none print:min-h-0 print:max-w-none">
                     <div class="mb-4 print:hidden"><?php echo $__env->make('admin.layout.notif', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></div>
+
                     <?php echo $__env->yieldContent('content'); ?>
                 </div>
             </main>

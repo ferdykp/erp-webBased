@@ -193,7 +193,7 @@
                             class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg"></span>
                     </div>
                 </div>
-                <button onclick="closeDetailModal()"
+                <button type="button" data-modal-dismiss onclick="closeDetailModal()"
                     class="flex items-center justify-center w-12 h-12 transition-all bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl">
                     <i class="text-xl fa-solid fa-xmark"></i>
                 </button>
@@ -296,7 +296,7 @@
             </div>
 
             <div class="flex justify-end px-12 py-8 border-t bg-slate-50 border-slate-100">
-                <button onclick="closeDetailModal()"
+                <button type="button" data-modal-dismiss onclick="closeDetailModal()"
                     class="px-10 py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all">Close
                     Details</button>
             </div>

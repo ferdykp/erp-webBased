@@ -195,15 +195,19 @@ class CustomerBookingController extends Controller
         $user = Auth::guard('customer')->user();
         $booking = Booking::where('customer_id', $user->customer->id)->findOrFail($id);
         abort_if(!in_array($booking->status, ['pending', 'cancelled'], true), 403);
-        $booking->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($booking) {
+            $locked=Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            abort_unless(!$locked->arrival_time && !$locked->batches()->exists() && !\App\Models\PalletContent::where('booking_id',$locked->id)->exists(),409);
+            $locked->delete();
+        });
 
-        return redirect()->route('customer.dashboard')->with('success', 'Booking deleted.');
+        return redirect()->route('customer.dashboard')->with('success', 'Booking moved to Trash. Contact staff if you need it restored.');
     }
 
     private function nextBookingCode(): string
     {
         $prefix = now()->format('ymd');
-        $lastCode = Booking::where('booking_code', 'like', $prefix . '%')
+        $lastCode = Booking::withTrashed()->where('booking_code', 'like', $prefix . '%')
             ->orderByDesc('booking_code')
             ->value('booking_code');
         $lastSequence = $lastCode ? (int) substr($lastCode, strlen($prefix)) : 0;

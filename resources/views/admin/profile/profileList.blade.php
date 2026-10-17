@@ -1,5 +1,7 @@
 @extends('admin.layout.app')
 
+@section('title', 'Team & Access')
+
 @section('content')
     <div class="w-full px-2 py-4 mx-auto space-y-6 sm:px-4 md:px-6 lg:py-8">
 
@@ -11,7 +13,7 @@
                 class="flex flex-col gap-4 px-6 py-6 border-b sm:flex-row sm:items-center sm:justify-between border-slate-50 md:px-10">
                 <div>
                     <h2 class="text-2xl font-black tracking-tighter text-slate-800 md:text-3xl">
-                        List <span class="text-blue-600">Admin</span>
+                        Staff <span class="text-blue-600">Accounts</span>
                     </h2>
                     <p class="mt-1 text-xs font-bold tracking-widest uppercase text-slate-400">
                         Staff Roles and Access
@@ -72,8 +74,8 @@
                                                 {{-- Mobile-only badge --}}
                                                 <div class="mt-1 md:hidden">
                                                     <span
-                                                        class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md {{ $user->role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' }}">
-                                                        {{ $user->role }}
+                                                        class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md {{ $user->role === 'superadmin' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' }}">
+                                                        {{ ucwords(str_replace('_', ' ', $user->role)) }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -83,8 +85,8 @@
                                     {{-- ROLE (Desktop Only) --}}
                                     <td class="hidden px-4 py-4 text-center border-y border-slate-50 md:table-cell">
                                         <span
-                                            class="px-3 py-1 text-[10px] font-black uppercase rounded-lg {{ $user->role === 'admin' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-50 text-slate-500 border border-slate-100' }}">
-                                            {{ $user->role }}
+                                            class="px-3 py-1 text-[10px] font-black uppercase rounded-lg {{ $user->role === 'superadmin' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-50 text-slate-500 border border-slate-100' }}">
+                                            {{ ucwords(str_replace('_', ' ', $user->role)) }}
                                         </span>
                                     </td>
 
@@ -92,16 +94,16 @@
                                     @if (in_array(auth('admin')->user()->role, ['superadmin']))
                                         <td class="px-4 py-4 border-r border-y border-slate-50 rounded-r-2xl">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="{{ route('admin.profile.edit', $user->id) }}"
+                                                <a aria-label="Edit {{ $user->name }}" href="{{ route('admin.profile.edit', $user->id) }}"
                                                     class="flex items-center justify-center text-blue-600 transition-all bg-white border shadow-sm w-9 h-9 border-slate-100 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </a>
 
-                                                <form action="{{ route('admin.profile.destroy', $user->id) }}"
+                                                <form data-record-name="{{ $user->name }}" action="{{ route('admin.profile.destroy', $user->id) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
+                                                    <button aria-label="Delete {{ $user->name }}" type="submit"
                                                         class="flex items-center justify-center text-red-500 transition-all bg-white border shadow-sm w-9 h-9 border-slate-100 rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500">
                                                         <i class="fa-solid fa-trash-can"></i>
                                                     </button>
@@ -119,7 +121,7 @@
                                         <div class="flex flex-col items-center">
                                             <i class="mb-3 text-4xl text-slate-200 fa-solid fa-user-slash"></i>
                                             <p class="text-sm font-bold tracking-widest uppercase text-slate-400">No
-                                                user yang terdaftar</p>
+                                                staff accounts found</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -134,7 +136,7 @@
         {{-- INFO FOOTER --}}
         <div class="text-center">
             <p class="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-                Total Admin Terdaftar: {{ count($admins) }} Orang
+                Total staff accounts: {{ count($admins) }}
             </p>
         </div>
     </div>

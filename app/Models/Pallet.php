@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pallet extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     protected $fillable = [
         // 'pallet_number',
         'status',

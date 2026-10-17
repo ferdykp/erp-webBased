@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SuperadminAccess;
+
 use App\Models\{Booking, BookingBatch, DosimeterRecord, Pallet, ProductionLine};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +13,7 @@ class OperationsEnhancementController extends Controller
 {
     private function role(array $allowed): void
     {
-        abort_unless(in_array(auth('admin')->user()->role, $allowed, true), 403);
+        abort_unless(SuperadminAccess::isSuperadmin() || in_array(auth('admin')->user()->role, $allowed, true), 403);
     }
 
     private function audit(string $action, string $type, int $id, array $details = []): void
@@ -44,10 +46,10 @@ class OperationsEnhancementController extends Controller
             $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
             $record = DosimeterRecord::with('details')->where('booking_id', $booking->id)->first();
             if ($data['decision'] === 'reviewed') {
-                if (!$record || $record->details->isEmpty() || $record->details->contains(fn($d) => $d->absorbance === null || blank($d->dosimeter_number))) {
+                if ((!$record || $record->details->isEmpty() || $record->details->contains(fn($d) => $d->absorbance === null || blank($d->dosimeter_number))) && !SuperadminAccess::overriding()) {
                     throw ValidationException::withMessages(['decision' => 'All required dosimeter identifiers and measurements must be recorded before review.']);
                 }
-                if ($booking->batches()->doesntExist() || $booking->batches()->where('status', '!=', 'done')->exists() || $booking->batches()->whereDoesntHave('qa')->exists()) {
+                if (($booking->batches()->doesntExist() || $booking->batches()->where('status', '!=', 'done')->exists() || $booking->batches()->whereDoesntHave('qa')->exists()) && !SuperadminAccess::overriding()) {
                     throw ValidationException::withMessages(['decision' => 'All batches must be finished with QA records before review.']);
                 }
             }
@@ -71,7 +73,7 @@ class OperationsEnhancementController extends Controller
         DB::transaction(function () use ($booking, $data) {
             $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
             $booking->load(['customer', 'products', 'batches.productionLine', 'batches.qa', 'placementDetails']);
-            $record = DosimeterRecord::with('details')->where('booking_id', $booking->id)->first();
+            $records = DosimeterRecord::with('details')->where('booking_id', $booking->id)->orderBy('id')->get();
             $snapshot = [
                 'generated_at' => now()->toIso8601String(),
                 'booking_code' => $booking->booking_code,
@@ -80,7 +82,8 @@ class OperationsEnhancementController extends Controller
                 'products' => $booking->products->map(fn($p) => $p->toArray())->all(),
                 'placements' => $booking->placementDetails->map(fn($p) => $p->toArray())->all(),
                 'batches' => $booking->batches->map(fn($b) => $b->toArray() + ['machine' => $b->productionLine?->name, 'qa' => $b->qa?->toArray()])->all(),
-                'dosimeters' => $record?->details?->map(fn($d) => $d->toArray())->all() ?? [],
+                'dosimeters' => $records->flatMap->details->map(fn($d) => $d->toArray())->values()->all(),
+                'dosimeter_sets' => $records->map(fn($record) => $record->toArray())->all(),
             ];
             $version = 1 + (int) DB::table('order_document_drafts')->where('booking_id', $booking->id)->where('document_type', $data['document_type'])->max('version');
             $id = DB::table('order_document_drafts')->insertGetId(['booking_id' => $booking->id, 'document_type' => $data['document_type'], 'version' => $version, 'snapshot' => json_encode($snapshot), 'status' => 'draft', 'created_by' => auth('admin')->id(), 'created_at' => now(), 'updated_at' => now()]);
@@ -101,7 +104,7 @@ class OperationsEnhancementController extends Controller
     public function storeTemplate(Request $request)
     {
         $this->role(['superadmin', 'production']);
-        $v = $request->validate(['name' => 'required|string|max:150', 'production_line_id' => 'required|exists:production_lines,id', 'target_dose' => 'required|numeric|gt:0', 'beam_speed' => 'required|numeric|gt:0', 'loading_mode' => 'required|in:single_side,double_side', 'freq' => 'nullable|numeric|gte:0', 'scan_gear' => 'nullable|numeric|gte:0']);
+        $v = $request->validate(['name' => 'required|string|max:150', 'production_line_id' => 'required|exists:production_lines,id,deleted_at,NULL', 'target_dose' => 'required|numeric|gt:0', 'beam_speed' => 'required|numeric|gt:0', 'loading_mode' => 'required|in:single_side,double_side', 'freq' => 'nullable|numeric|gte:0', 'scan_gear' => 'nullable|numeric|gte:0']);
         DB::transaction(function () use ($v) {
             $id = DB::table('production_parameter_templates')->insertGetId($v + ['approval_status' => 'draft', 'created_by' => auth('admin')->id(), 'created_at' => now(), 'updated_at' => now()]);
             $this->audit('template.created', 'production_parameter_template', $id);
@@ -116,7 +119,7 @@ class OperationsEnhancementController extends Controller
         DB::transaction(function () use ($id, $v) {
             $template = DB::table('production_parameter_templates')->where('id', $id)->lockForUpdate()->first();
             abort_unless($template, 404);
-            if ($template->approval_status !== 'draft') throw ValidationException::withMessages(['decision' => 'Only draft templates can be reviewed.']);
+            if (($template->approval_status !== 'draft') && !SuperadminAccess::overriding()) throw ValidationException::withMessages(['decision' => 'Only draft templates can be reviewed.']);
             DB::table('production_parameter_templates')->where('id', $id)->update(['approval_status' => $v['decision'], 'approved_by' => auth('admin')->id(), 'approved_at' => now(), 'approval_notes' => $v['approval_notes'] ?? null, 'updated_at' => now()]);
             $this->audit('template.' . $v['decision'], 'production_parameter_template', $id);
         });
@@ -130,8 +133,8 @@ class OperationsEnhancementController extends Controller
         DB::transaction(function () use ($batch, $v) {
             $booking = Booking::whereKey($batch->booking_id)->lockForUpdate()->firstOrFail();
             $batch = BookingBatch::whereKey($batch->id)->lockForUpdate()->firstOrFail();
-            if (!in_array($batch->status, ['pending', 'waiting'], true)) throw ValidationException::withMessages(['template_id' => 'Parameters can only be prepared for batches not yet started.']);
-            $t = DB::table('production_parameter_templates')->where('id', $v['template_id'])->where('approval_status', 'approved')->first();
+            if ((!in_array($batch->status, ['pending', 'waiting'], true)) && !SuperadminAccess::overriding()) throw ValidationException::withMessages(['template_id' => 'Parameters can only be prepared for batches not yet started.']);
+            $t = DB::table('production_parameter_templates')->where('id', $v['template_id'])->when(!SuperadminAccess::overriding(), fn($q) => $q->where('approval_status', 'approved'))->first();
             if (!$t) throw ValidationException::withMessages(['template_id' => 'Only Manager-approved templates can be applied.']);
             $products = $booking->products;
             if ($batch->booking_product_id !== null) $products = $products->where('id', $batch->booking_product_id);
@@ -144,7 +147,7 @@ class OperationsEnhancementController extends Controller
                     throw ValidationException::withMessages(['template_id' => 'Template target dose does not meet all booked product dose bounds.']);
                 }
             }
-            $batch->update(['production_line_id' => $t->production_line_id, 'target_dose' => $t->target_dose, 'beam_speed' => $t->beam_speed, 'loading_mode' => $mode, 'freq' => $t->freq, 'scan_gear' => $t->scan_gear, 'status' => 'waiting']);
+            $batch->update(['production_line_id' => $t->production_line_id, 'target_dose' => $t->target_dose, 'beam_speed' => $t->beam_speed, 'loading_mode' => $mode, 'freq' => $t->freq, 'scan_gear' => $t->scan_gear, 'status' => SuperadminAccess::overriding() ? $batch->status : 'waiting']);
             $this->audit('template.applied_to_batch', 'booking_batch', $batch->id, ['template_id' => $t->id]);
         }, 3);
         return back()->with('success', 'Approved parameter template copied to batch. Verify before start.');

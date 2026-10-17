@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Mendaftarkan alias middleware agar bisa dipanggil di web.php
         $middleware->alias([
+            'superadmin.audit' => \App\Http\Middleware\AuditSuperadminActions::class,
             'nocache' => NoCache::class,
             'confirm.delete' => \App\Http\Middleware\ConfirmDeletion::class,
             'role' => CheckAdminRole::class,

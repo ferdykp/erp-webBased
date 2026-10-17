@@ -92,9 +92,12 @@
                 <a href="<?php echo e(route('admin.business.index')); ?>" class="<?php echo e($navBase); ?> <?php echo e(request()->routeIs('admin.business.*') ? $navActive : $navIdle); ?>"><i class="fa-solid fa-chart-line w-5 text-center"></i><span>Order Analytics</span></a>
             <?php endif; ?>
             <a href="<?php echo e(route('admin.unified.settings')); ?>" class="<?php echo e($navBase); ?> <?php echo e(request()->routeIs('admin.unified.settings','admin.porter.*','admin.warehouse-pics.*','admin.production-lines.*','admin.profile.profileList') ? $navActive : $navIdle); ?>"><i class="fa-solid fa-gear w-5 text-center"></i><span>Settings & Master Data</span></a>
+            <?php if($role === 'superadmin'): ?>
+                <a href="<?php echo e(route('admin.trash.index')); ?>" class="<?php echo e($navBase); ?> <?php echo e(request()->routeIs('admin.trash.*') ? $navActive : $navIdle); ?>"><i class="fa-solid fa-trash-can w-5 text-center"></i><span>Trash</span></a>
+            <?php endif; ?>
         </div>
 
-    </nav>
+</nav>
 
     <div class="p-3 border-t shrink-0 border-slate-800/80 3xl:p-4">
         <div class="flex items-center gap-3 px-3 py-3 rounded-xl bg-slate-900">

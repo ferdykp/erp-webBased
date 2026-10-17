@@ -61,6 +61,7 @@
                 {{-- Checkbox Toggle: Active Status --}}
                 <div class="p-4 bg-slate-50/60 border border-slate-100 rounded-xl flex items-start gap-3.5 group">
                     <div class="flex items-center h-5 mt-0.5">
+                        <input type="hidden" name="is_active" value="0">
                         <input id="is_active" name="is_active" type="checkbox" value="1"
                             {{ old('is_active', $porter->is_active) ? 'checked' : '' }}
                             class="w-4 h-4 text-indigo-600 bg-white rounded border-slate-300 focus:ring-indigo-500/20 focus:ring-offset-0">

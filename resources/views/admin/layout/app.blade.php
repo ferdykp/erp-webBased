@@ -32,6 +32,7 @@
             <main class="w-full flex-1 px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)] print:p-0">
                 <div class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none print:min-h-0 print:max-w-none">
                     <div class="mb-4 print:hidden">@include('admin.layout.notif')</div>
+
                     @yield('content')
                 </div>
             </main>

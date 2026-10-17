@@ -43,7 +43,7 @@
                         class="flex items-center gap-3 px-4 py-2 transition-colors border bg-slate-50 border-slate-100 rounded-xl group hover:border-blue-200">
                         <span class="text-xs font-bold md:text-sm text-slate-700">{{ $line->name }}</span>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="openEditMachineModal({{ $line->id }}, '{{ addslashes($line->name) }}')"
+                            <button onclick="openEditMachineModal({{ $line->id }}, @js($line->name))"
                                 class="w-7 h-7 flex items-center justify-center text-amber-600 bg-amber-50 rounded-lg hover:bg-amber-600 hover:text-white transition-all text-[10px]">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
@@ -216,7 +216,7 @@
                             class="w-full px-6 py-4 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row">
-                        <button type="button"
+                        <button data-modal-dismiss type="button"
                             onclick="document.getElementById('{{ $key }}MachineModal').classList.replace('flex','hidden')"
                             class="flex-1 order-2 py-4 text-sm font-black uppercase transition-all sm:order-1 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
                             Cancel
@@ -243,7 +243,7 @@
                         <p class="mt-1 text-xs md:text-sm text-slate-500">Set production parameters and batch distribution.
                         </p>
                     </div>
-                    <button type="button" onclick="closeUpdateProcessModal()"
+                    <button data-modal-dismiss type="button" onclick="closeUpdateProcessModal()"
                         class="flex items-center justify-center w-10 h-10 transition rounded-xl bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -347,7 +347,7 @@
                     </div>
 
                     <div class="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" onclick="closeUpdateProcessModal()"
+                        <button data-modal-dismiss type="button" onclick="closeUpdateProcessModal()"
                             class="px-8 py-4 text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200">
                             Cancel
                         </button>

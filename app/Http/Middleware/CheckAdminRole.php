@@ -31,6 +31,8 @@ class CheckAdminRole
             return redirect()->route('admin.login');
         }
 
+        if ($admin->role === 'superadmin') return $next($request);
+
         // Normalisasi parameter jika route menggunakan pemisah pipa '|' (contoh: role:superadmin|manager)
         // diubah menjadi array bersih: ['superadmin', 'manager']
         $allowedRoles = [];

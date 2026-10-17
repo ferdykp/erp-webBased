@@ -2,6 +2,8 @@
 
 @section('title', 'Profile')
 
+@section('title', 'My Account')
+
 @section('content')
     <div class="w-full px-2 py-4 mx-auto space-y-6 sm:px-4 md:px-6 lg:py-8">
 

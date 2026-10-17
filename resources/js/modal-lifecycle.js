@@ -45,7 +45,13 @@ export function initializeModalLifecycle() {
         queueMicrotask(() => { queued = false; sync(); });
     }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'open', 'x-cloak'] });
     document.addEventListener('keydown', event => {
-        if (!active || event.key !== 'Tab') return;
+        if (!active) return;
+        if (event.key === 'Escape' && active.tagName !== 'DIALOG' && !event.defaultPrevented) {
+            const dismiss = active.querySelector('[data-modal-dismiss]:not(:disabled)');
+            if (dismiss) { event.preventDefault(); dismiss.click(); }
+            return;
+        }
+        if (event.key !== 'Tab') return;
         const items = focusable(active);
         const first = items[0], last = items.at(-1);
         if (!first) { event.preventDefault(); active.focus(); return; }
@@ -53,6 +59,11 @@ export function initializeModalLifecycle() {
             event.preventDefault(); (event.shiftKey ? last : first).focus();
         } else if (!event.shiftKey && document.activeElement === last) {
             event.preventDefault(); first.focus();
+        }
+    });
+    document.addEventListener('click', event => {
+        if (active && event.target === active && active.tagName !== 'DIALOG') {
+            active.querySelector('[data-modal-dismiss]:not(:disabled)')?.click();
         }
     });
     document.addEventListener('focusin', event => {

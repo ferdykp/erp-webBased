@@ -1,5 +1,7 @@
 @extends('admin.layout.app')
 
+@section('title', 'Edit Profile')
+
 @section('content')
     <div class="w-full px-2 py-4 mx-auto space-y-6 sm:px-4 md:px-6 lg:py-8">
 
@@ -9,7 +11,7 @@
                 Edit <span class="text-blue-600">Profile</span>
             </h3>
             <p class="mt-1 text-xs font-bold tracking-widest uppercase text-slate-400">
-                Update your account information and security settings
+                {{ (int) $user->id === (int) auth('admin')->id() ? 'Update your account information and password' : 'Update the selected staff account information' }}
             </p>
         </div>
 
@@ -57,15 +59,23 @@
                     </div>
                 </div>
 
+                @if(\App\Services\SuperadminAccess::isSuperadmin())
+                <label class="mt-5 block text-sm font-semibold">Staff Role<select name="role" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3">@foreach(['superadmin'=>'Superadmin','manager'=>'Manager','production'=>'Production','cargo_admin'=>'Cargo Admin'] as $value=>$label)<option value="{{ $value }}" @selected(old('role',$user->role) === $value)>{{ $label }}</option>@endforeach</select></label><p class="mt-2 text-xs text-slate-500">Changing a role requires confirmation and a reason in the audit history.</p>
+                @endif
+                @if(\App\Services\SuperadminAccess::isSuperadmin() && (int) $user->id !== (int) auth('admin')->id())
+                <details class="mt-5 rounded-xl border border-amber-200 p-4 text-sm"><summary class="cursor-pointer font-semibold">Reset Staff Password</summary><p class="mt-2 text-slate-600">Optional. Requires confirmation and a reason. Leave blank to keep the existing password.</p><label class="mt-3 block">New Password<input name="password" type="password" autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border p-3"></label><label class="mt-3 block">Confirm New Password<input name="password_confirmation" type="password" autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border p-3"></label></details><div class="mt-4 space-y-3 rounded-xl border border-amber-200 p-3 text-sm"><label class="block">Reason for account or role change<input name="override_reason" maxlength="2000" class="mt-1 w-full rounded-lg border p-3"></label><label class="flex items-start gap-2"><input type="checkbox" name="confirmed" value="1" class="mt-1">I confirm this account change.</label></div>
+                @endif
                 <div class="pt-8">
                     <button type="submit"
                         class="w-full px-10 py-4 text-sm font-black tracking-widest text-white uppercase transition-all bg-blue-600 shadow-xl shadow-blue-100 rounded-2xl md:w-fit hover:bg-blue-700 active:scale-95">
                         Save Changes
                     </button>
                 </div>
+
             </form>
 
             {{-- PASSWORD UPDATE FORM --}}
+            @if((int) $user->id === (int) auth('admin')->id())
             <form action="{{ route('admin.profile.password') }}" method="POST"
                 class="bg-white p-6 sm:p-8 md:p-10 border border-slate-100 shadow-sm rounded-[1.5rem] sm:rounded-[2.5rem]">
                 @csrf
@@ -166,15 +176,19 @@
                     </div>
                 </div>
             </form>
+            @else
+                <p class="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600">The account owner manages their password from their own profile or the Forgot Password page.</p>
+            @endif
         </div>
 
         <div class="pt-4 text-center">
             <p class="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-                Encrypted Security System • SSL Active
+                Beam • Account Settings
             </p>
         </div>
     </div>
 
+    @if((int) $user->id === (int) auth('admin')->id())
     <script>
         // Toggle view/hide password inputs
         function togglePassword(inputId, iconId) {
@@ -241,4 +255,5 @@
         passwordInput.addEventListener('input', validatePasswords);
         confirmInput.addEventListener('input', validatePasswords);
     </script>
+    @endif
 @endsection

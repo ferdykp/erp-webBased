@@ -21,10 +21,15 @@ test('current step validation prevents advancing and opening a wizard resets its
     wizard.$watch = (flag, callback) => { assert.equal(flag,'openCreate'); watches=callback; };
     wizard.init();
     let valid = false;
-    wizard.$refs = { wizardForm: { querySelector: () => ({ querySelectorAll: () => [{ checkValidity: () => valid, reportValidity() {} }] }) } };
+    const password = { value: 'previous-customer-password' };
+    const reason = { value: 'Previous account reason' }, confirmation = { type: 'checkbox', checked: true };
+    wizard.$refs = { wizardForm: { querySelectorAll: () => [password, reason, confirmation], querySelector: () => ({ querySelectorAll: () => [{ checkValidity: () => valid, reportValidity() {} }] }) } };
     wizard.validateAndNext(); assert.equal(wizard.step,1);
     valid = true; wizard.validateAndNext(); assert.equal(wizard.step,2);
     wizard.validateAndNext(); assert.equal(wizard.step,2);
     watches(false); assert.equal(wizard.step,2);
+    assert.equal(password.value,'');
+    assert.equal(reason.value,'');
+    assert.equal(confirmation.checked,false);
     watches(true); assert.equal(wizard.step,1);
 });

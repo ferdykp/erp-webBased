@@ -1,3 +1,5 @@
+> Lanjutan setelah perubahan desain pengguna: [audit profil/master data dan hasil akhir 53 tes](MASTER_DATA_AUDIT_2026-10-16.md).
+
 # Perbaikan UI dan reliabilitas — 16 Oktober 2026
 
 Pekerjaan ini melanjutkan integrasi workflow sebelumnya dan mempertahankan keputusan dispatch tanpa approval. Tidak ada migrasi baru pada tahap ini; database operasional tidak dimodifikasi.

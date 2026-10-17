@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DosimeterRecord extends Model
 {
+    protected static function booted(): void
+    {
+        static::addGlobalScope('active_booking', fn ($query) => $query->whereHas('booking'));
+    }
+
     protected $fillable = ['booking_id', 'tablet_quantity'];
 
     public function booking(): BelongsTo

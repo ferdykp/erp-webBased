@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Services\SuperadminAccess;
 
 use App\Models\Booking;
 use App\Models\Pallet;
@@ -15,7 +16,7 @@ class OrderDispatchController extends Controller
 {
     private function requireRole(array $roles): void
     {
-        abort_unless(in_array(auth('admin')->user()?->role, $roles, true), 403);
+        abort_unless(SuperadminAccess::isSuperadmin() || in_array(auth('admin')->user()?->role, $roles, true), 403);
     }
 
     public function show(Booking $booking): View
@@ -63,6 +64,12 @@ class OrderDispatchController extends Controller
                 ->lockForUpdate()
                 ->first();
 
+            if ($existingDispatch?->status === 'dispatched' && SuperadminAccess::overriding()) {
+                DB::table('order_dispatches')->where('id',$existingDispatch->id)->update([
+                    'reference'=>$data['reference'], 'dispatch_notes'=>$data['dispatch_notes'] ?? null, 'updated_at'=>now(),
+                ]);
+                return; // Correct metadata without issuing the same goods twice.
+            }
             if ($existingDispatch?->status === 'dispatched') {
                 throw ValidationException::withMessages([
                     'dispatch' => 'This order has already been dispatched.',
@@ -88,6 +95,7 @@ class OrderDispatchController extends Controller
                 ->lockForUpdate()
                 ->get();
 
+            if (SuperadminAccess::overriding()) foreach ($pallets as $pallet) \App\Services\WarehouseInventory::sync($pallet);
             $contents = DB::table('pallet_contents')->where('booking_id', $locked->id)->lockForUpdate()->get();
             foreach ($locked->products as $product) {
                 $stored = $contents->where('booking_product_id', $product->id);
@@ -238,6 +246,7 @@ class OrderDispatchController extends Controller
 
     private function assertReady(Booking $booking): void
     {
+        if (SuperadminAccess::overriding()) return;
         // Load required relationships.
         $booking->loadMissing('products');
 

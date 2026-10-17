@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SuperadminAccess;
+
 use App\Models\ProductTest;
 use App\Models\ProductTestDosimeter;
 use App\Models\ProductionLine;
@@ -66,6 +68,7 @@ class ProductTestingController extends Controller
 
     public function edit(ProductTest $test)
     {
+        if ($test->status === 'completed') return redirect()->route('admin.testing.report',$test);
         return view('admin.testing.form', compact('test'));
     }
 
@@ -74,10 +77,7 @@ class ProductTestingController extends Controller
         $validated = $this->validateTestData($request);
 
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
-            if ($test->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($test->image)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($test->image);
-            }
+            // Keep previous evidence files so retained history remains usable.
             $validated['image'] = $request->file('image')->store('product-tests', 'public');
         }
 
@@ -92,6 +92,7 @@ class ProductTestingController extends Controller
 
     public function parameters(ProductTest $test)
     {
+        if ($test->status === 'completed') return redirect()->route('admin.testing.report',$test);
         $productionLines = ProductionLine::orderBy('name')->get();
         return view('admin.testing.parameters', compact('test', 'productionLines'));
     }
@@ -99,7 +100,7 @@ class ProductTestingController extends Controller
     public function storeParameters(Request $request, ProductTest $test)
     {
         $validated = $request->validate([
-            'production_line_id' => 'required|exists:production_lines,id',
+            'production_line_id' => 'required|exists:production_lines,id,deleted_at,NULL',
             'target_dose' => 'nullable|numeric|min:0',
             'beam_speed' => 'required|numeric|min:0.0001',
             'loading_mode' => 'required|string|in:single-side,double-side,custom',
@@ -132,7 +133,7 @@ class ProductTestingController extends Controller
 
     public function report(ProductTest $test)
     {
-        if ($test->status !== 'completed') {
+        if ($test->status !== 'completed' && !(request()->isMethod('GET') ? SuperadminAccess::isSuperadmin() : SuperadminAccess::overriding())) {
             return redirect()->route('admin.testing.parameters', $test)
                 ->with('error', 'Lengkapi process parameter sebelum membuka report.');
         }
@@ -151,7 +152,7 @@ class ProductTestingController extends Controller
 
     public function storeDosimeters(Request $request, ProductTest $test)
     {
-        if ($test->status !== 'completed') {
+        if ($test->status !== 'completed' && !(request()->isMethod('GET') ? SuperadminAccess::isSuperadmin() : SuperadminAccess::overriding())) {
             return redirect()->route('admin.testing.parameters', $test)
                 ->with('error', 'Lengkapi process parameter sebelum mengisi dosimeter.');
         }
@@ -178,10 +179,10 @@ class ProductTestingController extends Controller
             $test = ProductTest::whereKey($test->id)->lockForUpdate()->firstOrFail();
             $before = $test->dosimeters()->get()->toArray();
             $tail = $test->dosimeters()->where('sequence', '>', $rows->count())->get();
-            if ($tail->contains(fn($row) => $row->absorbance !== null || filled($row->dosimeter_number))) {
+            if (($tail->contains(fn($row) => $row->absorbance !== null || filled($row->dosimeter_number))) && !SuperadminAccess::overriding()) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['readings' => 'Recorded dosimetry rows cannot be removed. Keep them and record a correction.']);
             }
-            $test->dosimeters()->whereIn('id', $tail->pluck('id'))->delete();
+            foreach ($tail as $row) $row->delete();
 
             foreach ($rows as $index => $row) {
                 $absorbance = $row['absorbance'];
@@ -206,14 +207,16 @@ class ProductTestingController extends Controller
 
     public function destroy(ProductTest $test)
     {
-        if ($test->status !== 'parameter_pending' || $test->processed_at || $test->dosimeters()->exists()) {
+        if (\App\Services\SuperadminAccess::overriding()) {
+            app(\App\Services\AdminRecordHistory::class)->delete($test);
+            return redirect()->route('admin.testing.index')->with('success','Record removed; its history was captured in the audit log.');
+        }
+
+        if (!in_array($test->status,['parameter_pending','completed'],true)) {
             throw \Illuminate\Validation\ValidationException::withMessages(['test' => 'Processed product tests and dosimetry evidence cannot be deleted.']);
         }
-        if ($test->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($test->image)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($test->image);
-        }
         $test->delete();
-        return redirect()->route('admin.testing.index')->with('success', 'Product test berhasil dihapus.');
+        return redirect()->route('admin.testing.index')->with('success', 'Product test moved to Trash.');
     }
 
     private function validateTestData(Request $request): array
@@ -245,7 +248,7 @@ class ProductTestingController extends Controller
     private function nextCode(): string
     {
         $prefix = 'PT-' . now()->format('ymd') . '-';
-        $lastCode = ProductTest::where('test_code', 'like', $prefix . '%')
+        $lastCode = ProductTest::withTrashed()->where('test_code', 'like', $prefix . '%')
             ->lockForUpdate()
             ->orderByDesc('test_code')
             ->value('test_code');

@@ -154,7 +154,7 @@
                         @js($detail->dosimeter_number)
                     )"
                                                         class="inline-flex items-center justify-center w-8 h-8 text-red-500 transition-colors rounded-lg hover:bg-red-50"
-                                                        title="Delete dosimeter row"
+                                                        title="Move dosimeter row to Trash"
                                                         aria-label="Delete Tablet #{{ $detail->tablet_number }}">
                                                         <i class="text-xs fa-solid fa-trash-can"></i>
                                                     </button>
@@ -311,11 +311,11 @@
             </div>
 
             <h3 id="deleteDosimeterTitle" class="text-xl font-bold text-slate-900">
-                Delete Dosimeter?
+                Move Dosimeter Row to Trash?
             </h3>
 
             <p class="mt-2 text-sm leading-relaxed text-slate-500">
-                You are about to permanently delete
+                You are about to move to Trash
                 <span id="deleteTabletLabel" class="font-bold text-slate-900"></span>.
                 Remaining tablets will be renumbered automatically.
             </p>
@@ -331,14 +331,14 @@
             <p id="deleteDosimeterError" role="alert" class="hidden mt-4 text-sm text-red-600"></p>
 
             <div class="flex gap-3 mt-6">
-                <button type="button" onclick="closeDeleteDosimeterModal()"
+                <button data-modal-dismiss type="button" onclick="closeDeleteDosimeterModal()"
                     class="flex-1 px-4 py-3 text-sm font-semibold bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200">
                     Cancel
                 </button>
 
                 <button type="button" id="confirmDeleteDosimeterButton" onclick="submitDeleteDosimeter()"
                     class="flex-1 px-4 py-3 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700">
-                    Delete Row
+                    Move to Trash
                 </button>
             </div>
         </div>
@@ -407,6 +407,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
+                            confirmed: true,
                             confirm_delete: true
                         })
                     });
@@ -431,7 +432,7 @@
                 } finally {
                     deletingDosimeter = false;
                     button.disabled = false;
-                    button.textContent = 'Delete Row';
+                    button.textContent = 'Move to Trash';
                 }
             }
 

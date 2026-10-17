@@ -15,6 +15,7 @@ Alpine.start();
 import { initializeAsyncTables } from './async-table';
 initializeAsyncTables();
 
+
 import { initializeDeleteConfirmation } from './delete-confirmation';
 initializeDeleteConfirmation();
 

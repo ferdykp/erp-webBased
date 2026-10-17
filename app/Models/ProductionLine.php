@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class ProductionLine extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     protected $fillable = ['name'];
 
     /**

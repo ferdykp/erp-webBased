@@ -9,7 +9,7 @@ class OrderProcessReportController extends Controller
 {
     public function download(Booking $booking)
     {
-        abort_unless($booking->booking_type === 'regular' && $booking->status === 'completed', 404);
+        abort_unless($booking->booking_type === 'regular' && ($booking->status === 'completed' || \App\Services\SuperadminAccess::isSuperadmin()), 404);
 
         $booking->load(['customer.contacts', 'products', 'batches.productionLine', 'batches.qa', 'placementDetails']);
         $records = \App\Models\DosimeterRecord::with('details')
@@ -31,7 +31,7 @@ class OrderProcessReportController extends Controller
     {
         abort_unless(
             $booking->booking_type === 'regular' &&
-                $booking->status === 'completed',
+                ($booking->status === 'completed' || \App\Services\SuperadminAccess::isSuperadmin()),
             404
         );
 
@@ -72,7 +72,7 @@ class OrderProcessReportController extends Controller
     {
         abort_unless(
             $booking->booking_type === 'regular' &&
-                $booking->status === 'completed',
+                ($booking->status === 'completed' || \App\Services\SuperadminAccess::isSuperadmin()),
             404
         );
 

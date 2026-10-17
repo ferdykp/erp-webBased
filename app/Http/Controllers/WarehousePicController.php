@@ -67,6 +67,11 @@ class WarehousePicController extends Controller
 
     public function destroy(WarehousePic $warehousePic)
     {
+        if (\App\Services\SuperadminAccess::overriding()) {
+            app(\App\Services\AdminRecordHistory::class)->delete($warehousePic);
+            return redirect()->route('admin.warehouse-pics.index')->with('success','Record removed; its history was captured in the audit log.');
+        }
+
         \Illuminate\Support\Facades\DB::transaction(function () use ($warehousePic) {
             $warehousePic = WarehousePic::whereKey($warehousePic->id)->lockForUpdate()->firstOrFail();
             if (\App\Models\Booking::where('pic_warehouse', $warehousePic->name)->orWhere('pic_warehouse', (string) $warehousePic->id)->exists()) {
@@ -74,6 +79,6 @@ class WarehousePicController extends Controller
             }
             $warehousePic->delete();
         });
-        return redirect()->route('admin.warehouse-pics.index')->with('success', 'Warehouse PIC deleted.');
+        return redirect()->route('admin.warehouse-pics.index')->with('success', 'Warehouse PIC moved to Trash.');
     }
 }

@@ -17,7 +17,7 @@
                     <x-status-badge :status="$booking->status" :received="$booking->arrival_time !== null || $booking->placementDetails->isNotEmpty()" />
                 </div>
             </div>
-            <button onclick="toggleDetailModal('{{ $booking->id }}', false)"
+            <button type="button" data-modal-dismiss onclick="toggleDetailModal('{{ $booking->id }}', false)"
                 class="flex items-center justify-center w-12 h-12 transition-all bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl">
                 <i class="text-xl fa-solid fa-xmark"></i>
             </button>
@@ -63,7 +63,8 @@
                         <span class="text-indigo-700">{{ $product->dimension_pack ?? '-' }} cm</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Dose:
-                        <span class="text-indigo-700"> {{ \App\Support\NumberFormatter::smart($product->dmin ?? 0, 4) }} -
+                        <span class="text-indigo-700">
+                            {{ \App\Support\NumberFormatter::smart($product->dmin ?? 0, 4) }} -
                             {{ \App\Support\NumberFormatter::smart($product->dmax ?? 0, 4) }} kGy
                         </span>
                     </p>
@@ -71,45 +72,60 @@
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Vol Pcs:
-                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->vol_per_pcs ?? 0, 4) }} cm³</span>
+                        <span
+                            class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->vol_per_pcs ?? 0, 4) }}
+                            cm³</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Vol Total:
-                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->vol_total ?? 0, 4) }} cm³</span>
+                        <span
+                            class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->vol_total ?? 0, 4) }}
+                            cm³</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Total Quantity</p>
-                    <p class="font-bold text-blue-600">{{ \App\Support\NumberFormatter::integer($product->quantity ?? 0) }} {{ $product->unit ?? '' }}</p>
+                    <p class="font-bold text-blue-600">
+                        {{ \App\Support\NumberFormatter::integer($product->quantity ?? 0) }}
+                        {{ $product->unit ?? '' }}</p>
                 </div>
             </div>
             <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Nett Weigth</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
-                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->net_weight_pcs ?? 0, 4) }} kg</span>
+                        <span
+                            class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->net_weight_pcs ?? 0, 4) }}
+                            kg</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Total:
-                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->total_net_weight ?? 0, 4) }} kg</span>
+                        <span
+                            class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->total_net_weight ?? 0, 4) }}
+                            kg</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Gross Weigth</p>
 
                     <p class="flex justify-between text-xs font-bold text-slate-600">Per Pcs:
-                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->gross_weight_per_pcs ?? 0, 4) }}
+                        <span
+                            class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->gross_weight_per_pcs ?? 0, 4) }}
                             kg</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Total:
-                        <span class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->total_gross_weight ?? 0, 4) }} kg</span>
+                        <span
+                            class="text-indigo-700">{{ \App\Support\NumberFormatter::smart($product->total_gross_weight ?? 0, 4) }}
+                            kg</span>
                     </p>
                 </div>
                 <div class="p-6 border border-slate-100 rounded-3xl">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Density</p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Nett:
-                        <span class="text-indigo-700">{{ $product->density_nett !== null ? \App\Support\NumberFormatter::smart($product->density_nett, 6) : '-' }}</span>
+                        <span
+                            class="text-indigo-700">{{ $product->density_nett !== null ? \App\Support\NumberFormatter::smart($product->density_nett, 6) : '-' }}</span>
                     </p>
                     <p class="flex justify-between text-xs font-bold text-slate-600">Gross:
-                        <span class="text-indigo-700">{{ $product->density_gross !== null ? \App\Support\NumberFormatter::smart($product->density_gross, 6) : '-' }}</span>
+                        <span
+                            class="text-indigo-700">{{ $product->density_gross !== null ? \App\Support\NumberFormatter::smart($product->density_gross, 6) : '-' }}</span>
                     </p>
                 </div>
             </div>
@@ -148,7 +164,10 @@
                                 }
                             }
                         }
-                        $unevenness = $minDose > 0 && $minDose != 999 ? \App\Support\NumberFormatter::smart($maxDose / $minDose, 4) : '1.08';
+                        $unevenness =
+                            $minDose > 0 && $minDose != 999
+                                ? \App\Support\NumberFormatter::smart($maxDose / $minDose, 4)
+                                : '1.08';
                     @endphp
 
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -302,7 +321,7 @@
         </div>
 
         <div class="flex justify-end px-12 py-8 border-t bg-slate-50 border-slate-100">
-            <button onclick="toggleDetailModal('{{ $booking->id }}', false)"
+            <button type="button" data-modal-dismiss onclick="toggleDetailModal('{{ $booking->id }}', false)"
                 class="px-10 py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all">
                 Close Details
             </button>

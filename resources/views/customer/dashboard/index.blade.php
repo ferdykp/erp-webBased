@@ -77,7 +77,7 @@
                 {{-- <p class="mt-1 text-xs font-bold tracking-widest text-gray-400 uppercase" id="modalTicketCode">Ticket:
                     Loading...</p> --}}
             </div>
-            <button onclick="closeModal()"
+            <button type="button" data-modal-dismiss onclick="closeModal()"
                 class="flex items-center justify-center w-10 h-10 text-gray-400 transition-colors rounded-full bg-gray-50 hover:text-red-500">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -88,7 +88,7 @@
         </div>
 
         <div class="flex items-center justify-between p-8 bg-gray-50">
-            <button onclick="closeModal()" class="text-sm font-bold text-gray-500 hover:text-gray-700">Close
+            <button type="button" data-modal-dismiss onclick="closeModal()" class="text-sm font-bold text-gray-500 hover:text-gray-700">Close
                 Window</button>
             <a id="printBtn" href="#" target="_blank"
                 class="flex items-center gap-2 px-8 py-3 text-sm font-black text-white transition-all bg-blue-600 shadow-lg rounded-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95">

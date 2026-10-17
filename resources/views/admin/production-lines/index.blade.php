@@ -1,6 +1,6 @@
 @extends('admin.layout.app')
 
-@section('title', 'Master Mesin Penyinaran')
+@section('title', 'Production Units')
 
 @section('content')
 
@@ -9,13 +9,13 @@
         {{-- HEADER --}}
         <div class="flex flex-col gap-6 px-2 md:flex-row md:items-center md:justify-between">
             <div>
-                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Master Mesin</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500">Kelola daftar mesin penyinaran (Production Lines).</p>
+                <h2 class="text-4xl font-black tracking-tighter text-slate-800">Production Units</h2>
+                <p class="mt-1 text-sm font-medium text-slate-500">Manage irradiation production units.</p>
             </div>
             <button onclick="document.getElementById('createModal').classList.replace('hidden','flex')"
                 class="flex items-center gap-2 px-6 py-3 text-sm font-black text-white bg-blue-600 shadow-lg rounded-2xl hover:bg-blue-700 active:scale-95 transition-all shadow-blue-100">
                 <i class="fa-solid fa-plus"></i>
-                Tambah Mesin
+                Add Unit
             </button>
         </div>
 
@@ -26,9 +26,9 @@
                     <thead>
                         <tr class="text-[10px] font-black tracking-[0.2em] text-slate-600 uppercase">
                             <th class="px-8 py-4">#</th>
-                            <th class="px-6 py-4">Nama Mesin</th>
+                            <th class="px-6 py-4">Unit Name</th>
                             <th class="px-6 py-4 text-center">Created</th>
-                            <th class="px-8 py-4 text-right">Aksi</th>
+                            <th class="px-8 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,7 +55,7 @@
                                     class="px-8 py-6 rounded-r-[2rem] border-y border-r border-transparent group-hover:border-slate-100">
                                     <div class="flex items-center justify-end gap-2">
                                         {{-- Edit Button --}}
-                                        <button onclick="openEditModal({{ $line->id }}, '{{ addslashes($line->name) }}')"
+                                        <button aria-label="Edit {{ $line->name }}" onclick="openEditModal({{ $line->id }}, @js($line->name))"
                                             class="flex items-center justify-center w-9 h-9 text-amber-600 bg-amber-50 rounded-xl hover:bg-amber-600 hover:text-white transition-all">
                                             <i class="text-xs fa-solid fa-pen"></i>
                                         </button>
@@ -80,7 +80,7 @@
                                             <i class="text-2xl fa-solid fa-gear text-slate-300"></i>
                                         </div>
                                         <p class="text-sm font-bold text-slate-400">No production units yet.</p>
-                                        <p class="text-xs text-slate-400">Klik tombol "Tambah Mesin" untuk memulai.</p>
+                                        <p class="text-xs text-slate-400">Klik tombol "Add Unit" untuk memulai.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -95,16 +95,16 @@
     <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="createModal"
         class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
         <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10">
-            <h3 class="mb-6 text-2xl font-black text-slate-800">Tambah Mesin Baru</h3>
+            <h3 class="mb-6 text-2xl font-black text-slate-800">Add Production Unit</h3>
             <form action="{{ route('admin.production-lines.store') }}" method="POST">
                 @csrf
                 <div class="mb-6">
-                    <label class="block mb-2 text-xs font-black text-slate-400 uppercase">Nama Mesin</label>
-                    <input type="text" name="name" required placeholder='Contoh: "Mesin 1"'
+                    <label for="createUnitName" class="block mb-2 text-xs font-black text-slate-400 uppercase">Unit Name</label>
+                    <input id="createUnitName" type="text" name="name" required placeholder='Example: "Unit 1"'
                         class="w-full px-6 py-4 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex gap-3">
-                    <button type="button"
+                    <button data-modal-dismiss type="button"
                         onclick="document.getElementById('createModal').classList.replace('flex','hidden')"
                         class="flex-1 py-4 text-sm font-black bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all">
                         Cancel
@@ -122,17 +122,17 @@
     <div data-ui-modal role="dialog" aria-modal="true" tabindex="-1" id="editModal"
         class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
         <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10">
-            <h3 class="mb-6 text-2xl font-black text-slate-800">Edit Mesin</h3>
+            <h3 class="mb-6 text-2xl font-black text-slate-800">Edit Production Unit</h3>
             <form id="editForm" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="mb-6">
-                    <label class="block mb-2 text-xs font-black text-slate-400 uppercase">Nama Mesin</label>
+                    <label for="editName" class="block mb-2 text-xs font-black text-slate-400 uppercase">Unit Name</label>
                     <input type="text" name="name" id="editName" required
                         class="w-full px-6 py-4 text-sm font-bold border-none bg-slate-50 rounded-2xl focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex gap-3">
-                    <button type="button" onclick="document.getElementById('editModal').classList.replace('flex','hidden')"
+                    <button data-modal-dismiss type="button" onclick="document.getElementById('editModal').classList.replace('flex','hidden')"
                         class="flex-1 py-4 text-sm font-black bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-all">
                         Cancel
                     </button>

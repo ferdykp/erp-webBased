@@ -157,7 +157,9 @@
                                             <x-status-badge :status="$booking->status" :received="$booking->arrival_time !== null ||
                                                 $booking->placementDetails->isNotEmpty()" />
 
-                                            @if ($booking->arrival_time !== null || $booking->placementDetails->isNotEmpty())
+                                            @if (\App\Services\WorkflowState::handedOver($booking))
+                                                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700"><i class="fa-solid fa-circle-check"></i> Goods Handed Over</span>
+                                            @elseif ($booking->arrival_time !== null || $booking->placementDetails->isNotEmpty())
                                                 <span
                                                     class="inline-flex items-center gap-1.5
                    text-[11px] font-medium text-emerald-700">
@@ -184,9 +186,7 @@
                                         $hasReceivingRecord =
                                             $booking->arrival_time !== null || $booking->placementDetails->isNotEmpty();
 
-                                        $isReceivingAvailable =
-                                            in_array($booking->status, ['pending', 'approved'], true) &&
-                                            !$hasReceivingRecord;
+                                        $isReceivingAvailable = \App\Services\WorkflowState::canReceive($booking);
                                     @endphp
 
                                     @if ($canReceive)
@@ -197,25 +197,15 @@
                                                 <i class="fa-solid fa-box-open"></i>
                                                 Receive Goods
                                             </a>
-                                        @elseif ($hasReceivingRecord)
-                                            <span
-                                                class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-emerald-50 text-emerald-700">
-
-                                                <i class="fa-solid fa-circle-check"></i>
-                                                Goods Received
-                                            </span>
                                         @endif
                                     @endif
 
-                                    @if (
-                                        $hasReceivingRecord &&
-                                            in_array($booking->status, ['pending', 'approved', 'processing'], true) &&
-                                            in_array(auth('admin')->user()->role, ['superadmin', 'production'], true))
+                                    @if ($canManage && \App\Services\WorkflowState::canPlan($booking))
                                         <a href="{{ route('admin.smart.batch-plan', $booking) }}"
                                             class="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"><i
                                                 class="fa-solid fa-gears"></i> Process</a>
                                     @endif
-                                    @if ($booking->status === 'completed' && in_array(auth('admin')->user()->role, ['superadmin', 'manager', 'cargo_admin']))
+                                    @if (($booking->status === 'completed' && !\App\Services\WorkflowState::handedOver($booking)) && in_array(auth('admin')->user()->role, ['superadmin', 'manager', 'cargo_admin']))
                                         <a href="{{ route('admin.dispatch.show', $booking) }}"
                                             class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">Goods
                                             Handover</a>
@@ -236,30 +226,21 @@
                                         </button>
                                     @endif
 
-                                    @if ($booking->arrival_time && $canManage)
+                                    @if (($booking->arrival_time) && $canManage)
                                         <a target="_blank" rel="noopener"
                                             href="{{ route('admin.bookings.invoice', $booking->id) }}"
                                             class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Invoice</a>
                                     @endif
-                                    @if ($canManage)
+                                    @if ($canManage && \App\Services\WorkflowState::canEdit($booking))
                                         <a href="{{ route('admin.bookings.edit', $booking->id) }}"
                                             class="rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:text-blue-600">Edit</a>
                                     @endif
-                                    @if (auth('admin')->user()->role === 'superadmin' &&
-                                            $booking->status === 'pending' &&
-                                            !$booking->arrival_time &&
-                                            !$booking->batches()->exists() &&
-                                            !\App\Models\PalletContent::where('booking_id', $booking->id)->exists() &&
-                                            !\App\Models\PlacementDetail::where('booking_id', $booking->id)->exists())
+                                    @if (auth('admin')->user()->role === 'superadmin' && \App\Services\WorkflowState::canArchive($booking))
                                         <button type="button"
                                             onclick="confirmDelete({{ $booking->id }}, @js($booking->booking_code))"
                                             class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">
-                                            <i class="mr-1 fa-solid fa-trash-can"></i> Delete
+                                            <i class="mr-1 fa-solid fa-trash-can"></i> Move to Trash
                                         </button>
-                                    @elseif (auth('admin')->user()->role === 'superadmin')
-                                        <span class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-400"
-                                            title="Orders with warehouse or production records cannot be deleted">Delete
-                                            locked</span>
                                     @endif
                                 </div>
                             </div>
@@ -355,10 +336,9 @@
                 <div class="flex items-center justify-center w-16 h-16 mb-6 rounded-2xl bg-rose-50 text-rose-500">
                     <i class="text-2xl fa-solid fa-triangle-exclamation"></i>
                 </div>
-                <h3 class="mb-2 text-xl font-black text-slate-800">Delete Order?</h3>
+                <h3 class="mb-2 text-xl font-black text-slate-800">Move Order to Trash?</h3>
                 <p class="mb-8 text-xs font-medium leading-relaxed text-slate-500">
-                    Booking <span id="deleteBookingCode" class="font-bold text-slate-800"></span> will be permanently
-                    deleted only if it has no operational history.
+                    Booking <span id="deleteBookingCode" class="font-bold text-slate-800"></span> will be moved to Trash. Its history and documents will remain available for restoration. Complete goods handover before archiving an operational order.
                 </p>
                 <div class="flex flex-col w-full gap-3">
                     <form id="deleteForm" data-delete-confirmed="true" method="POST" action="">
@@ -366,9 +346,9 @@
                         @method('DELETE')
                         <button type="submit"
                             class="w-full py-4 text-xs font-black tracking-widest text-white uppercase shadow-lg bg-rose-600 rounded-2xl active:scale-95 shadow-rose-100">Yes,
-                            Delete Order</button>
+                            Move to Trash</button>
                     </form>
-                    <button onclick="closeDeleteModal()"
+                    <button type="button" data-modal-dismiss onclick="closeDeleteModal()"
                         class="w-full py-4 text-xs font-black tracking-widest uppercase text-slate-400 bg-slate-50 rounded-2xl active:scale-95">Cancel</button>
                 </div>
             </div>

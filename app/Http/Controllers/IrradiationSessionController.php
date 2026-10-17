@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SuperadminAccess;
+
 use App\Models\{Booking, BookingBatch};
 use App\Services\WarehouseInventory;
 use Carbon\Carbon;
@@ -26,7 +28,7 @@ class IrradiationSessionController extends Controller
         DB::transaction(function () use ($batch, $data, $start, $end) {
             $booking = Booking::whereKey($batch->booking_id)->lockForUpdate()->firstOrFail();
             $locked = BookingBatch::whereKey($batch->id)->lockForUpdate()->firstOrFail();
-            if ($locked->status !== 'processing' || !$booking->arrival_time || $booking->status !== 'processing') {
+            if (($locked->status !== 'processing' || !$booking->arrival_time || $booking->status !== 'processing') && !SuperadminAccess::overriding()) {
                 throw ValidationException::withMessages(['started_at' => 'Start production first, then record the completed run.']);
             }
             if (!$locked->production_line_id || $locked->target_dose <= 0 || $locked->beam_speed <= 0 || !in_array($locked->loading_mode, ['single_side','double_side'], true)) {
@@ -39,7 +41,9 @@ class IrradiationSessionController extends Controller
                 ->where('s.production_line_id', $locked->production_line_id)->whereNull('s.voided_at')
                 ->where('s.started_at', '<', $end->toDateTimeString())
                 ->where('s.ended_at', '>', $start->toDateTimeString())
-                ->select('s.id', 's.started_at', 's.ended_at', 'b.batch_number', 'o.booking_code')->first();
+                // Current read after the machine lock: a waiting MySQL transaction
+                // must see runs committed by the previous machine owner.
+                ->select('s.id', 's.started_at', 's.ended_at', 'b.batch_number', 'o.booking_code')->lockForUpdate()->first();
             if ($conflict) {
                 throw ValidationException::withMessages(['started_at' => "Run conflicts with {$conflict->booking_code} / Batch {$conflict->batch_number}, run #{$conflict->id}: {$conflict->started_at} to {$conflict->ended_at} (".config('app.timezone')."). Check the actual times or correct the incorrect run. A run may start exactly when another ends."]);
             }
@@ -64,11 +68,11 @@ class IrradiationSessionController extends Controller
         DB::transaction(function () use ($batch, $session, $data) {
             Booking::whereKey($batch->booking_id)->lockForUpdate()->firstOrFail();
             $locked = BookingBatch::whereKey($batch->id)->lockForUpdate()->firstOrFail();
-            if ($locked->status !== 'processing') throw ValidationException::withMessages(['reason' => 'Completed batch history is locked. Corrections require a formal quality review.']);
+            if (($locked->status !== 'processing') && !SuperadminAccess::overriding()) throw ValidationException::withMessages(['reason' => 'Completed batch history is locked. Corrections require a formal quality review.']);
             DB::table('production_lines')->where('id', $locked->production_line_id)->lockForUpdate()->first();
             $run = DB::table('irradiation_sessions')->where('id', $session)->where('booking_batch_id', $batch->id)->lockForUpdate()->first();
             abort_unless($run, 404);
-            if ($run->voided_at) throw ValidationException::withMessages(['reason' => 'This run has already been voided.']);
+            if ($run->voided_at && !SuperadminAccess::overriding()) throw ValidationException::withMessages(['reason' => 'This run has already been voided.']);
             DB::table('irradiation_sessions')->where('id', $session)->update(['voided_at' => now(), 'voided_by' => auth('admin')->id(), 'void_reason' => $data['reason'], 'updated_at' => now()]);
             $this->syncTimes($locked);
             WarehouseInventory::audit('irradiation.voided', 'booking_batch', $batch->id, ['session_id' => $session, 'original' => $run, 'reason' => $data['reason']]);

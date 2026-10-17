@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SuperadminAccess;
+
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\DosimeterRecord;
@@ -59,7 +61,7 @@ class DosimeterController extends Controller
         $record = $request->filled('record') ? $records->firstWhere('id', $request->integer('record')) : $records->first();
         abort_if($request->filled('record') && !$record, 404);
 
-        $evidenceLocked = $booking->status !== 'completed' || DB::table('order_dispatches')->where('booking_id', $bookingId)->where('status', 'dispatched')->exists();
+        $evidenceLocked = \App\Services\WorkflowState::dosimetryFinal($booking, $record?->id) || ($booking->status !== 'completed' || DB::table('order_dispatches')->where('booking_id', $bookingId)->where('status', 'dispatched')->exists());
         return view('admin.dosimeter.show', compact('booking', 'record', 'records', 'evidenceLocked'));
     }
 
@@ -101,13 +103,13 @@ class DosimeterController extends Controller
                     filled($detail->position) ||
                     filled($detail->image)
             );
-            if ($filled->isNotEmpty()) {
+            if (($filled->isNotEmpty()) && !SuperadminAccess::overriding()) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'tablet_quantity' => 'Cannot reduce tablet quantity: measurements or evidence exist in the rows that would be removed. Retain the current quantity and review the records first.',
                 ]);
             }
             if ($tail->isNotEmpty()) {
-                $record->details()->whereIn('id', $tail->pluck('id'))->delete();
+                foreach ($tail as $row) $row->delete();
             }
             for ($i = 1; $i <= $quantity; $i++) {
                 if (! $details->has($i)) {
@@ -172,7 +174,7 @@ class DosimeterController extends Controller
                     $assigned = array_key_exists($tabletNumber, $validated['batch_id'] ?? [])
                         ? $validated['batch_id'][$tabletNumber]
                         : $locked->details->firstWhere('tablet_number', $tabletNumber)?->booking_batch_id;
-                    if ($assigned && (!$batches->has($assigned) || $batches[$assigned]->status !== 'done')) {
+                    if ($assigned && (!$batches->has($assigned) || ($batches[$assigned]->status !== 'done' && !SuperadminAccess::overriding()))) {
                         throw \Illuminate\Validation\ValidationException::withMessages([
                             'batch_id' => 'Select a completed batch belonging to this order.',
                         ]);
@@ -225,7 +227,7 @@ class DosimeterController extends Controller
     }
     private function assertEditable(Booking $booking): void
     {
-        if ($booking->status !== 'completed' || DB::table('order_dispatches')->where('booking_id', $booking->id)->where('status', 'dispatched')->exists()) {
+        if (($booking->status !== 'completed' || DB::table('order_dispatches')->where('booking_id', $booking->id)->where('status', 'dispatched')->exists()) && !SuperadminAccess::overriding()) {
             throw \Illuminate\Validation\ValidationException::withMessages(['dosimetry' => 'Dosimetry can be recorded after production is complete and before dispatch. Dispatched evidence is locked.']);
         }
     }
@@ -272,11 +274,13 @@ class DosimeterController extends Controller
 
             // Jangan hapus baris terakhir.
             // Set tetap harus memiliki minimal satu tablet.
-            if ($details->count() <= 1) {
+            if ($details->count() <= 1 && !SuperadminAccess::overriding()) {
                 throw ValidationException::withMessages([
                     'detail' => 'At least one dosimeter row must remain.',
                 ]);
             }
+
+            if ($target->absorbance !== null || $target->dose_kgy !== null) throw ValidationException::withMessages(['detail'=>'Measured dosimeter evidence is locked and cannot be removed.']);
 
             // Snapshot sebelum perubahan untuk audit.
             $before = $record->load('details')->toArray();
@@ -304,7 +308,7 @@ class DosimeterController extends Controller
          * yang ada pada set tersebut.
          */
             $temporaryBase = max(
-                (int) $details->max('tablet_number'),
+                (int) \Illuminate\Support\Facades\DB::table('dosimeter_details')->where('dosimeter_record_id',$record->id)->max('tablet_number'),
                 $details->count()
             ) + $remaining->count() + 1;
 

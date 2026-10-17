@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductTest extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     protected $fillable = [
         'test_code',
         'requester_name',

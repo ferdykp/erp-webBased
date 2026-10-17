@@ -19,17 +19,35 @@ if (($argv[1] ?? '') === 'worker') {
     auth('admin')->login(Admin::findOrFail($data['admin']));
     while (microtime(true) < $data['at']) usleep(2000);
     try {
+        if ($data['mode'] === 'staff_delete') {
+            app(App\Http\Controllers\UserAdminController::class)->destroy($data['target']);
+            echo json_encode(['result'=>'saved']);
+            exit;
+        }
         $booking = Booking::findOrFail($data['booking']);
         if ($data['mode'] === 'receive') {
             app(WarehouseInventory::class)->receive($booking->id, [['product_id'=>$booking->products()->firstOrFail()->id,'pallet_id'=>$data['slot'],'quantity'=>(int)$booking->products()->sum('quantity')]], ['pic_warehouse'=>'Race PIC','porter_name'=>'Race Porter']);
         } elseif ($data['mode'] === 'dispatch') {
             app(App\Http\Controllers\OrderDispatchController::class)->confirm(Request::create('/', 'POST', ['reference'=>'RACE-'.$booking->id,'quantity_confirmed'=>1,'physical_handover'=>1]), $booking);
+        } elseif ($data['mode'] === 'dosimetry') {
+            $request=Request::create('/admin/dosimeter/store-absorbance/'.$data['record'], 'POST', ['dosimeter_number'=>[1=>'RACE-FINAL'], 'absorbance'=>[1=>0.1]]);
+            $route=new Illuminate\Routing\Route('POST','/admin/dosimeter/store-absorbance/{record_id}',fn()=>null);
+            $route->name('admin.dosimeter.store-absorbance')->bind($request);
+            $request->setRouteResolver(fn()=>$route);
+            $record=DosimeterRecord::findOrFail($data['record']);
+            DB::transaction(function () use ($request,$record) {
+                App\Services\WorkflowState::enforce($request,[$record]);
+                app(App\Http\Controllers\DosimeterController::class)->storeAbsorbance($request,$record->id);
+            },3);
         } else {
             app(App\Http\Controllers\IrradiationSessionController::class)->store(Request::create('/', 'POST', ['started_at'=>'2025-06-01T08:00','ended_at'=>'2025-06-01T09:00']), BookingBatch::findOrFail($data['batch']));
         }
         echo json_encode(['result'=>'saved']);
     } catch (Illuminate\Validation\ValidationException $e) {
         echo json_encode(['result'=>'rejected','errors'=>$e->errors()]);
+    } catch (Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+        if ($data['mode'] !== 'staff_delete' || $e->getStatusCode() !== 403) throw $e;
+        echo json_encode(['result'=>'rejected','status'=>403]);
     } catch (Throwable $e) {
         echo json_encode(['result'=>'unexpected','type'=>get_class($e),'message'=>$e->getMessage()]);
         exit(1);
@@ -99,7 +117,25 @@ foreach([$b,$c] as $booking) {
     $jobs[]=['mode'=>'session','booking'=>$booking->id,'batch'=>$batch->id];
 }
 $results=$race($jobs);
-$assert(collect($results)->where('result','saved')->count()===1,'Overlapping machine sessions must have one winner.');
+$assert(collect($results)->where('result','saved')->count()===1,'Overlapping machine sessions must have one winner: '.json_encode($results));
 $assert(DB::table('irradiation_sessions')->where('production_line_id',$machine->id)->count()===1,'Concurrent overlapping sessions saved.');
 echo "PASS simultaneous overlapping machine runs: one saved; conflict identified\n";
+$staff=[];
+foreach(['a','b'] as $suffix) $staff[]=Admin::create(['name'=>$tag.'-staff-'.$suffix,'email'=>$tag.'-staff-'.$suffix.'@example.test','password'=>bcrypt(bin2hex(random_bytes(16))),'role'=>'superadmin']);
+$results=$race([
+    ['mode'=>'staff_delete','admin'=>$staff[0]->id,'target'=>$staff[1]->id],
+    ['mode'=>'staff_delete','admin'=>$staff[1]->id,'target'=>$staff[0]->id],
+]);
+$assert(collect($results)->where('result','saved')->count()===1,'Concurrent staff deletions must have one winner.');
+$assert(Admin::whereIn('id',array_map(fn($account)=>$account->id,$staff))->count()===1,'Competing deletions removed both administrator accounts.');
+echo "PASS simultaneous staff deletion: one account retained; stale authenticated request rejected\n";
+$measurementOrder=$makeOrder(50);
+$measurementOrder->update(['status'=>'completed','arrival_time'=>now()]);
+$measurementRecord=DosimeterRecord::create(['booking_id'=>$measurementOrder->id,'tablet_quantity'=>1]);
+$measurementRecord->details()->create(['tablet_number'=>1]);
+$measurementJobs=array_fill(0,2,['mode'=>'dosimetry','booking'=>$measurementOrder->id,'record'=>$measurementRecord->id]);
+$results=$race($measurementJobs);
+$assert(collect($results)->where('result','saved')->count()===1,'Final dosimetry must have one winner: '.json_encode($results));
+$assert(DB::table('operational_audit_events')->where('action','dosimetry.saved')->where('subject_id',$measurementOrder->id)->count()===1,'Final dosimetry was overwritten.');
+echo "PASS simultaneous final dosimetry: one save; stale finalization rejected\n";
 echo "Synthetic fixtures retained under {$tag} in isolated schema.\n";

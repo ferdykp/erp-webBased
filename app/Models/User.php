@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
+    use \App\Models\Concerns\Recoverable;
+
     use HasFactory, Notifiable;
 
     protected $fillable = [

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Booking extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     protected $fillable = [
         'booking_code',
         'booking_type',
@@ -29,9 +31,18 @@ class Booking extends Model
         'total_price' => 'float',
     ];
 
+    public function dispatchRecord(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\OrderDispatch::class);
+    }
+    public function palletContents(): HasMany
+    {
+        return $this->hasMany(\App\Models\PalletContent::class);
+    }
+
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class)->withTrashed();
     }
 
     public function products(): HasMany

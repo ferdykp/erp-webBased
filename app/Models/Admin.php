@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class Admin extends Authenticatable
 
 {
+    use \App\Models\Concerns\Recoverable;
+
     use \Illuminate\Notifications\Notifiable;
 
     protected $fillable = [

@@ -86,9 +86,10 @@
                 </p>
 
             </section>
-        @elseif($readinessIssue)
+        @endif
+        @if($readinessIssue)
             <div role="status" class="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"><strong>Complete the next step before dispatch.</strong><p class="mt-2">{{ $readinessIssue }}</p><a href="{{ route('admin.workspace.show', $booking) }}" class="mt-3 inline-block font-semibold underline">Open Order Workflow</a></div>
-        @elseif(in_array(auth('admin')->user()->role, ['superadmin', 'cargo_admin']))
+        @elseif(in_array(auth('admin')->user()->role, ['superadmin', 'cargo_admin']) && ($dispatch?->status !== 'dispatched'))
             <form method="POST" action="{{ route('admin.dispatch.confirm', $booking) }}"
                 class="p-6 space-y-5 bg-white border rounded-2xl border-slate-200" x-data="{ showConfirm: false, submitting: false }" @keydown.escape.window="showConfirm = false"
                 @submit.prevent="showConfirm = true">
@@ -108,7 +109,7 @@
                 <label class="block text-sm font-medium text-slate-700">
                     Dispatch Reference
 
-                    <input type="text" name="reference" value="{{ old('reference') }}" maxlength="150" required
+                    <input type="text" name="reference" value="{{ old('reference', $dispatch?->reference) }}" maxlength="150" required
                         placeholder="Delivery note number" class="w-full p-3 mt-2 border border-slate-200 rounded-xl">
                 </label>
 
@@ -116,7 +117,7 @@
                     Notes (Optional)
 
                     <textarea name="dispatch_notes" rows="3" maxlength="2000" placeholder="Additional details"
-                        class="w-full p-3 mt-2 border border-slate-200 rounded-xl">{{ old('dispatch_notes') }}</textarea>
+                        class="w-full p-3 mt-2 border border-slate-200 rounded-xl">{{ old('dispatch_notes', $dispatch?->dispatch_notes) }}</textarea>
                 </label>
 
                 <div class="p-4 space-y-3 rounded-xl bg-slate-50">
@@ -141,7 +142,7 @@
 
                 <button type="submit"
                     class="w-full px-5 py-3 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
-                    Confirm Dispatch
+                    {{ $dispatch?->status === 'dispatched' ? 'Update Dispatch Record' : 'Confirm Dispatch' }}
                 </button>
 
                 <!-- Confirmation Modal -->
@@ -155,13 +156,11 @@
                         </div>
 
                         <h3 class="text-xl font-semibold text-slate-900">
-                            Confirm Dispatch?
+                            {{ $dispatch?->status === 'dispatched' ? 'Confirm Record Correction?' : 'Confirm Dispatch?' }}
                         </h3>
 
                         <p class="mt-2 text-sm text-slate-500">
-                            Goods from this order will be removed
-                            from warehouse inventory.
-                            Other orders will not be affected.
+                            {{ $dispatch?->status === 'dispatched' ? 'Only this dispatch record will be corrected. Stock will not be released again.' : 'Goods from this order will be removed from warehouse inventory. Other orders will not be affected.' }}
                         </p>
 
                         @if(count($verificationWarnings))<p class="mt-3 text-sm text-amber-800">{{ count($verificationWarnings) }} verification difference(s) will be recorded with this dispatch. No approval is required.</p>@endif

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class WarehousePic extends Model
 {
+    use \App\Models\Concerns\Recoverable;
+
     use HasFactory;
 
     protected $table = 'warehouse_pics';

@@ -108,8 +108,10 @@ Route::prefix('admin')->middleware('nocache')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
-    ->middleware(['auth:admin', 'nocache', 'confirm.delete'])
+    ->middleware(['auth:admin', 'nocache', 'superadmin.audit', 'confirm.delete'])
     ->group(function () {
+        Route::get('/trash', [\App\Http\Controllers\TrashController::class,'index'])->middleware('role:superadmin')->name('admin.trash.index');
+        Route::post('/trash/{id}/restore', [\App\Http\Controllers\TrashController::class,'restore'])->whereNumber('id')->middleware('role:superadmin')->name('admin.trash.restore');
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
         // Assisted operations: dedicated permissions enforced in controller, plus admin guard.
         Route::get('/orders/{booking}/quality-review', [\App\Http\Controllers\OperationsEnhancementController::class, 'quality'])->name('admin.enhancements.quality');
@@ -325,7 +327,7 @@ Route::prefix('admin')
 
 
             // Hanya Superadmin yang boleh menghapus data krusial atau akun orang lain
-            Route::delete('/profile/{id}/destroy', [UserAdminController::class, 'destroy'])->name('admin.profile.destroy');
+            Route::delete('/profile/{id}/destroy', [UserAdminController::class, 'destroy'])->whereNumber('id')->name('admin.profile.destroy');
             Route::get('/profile/create', [UserAdminController::class, 'create'])->name('admin.profile.create');
             Route::post('/profile/store', [UserAdminController::class, 'store'])->name('admin.profile.store');
 
@@ -342,8 +344,8 @@ Route::prefix('admin')
         | Sengaja ditaruh di paling bawah agar tidak menabrak route statis
         | seperti '/profile/create' atau '/profile/list'.
         */
-        Route::middleware('role:superadmin')->group(function () {
-            Route::get('/profile/{id}/edit', [UserAdminController::class, 'edit'])->name('admin.profile.edit');
-            Route::put('/profile/{id}/update', [UserAdminController::class, 'update'])->name('admin.profile.update');
+        Route::middleware('role:superadmin|manager|production|cargo_admin')->group(function () {
+            Route::get('/profile/{id}/edit', [UserAdminController::class, 'edit'])->whereNumber('id')->name('admin.profile.edit');
+            Route::put('/profile/{id}/update', [UserAdminController::class, 'update'])->whereNumber('id')->name('admin.profile.update');
         });
     });
