@@ -41,34 +41,120 @@
         ];
         $canManage = in_array(auth('admin')->user()->role, ['superadmin', 'production']);
         $canReceive = in_array(auth('admin')->user()->role, ['superadmin', 'cargo_admin']);
+
         $orderDetails = $bookings->getCollection()->mapWithKeys(function ($booking) {
+            $contact =
+                $booking->customer?->contacts?->firstWhere('is_primary', true) ??
+                $booking->customer?->contacts?->first();
+
+            $products = $booking->products
+                ->map(function ($product) {
+                    return [
+                        'name' => $product->product_name ?? 'Unnamed Product',
+                        'type' => $product->product_type ?? null,
+                        'quantity' => $product->quantity,
+                        'unit' => $product->unit,
+                        'temperature' => $product->expect_temp,
+                        'dimension' => $product->dimension_pack,
+                        'dmin' => $product->dmin,
+                        'dmax' => $product->dmax,
+                        'volumePcs' => $product->vol_per_pcs,
+                        'volumeTotal' => $product->vol_total,
+                        'netPcs' => $product->net_weight_pcs,
+                        'netTotal' => $product->total_net_weight,
+                        'grossPcs' => $product->gross_weight_per_pcs,
+                        'grossTotal' => $product->total_gross_weight,
+                        'densityNet' => $product->density_nett,
+                        'densityGross' => $product->density_gross,
+                    ];
+                })
+                ->values()
+                ->all();
+
+            $batches = $booking->batches
+                ->map(function ($batch) {
+                    return [
+                        'id' => $batch->id,
+                        'status' => $batch->status,
+                        'quantity' => $batch->quantity,
+                        'frequency' => $batch->freq,
+                        'beamSpeed' => $batch->beam_speed,
+                        'scanGear' => $batch->scan_gear,
+                        'loadingMode' => $batch->loading_mode,
+                    ];
+                })
+                ->values()
+                ->all();
+
             return [
                 $booking->id => [
                     'id' => $booking->id,
                     'code' => $booking->booking_code,
                     'customer' => $booking->customer?->company_name ?: 'Company not specified',
-                    'contact' =>
-                        $booking->customer?->contacts->firstWhere('is_primary', true)?->name ??
-                        ($booking->customer?->contacts->first()?->name ?? 'Contact not registered'),
-                    'product' => $booking->products->first()?->product_name ?? 'Not specified',
-                    'quantity' => $booking->products->sum('quantity'),
+                    'contact' => $contact?->name ?? 'Not registered',
+                    'email' => $booking->customer?->email,
                     'status' => $booking->status,
-                    'created' => $booking->created_at?->format('d M Y'),
+                    'created' => $booking->created_at?->format('d M Y H:i'),
+                    'arrival' => $booking->arrival_time
+                        ? \Carbon\Carbon::parse($booking->arrival_time)->format('d M Y H:i')
+                        : null,
+                    'quantity' => $booking->products->sum('quantity'),
+                    'productCount' => $booking->products->count(),
+                    'products' => $products,
+                    'batches' => $batches,
                     'batchCount' => $booking->batches->count(),
                     'finishedCount' => $booking->batches->where('status', 'done')->count(),
                     'received' => $booking->arrival_time !== null || $booking->placementDetails->isNotEmpty(),
-                    'workspace' => route('admin.workspace.show', ['booking' => $booking->id]),
+                    'handedOver' => \App\Services\WorkflowState::handedOver($booking),
+                    'workspace' => route('admin.workspace.show', [
+                        'booking' => $booking->id,
+                    ]),
                 ],
             ];
         });
+
     @endphp
+
 
     <div class="mx-auto max-w-[1680px] space-y-5 pb-10" x-data="{
         selectedId: null,
-        details: {{ Js::from($orderDetails) }},
-        get selected() { return this.selectedId ? this.details[this.selectedId] : null },
-        select(id) { this.selectedId = id; }
+        activeTab: 'overview',
+        details: {{ \Illuminate\Support\Js::from($orderDetails) }},
+
+        get selected() {
+            return this.selectedId ?
+                this.details[this.selectedId] :
+                null;
+        },
+
+        select(id) {
+            this.selectedId = id;
+            this.activeTab = 'overview';
+        },
+
+        number(value, decimals = 2) {
+            if (value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            const number = Number(value);
+
+            if (!Number.isFinite(number)) return '—';
+
+            return new Intl.NumberFormat('en-US', {
+                maximumFractionDigits: decimals
+            }).format(number);
+        },
+
+        display(value, suffix = '') {
+            if (value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            return String(value) + suffix;
+        }
     }">
+
         <header class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-[.15em] text-slate-400">Operations / Workspace</p>
@@ -158,7 +244,9 @@
                                                 $booking->placementDetails->isNotEmpty()" />
 
                                             @if (\App\Services\WorkflowState::handedOver($booking))
-                                                <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700"><i class="fa-solid fa-circle-check"></i> Goods Handed Over</span>
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700"><i
+                                                        class="fa-solid fa-circle-check"></i> Goods Handed Over</span>
                                             @elseif ($booking->arrival_time !== null || $booking->placementDetails->isNotEmpty())
                                                 <span
                                                     class="inline-flex items-center gap-1.5
@@ -205,7 +293,10 @@
                                             class="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"><i
                                                 class="fa-solid fa-gears"></i> Process</a>
                                     @endif
-                                    @if (($booking->status === 'completed' && !\App\Services\WorkflowState::handedOver($booking)) && in_array(auth('admin')->user()->role, ['superadmin', 'manager', 'cargo_admin']))
+                                    @if (
+                                        $booking->status === 'completed' &&
+                                            !\App\Services\WorkflowState::handedOver($booking) &&
+                                            in_array(auth('admin')->user()->role, ['superadmin', 'manager', 'cargo_admin']))
                                         <a href="{{ route('admin.dispatch.show', $booking) }}"
                                             class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">Goods
                                             Handover</a>
@@ -226,7 +317,7 @@
                                         </button>
                                     @endif
 
-                                    @if (($booking->arrival_time) && $canManage)
+                                    @if ($booking->arrival_time && $canManage)
                                         <a target="_blank" rel="noopener"
                                             href="{{ route('admin.bookings.invoice', $booking->id) }}"
                                             class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Invoice</a>
@@ -255,80 +346,515 @@
                     <div class="px-5 py-4 border-t border-slate-100">{{ $bookings->links() }}</div>
                 </div>
 
-                <aside class="min-w-0 self-start p-5 bg-slate-50/60 xl:sticky xl:top-4" aria-label="Selected order preview">
+
+                <aside class="self-start min-w-0 bg-white xl:sticky xl:top-4" aria-label="Order Details">
+
+                    {{-- Empty state --}}
                     <div x-cloak x-show="!selected"
-                        class="flex min-h-[280px] flex-col items-center justify-center text-center">
-                        <i class="text-2xl fa-solid fa-arrow-pointer text-slate-300"></i>
-                        <h3 class="mt-4 font-semibold text-slate-800">Select an order</h3>
-                        <p class="max-w-xs mt-1 text-sm text-slate-500">Select an order from the list to review its details
-                            and continue the workflow.</p>
+                        class="flex min-h-[480px] flex-col items-center justify-center px-6 text-center">
+
+                        <div class="flex items-center justify-center h-14 w-14 rounded-2xl bg-slate-100">
+                            <i class="text-xl fa-solid fa-file-lines text-slate-400"></i>
+                        </div>
+
+                        <h3 class="mt-5 text-base font-semibold text-slate-900">
+                            Select an order
+                        </h3>
+
+                        <p class="max-w-xs mt-2 text-sm leading-6 text-slate-500">
+                            Choose an order to view its specifications, production progress,
+                            and operational details.
+                        </p>
                     </div>
-                    <div x-show="selected" x-cloak class="space-y-5" aria-live="polite">
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <p class="text-xs font-semibold tracking-wide uppercase text-slate-400">Overview Order</p>
-                                <h3 class="mt-1 text-xl font-bold break-all text-slate-900" x-text="selected?.code"></h3>
+
+                    {{-- Selected order --}}
+                    <div x-cloak x-show="selected">
+
+                        {{-- Header --}}
+                        <div class="px-5 py-5 border-b border-slate-100">
+
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+                                        Order Details
+                                    </p>
+
+                                    <h2 class="mt-1 text-xl font-bold tracking-tight break-all text-slate-900"
+                                        x-text="selected?.code">
+                                    </h2>
+
+                                    <p class="mt-1 text-sm text-slate-500" x-text="selected?.customer">
+                                    </p>
+                                </div>
+
+                                <button type="button" @click="selectedId = null"
+                                    class="flex items-center justify-center border rounded-lg h-9 w-9 shrink-0 border-slate-200 text-slate-500 hover:bg-slate-50"
+                                    aria-label="Close order details">
+
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
-                            <button type="button" @click="selectedId = null"
-                                class="p-2 rounded-lg text-slate-500 hover:bg-slate-200" aria-label="Close preview"><i
-                                    class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        <div class="p-4 bg-white border rounded-xl border-slate-200">
-                            <dl class="space-y-3 text-sm">
-                                <div>
-                                    <dt class="text-xs text-slate-400">Company</dt>
-                                    <dd class="mt-1 font-semibold text-slate-800" x-text="selected?.customer"></dd>
+
+                            <div class="flex flex-wrap items-center gap-2 mt-4">
+                                <span
+                                    class="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold capitalize text-blue-700"
+                                    x-text="selected?.status?.replaceAll('_', ' ')">
+                                </span>
+
+                                <span x-show="selected?.handedOver"
+                                    class="rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                    Goods Handed Over
+                                </span>
+                            </div>
+
+                            {{-- Summary --}}
+                            <div class="grid grid-cols-2 gap-3 mt-5">
+                                <div class="p-3 border rounded-xl border-slate-200">
+                                    <p class="text-xs text-slate-500">Total Quantity</p>
+                                    <p class="mt-1 text-xl font-bold tabular-nums text-slate-900"
+                                        x-text="number(selected?.quantity, 0)">
+                                    </p>
                                 </div>
-                                <div>
-                                    <dt class="text-xs text-slate-400">Customer Contact</dt>
-                                    <dd class="mt-1 text-slate-700" x-text="selected?.contact"></dd>
+
+                                <div class="p-3 border rounded-xl border-slate-200">
+                                    <p class="text-xs text-slate-500">Production Batches</p>
+
+                                    <p class="mt-1 text-xl font-bold tabular-nums text-slate-900">
+                                        <span x-text="selected?.finishedCount"></span>
+                                        <span class="text-slate-300">/</span>
+                                        <span x-text="selected?.batchCount"></span>
+                                    </p>
                                 </div>
-                                <div>
-                                    <dt class="text-xs text-slate-400">Product</dt>
-                                    <dd class="mt-1 text-slate-700" x-text="selected?.product"></dd>
-                                </div>
-                                <div>
-                                    <dt class="text-xs text-slate-400">Status</dt>
-                                    <dd class="mt-1 font-semibold capitalize text-slate-800"
-                                        x-text="selected?.status?.replaceAll('_', ' ')"></dd>
-                                </div>
-                                <div>
-                                    <dt class="text-xs text-slate-400">Created</dt>
-                                    <dd class="mt-1 text-slate-700" x-text="selected?.created"></dd>
-                                </div>
-                                <div>
-                                    <dt class="text-xs text-slate-400">Production batches</dt>
-                                    <dd class="mt-1 text-slate-700"><span x-text="selected?.finishedCount"></span> / <span
-                                            x-text="selected?.batchCount"></span> finished</dd>
-                                </div>
-                            </dl>
-                        </div>
-                        <div class="p-4 bg-white border rounded-xl border-slate-200">
-                            <h4 class="font-semibold text-slate-800">Workflow Overview</h4>
-                            <div class="mt-3 space-y-3 text-sm">
-                                <div class="flex items-center justify-between"><span>Receiving</span><span
-                                        class="font-medium"
-                                        x-text="selected?.received ? 'Goods Received' : 'Awaiting Goods'"></span>
-                                </div>
-                                <div class="flex items-center justify-between"><span>Production</span><span
-                                        class="font-medium"
-                                        x-text="selected?.status === 'completed' ? 'Completed' : (selected?.status === 'processing' ? 'In progress' : 'Not completed')"></span>
-                                </div>
-                                <p class="text-xs leading-relaxed text-slate-500">Open the order workspace for batch,
-                                    dosimetry, and document details.</p>
                             </div>
                         </div>
-                        <a :href="selected?.workspace"
-                            class="flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700">Continue
-                            Workflow <i class="fa-solid fa-arrow-right"></i></a>
+
+                        {{-- Tabs --}}
+                        <div class="px-4 border-b border-slate-100">
+                            <nav class="flex gap-1 overflow-x-auto" aria-label="Order detail sections">
+
+                                <template
+                                    x-for="tab in [
+                    {id: 'overview', label: 'Overview'},
+                    {id: 'products', label: 'Products'},
+                    {id: 'production', label: 'Production'}
+                ]"
+                                    :key="tab.id">
+
+                                    <button type="button" @click="activeTab = tab.id"
+                                        :class="activeTab === tab.id ?
+                                            'border-blue-600 text-blue-700' :
+                                            'border-transparent text-slate-500 hover:text-slate-900'"
+                                        class="px-3 py-3 text-xs font-semibold transition border-b-2 whitespace-nowrap"
+                                        x-text="tab.label">
+                                    </button>
+                                </template>
+
+                            </nav>
+                        </div>
+
+                        <div class="max-h-[680px] space-y-5 overflow-y-auto p-5">
+
+                            {{-- OVERVIEW --}}
+                            <div x-show="activeTab === 'overview'" class="space-y-5">
+
+                                <section class="space-y-3">
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Customer Information
+                                    </h3>
+
+                                    <div class="p-4 border rounded-xl border-slate-200">
+                                        <dl class="space-y-4 text-sm">
+                                            <div>
+                                                <dt class="text-xs text-slate-400">Company</dt>
+                                                <dd class="mt-1 font-semibold text-slate-800" x-text="selected?.customer">
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt class="text-xs text-slate-400">Contact Person</dt>
+                                                <dd class="mt-1 text-slate-700" x-text="selected?.contact">
+                                                </dd>
+                                            </div>
+
+                                            <div>
+                                                <dt class="text-xs text-slate-400">Email</dt>
+                                                <dd class="mt-1 break-all text-slate-700"
+                                                    x-text="display(selected?.email)">
+                                                </dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </section>
+
+                                <section class="space-y-3">
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Order Information
+                                    </h3>
+
+                                    <div class="p-4 border rounded-xl border-slate-200">
+                                        <dl class="space-y-4 text-sm">
+                                            <div class="flex justify-between gap-3">
+                                                <dt class="text-slate-500">Booking Date</dt>
+                                                <dd class="font-medium text-right text-slate-800"
+                                                    x-text="display(selected?.created)">
+                                                </dd>
+                                            </div>
+
+                                            <div class="flex justify-between gap-3">
+                                                <dt class="text-slate-500">Check-in</dt>
+                                                <dd class="font-medium text-right text-slate-800"
+                                                    x-text="display(selected?.arrival, ' ')">
+                                                </dd>
+                                            </div>
+
+                                            <div class="flex justify-between gap-3">
+                                                <dt class="text-slate-500">Products</dt>
+                                                <dd class="font-medium text-slate-800" x-text="selected?.productCount">
+                                                </dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </section>
+
+                                <section class="space-y-3">
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Workflow Progress
+                                    </h3>
+
+                                    <div class="p-4 border rounded-xl border-slate-200">
+                                        <div class="space-y-5">
+
+                                            <div class="flex items-start gap-3">
+                                                <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                                    :class="selected?.received ?
+                                                        'bg-emerald-50 text-emerald-600' :
+                                                        'bg-slate-100 text-slate-400'">
+
+                                                    <i class="text-xs fa-solid fa-box-open"></i>
+                                                </div>
+
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">
+                                                        Goods Receiving
+                                                    </p>
+
+                                                    <p class="mt-0.5 text-xs text-slate-500"
+                                                        x-text="selected?.received
+                                            ? 'Goods received'
+                                            : 'Awaiting goods'">
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-start gap-3">
+                                                <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                                    :class="selected?.status === 'completed' ?
+                                                        'bg-emerald-50 text-emerald-600' :
+                                                        'bg-blue-50 text-blue-600'">
+
+                                                    <i class="text-xs fa-solid fa-gears"></i>
+                                                </div>
+
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">
+                                                        Production
+                                                    </p>
+
+                                                    <p class="mt-0.5 text-xs text-slate-500">
+                                                        <span x-text="selected?.finishedCount"></span>
+                                                        of
+                                                        <span x-text="selected?.batchCount"></span>
+                                                        batches finished
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-start gap-3">
+                                                <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                                    :class="selected?.handedOver ?
+                                                        'bg-emerald-50 text-emerald-600' :
+                                                        'bg-slate-100 text-slate-400'">
+
+                                                    <i class="text-xs fa-solid fa-truck-ramp-box"></i>
+                                                </div>
+
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">
+                                                        Goods Handover
+                                                    </p>
+
+                                                    <p class="mt-0.5 text-xs text-slate-500"
+                                                        x-text="selected?.handedOver
+                                            ? 'Goods handed over'
+                                            : 'Not yet handed over'">
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            {{-- PRODUCTS --}}
+                            <div x-show="activeTab === 'products'" class="space-y-4">
+
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Product Specifications
+                                    </h3>
+
+                                    <span class="text-xs text-slate-500" x-text="selected?.productCount + ' products'">
+                                    </span>
+                                </div>
+
+                                <template x-for="(product, index) in (selected?.products || [])" :key="index">
+                                    <section class="overflow-hidden border rounded-xl border-slate-200">
+
+                                        <div class="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                                            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+                                                x-text="'Product ' + (index + 1)">
+                                            </p>
+
+                                            <h4 class="mt-1 text-sm font-bold break-words text-slate-900"
+                                                x-text="product.name">
+                                            </h4>
+
+                                            <p class="mt-1 text-xs text-slate-500" x-text="display(product.type)">
+                                            </p>
+                                        </div>
+
+                                        <div class="p-4 space-y-4">
+
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <p class="text-xs text-slate-400">Quantity</p>
+                                                    <p class="mt-1 text-sm font-semibold text-slate-900">
+                                                        <span x-text="number(product.quantity, 0)"></span>
+                                                        <span x-text="product.unit || ''"></span>
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p class="text-xs text-slate-400">Temperature</p>
+                                                    <p class="mt-1 text-sm font-semibold text-slate-900"
+                                                        x-text="display(product.temperature)">
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p class="text-xs text-slate-400">Minimum Dose</p>
+                                                    <p class="mt-1 text-sm font-semibold text-slate-900"
+                                                        x-text="product.dmin == null ? '—' : number(product.dmin, 4) + ' kGy'">
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p class="text-xs text-slate-400">Maximum Dose</p>
+                                                    <p class="mt-1 text-sm font-semibold text-slate-900"
+                                                        x-text="product.dmax == null ? '—' : number(product.dmax, 4) + ' kGy'">
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="pt-3 border-t border-slate-100">
+                                                <p class="text-xs text-slate-400">Dimensions</p>
+                                                <p class="mt-1 text-sm font-medium text-slate-800"
+                                                    x-text="product.dimension ? product.dimension + ' cm' : '—'">
+                                                </p>
+                                            </div>
+
+                                            <div class="pt-3 border-t border-slate-100">
+                                                <h5 class="mb-3 text-xs font-semibold text-slate-700">
+                                                    Volume
+                                                </h5>
+
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <p class="text-xs text-slate-400">Per Piece</p>
+                                                        <p class="mt-1 text-sm font-medium"
+                                                            x-text="product.volumePcs == null ? '—' : number(product.volumePcs, 4) + ' cm³'">
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p class="text-xs text-slate-400">Total</p>
+                                                        <p class="mt-1 text-sm font-medium"
+                                                            x-text="product.volumeTotal == null ? '—' : number(product.volumeTotal, 4) + ' cm³'">
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="pt-3 border-t border-slate-100">
+                                                <h5 class="mb-3 text-xs font-semibold text-slate-700">
+                                                    Weight
+                                                </h5>
+
+                                                <div class="grid grid-cols-2 gap-4">
+                                                    <div class="space-y-3">
+                                                        <p class="text-xs font-semibold text-slate-600">
+                                                            Net Weight
+                                                        </p>
+
+                                                        <div>
+                                                            <p class="text-xs text-slate-400">Per Piece</p>
+                                                            <p class="text-sm font-medium"
+                                                                x-text="product.netPcs == null ? '—' : number(product.netPcs, 4) + ' kg'">
+                                                            </p>
+                                                        </div>
+
+                                                        <div>
+                                                            <p class="text-xs text-slate-400">Total</p>
+                                                            <p class="text-sm font-medium"
+                                                                x-text="product.netTotal == null ? '—' : number(product.netTotal, 4) + ' kg'">
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="space-y-3">
+                                                        <p class="text-xs font-semibold text-slate-600">
+                                                            Gross Weight
+                                                        </p>
+
+                                                        <div>
+                                                            <p class="text-xs text-slate-400">Per Piece</p>
+                                                            <p class="text-sm font-medium"
+                                                                x-text="product.grossPcs == null ? '—' : number(product.grossPcs, 4) + ' kg'">
+                                                            </p>
+                                                        </div>
+
+                                                        <div>
+                                                            <p class="text-xs text-slate-400">Total</p>
+                                                            <p class="text-sm font-medium"
+                                                                x-text="product.grossTotal == null ? '—' : number(product.grossTotal, 4) + ' kg'">
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="pt-3 border-t border-slate-100">
+                                                <h5 class="mb-3 text-xs font-semibold text-slate-700">
+                                                    Density
+                                                </h5>
+
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <p class="text-xs text-slate-400">Net</p>
+                                                        <p class="mt-1 text-sm font-medium"
+                                                            x-text="number(product.densityNet, 6)">
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p class="text-xs text-slate-400">Gross</p>
+                                                        <p class="mt-1 text-sm font-medium"
+                                                            x-text="number(product.densityGross, 6)">
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </section>
+                                </template>
+
+                                <p x-show="!selected?.products?.length"
+                                    class="p-6 text-sm text-center border border-dashed rounded-xl border-slate-200 text-slate-500">
+                                    No product specifications available.
+                                </p>
+                            </div>
+
+                            {{-- PRODUCTION --}}
+                            <div x-show="activeTab === 'production'" class="space-y-4">
+
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Production Batches
+                                    </h3>
+
+                                    <span class="text-xs text-slate-500" x-text="selected?.batchCount + ' batches'">
+                                    </span>
+                                </div>
+
+                                <template x-for="batch in (selected?.batches || [])" :key="batch.id">
+                                    <section class="p-4 border rounded-xl border-slate-200">
+
+                                        <div class="flex items-center justify-between gap-3">
+                                            <h4 class="text-sm font-bold text-slate-900" x-text="'Batch #' + batch.id">
+                                            </h4>
+
+                                            <span
+                                                class="px-2 py-1 text-xs font-semibold text-blue-700 capitalize rounded-lg bg-blue-50"
+                                                x-text="display(batch.status).replaceAll('_', ' ')">
+                                            </span>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-4 mt-4">
+                                            <div>
+                                                <p class="text-xs text-slate-400">Quantity</p>
+                                                <p class="mt-1 text-sm font-semibold" x-text="number(batch.quantity, 0)">
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="text-xs text-slate-400">Frequency</p>
+                                                <p class="mt-1 text-sm font-semibold"
+                                                    x-text="batch.frequency == null ? '—' : number(batch.frequency, 4) + ' Hz'">
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="text-xs text-slate-400">Beam Speed</p>
+                                                <p class="mt-1 text-sm font-semibold"
+                                                    x-text="batch.beamSpeed == null ? '—' : number(batch.beamSpeed, 4) + ' m/s'">
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="text-xs text-slate-400">Scan Gear</p>
+                                                <p class="mt-1 text-sm font-semibold" x-text="number(batch.scanGear, 4)">
+                                                </p>
+                                            </div>
+
+                                            <div class="col-span-2">
+                                                <p class="text-xs text-slate-400">Loading Mode</p>
+                                                <p class="mt-1 text-sm font-semibold" x-text="display(batch.loadingMode)">
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </template>
+
+                                <p x-show="!selected?.batches?.length"
+                                    class="p-6 text-sm text-center border border-dashed rounded-xl border-slate-200 text-slate-500">
+                                    No production batches have been planned.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        {{-- Footer --}}
+                        <div class="p-4 bg-white border-t border-slate-100">
+                            <a :href="selected?.workspace"
+                                class="flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
+
+                                Open Order Workspace
+                                <i class="text-xs fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
+
                     </div>
                 </aside>
+
             </div>
         </section>
     </div>
 
     {{-- DELETE MODAL --}}
-    <div data-ui-modal role="dialog" aria-modal="true" aria-label="Confirm Deletion" tabindex="-1" id="deleteModal" class="fixed inset-0 z-[9999] flex items-center justify-center hidden px-4">
+    <div data-ui-modal role="dialog" aria-modal="true" aria-label="Confirm Deletion" tabindex="-1" id="deleteModal"
+        class="fixed inset-0 z-[9999] flex items-center justify-center hidden px-4">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
         <div
             class="relative w-full max-w-sm p-8 transition-all scale-95 opacity-0 bg-white shadow-2xl rounded-[2.5rem] modal-card">
@@ -338,7 +864,9 @@
                 </div>
                 <h3 class="mb-2 text-xl font-black text-slate-800">Move Order to Trash?</h3>
                 <p class="mb-8 text-xs font-medium leading-relaxed text-slate-500">
-                    Booking <span id="deleteBookingCode" class="font-bold text-slate-800"></span> will be moved to Trash. Its history and documents will remain available for restoration. Complete goods handover before archiving an operational order.
+                    Booking <span id="deleteBookingCode" class="font-bold text-slate-800"></span> will be moved to Trash.
+                    Its history and documents will remain available for restoration. Complete goods handover before
+                    archiving an operational order.
                 </p>
                 <div class="flex flex-col w-full gap-3">
                     <form id="deleteForm" data-delete-confirmed="true" method="POST" action="">
