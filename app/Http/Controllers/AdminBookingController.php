@@ -356,6 +356,7 @@ class AdminBookingController extends Controller
             : 'Lokasi sudah ada. Data pallet lama tetap dipertahankan.');
     }
 
+
     public function palletGenerate(Request $request)
     {
         $validated = $request->validate([
@@ -365,25 +366,53 @@ class AdminBookingController extends Controller
 
         $maxLines = (int) ($validated['lines'] ?? 2);
         $maxSlots = (int) ($validated['slots'] ?? 5);
-        $added = 0;
 
-        DB::transaction(function () use ($maxLines, $maxSlots, &$added) {
+        $result = DB::transaction(function () use ($maxLines, $maxSlots) {
+            $created = 0;
+            $restored = 0;
+            $existing = 0;
+
             for ($line = 1; $line <= $maxLines; $line++) {
                 for ($slot = 1; $slot <= $maxSlots; $slot++) {
-                    $added += DB::table('pallets')->insertOrIgnore([
+                    $pallet = Pallet::withTrashed()
+                        ->where('line', (string) $line)
+                        ->where('slot_section', $slot)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($pallet) {
+                        if ($pallet->trashed()) {
+                            $pallet->restore();
+                            $restored++;
+                        } else {
+                            $existing++;
+                        }
+
+                        continue;
+                    }
+
+                    Pallet::create([
                         'line' => (string) $line,
                         'slot_section' => $slot,
                         'status' => 'empty',
                         'filled_boxes' => 0,
-                        'created_at' => now(),
-                        'updated_at' => now(),
                     ]);
+
+                    $created++;
                 }
             }
+
+            return compact('created', 'restored', 'existing');
         }, 3);
 
-        return back()->with('success', "Generate selesai: {$added} lokasi baru dibuat. Lokasi existing tidak diubah.");
+        return back()->with(
+            'success',
+            "Generate selesai: {$result['created']} lokasi baru, "
+                . "{$result['restored']} lokasi dipulihkan, "
+                . "{$result['existing']} lokasi sudah tersedia."
+        );
     }
+
 
     public function palletDestroy(int $id)
     {
