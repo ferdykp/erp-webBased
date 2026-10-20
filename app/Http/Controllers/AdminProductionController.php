@@ -59,9 +59,11 @@ class AdminProductionController extends Controller
     {
         $data = $request->validate([
             'production_line_id' => 'required|exists:production_lines,id,deleted_at,NULL',
-            'target_dose' => 'required|numeric|gt:0', 'beam_speed' => 'required|numeric|gt:0',
+            'target_dose' => 'required|numeric|gt:0',
+            'beam_speed' => 'required|numeric|gt:0',
             'loading_mode' => 'required|in:single_side,double_side',
-            'freq' => 'nullable|numeric|min:0', 'scan_gear' => 'nullable|numeric|min:0',
+            'freq' => 'nullable|numeric|min:0',
+            'scan_gear' => 'nullable|numeric|min:0',
         ]);
         $batch = BookingBatch::findOrFail($batchId);
         DB::transaction(function () use ($batch, $data) {
@@ -80,11 +82,13 @@ class AdminProductionController extends Controller
 
     private function validateDose(Booking $booking, float $dose, ?int $productId = null): void
     {
-        if ($booking->products->isEmpty() || ($productId !== null && !$booking->products->contains('id', $productId))
-            || ($productId === null && $booking->products->count() > 1)) {
+        if (
+            $booking->products->isEmpty() || ($productId !== null && !$booking->products->contains('id', $productId))
+            || ($productId === null && $booking->products->count() > 1)
+        ) {
             throw \Illuminate\Validation\ValidationException::withMessages(['target_dose' => 'Assign the batch to a valid product before verifying its machine settings.']);
         }
-        foreach ($booking->products->when($productId, fn ($rows) => $rows->where('id', $productId)) as $product) {
+        foreach ($booking->products->when($productId, fn($rows) => $rows->where('id', $productId)) as $product) {
             if ($dose < $product->dmin || ($product->dmax !== null && $dose > $product->dmax)) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['target_dose' => 'Target dose must meet every allocated product specification.']);
             }
@@ -148,7 +152,7 @@ class AdminProductionController extends Controller
                     ->get();
 
                 $allocatedQty = (int) $existingBatches
-                    ->filter(fn ($batch) => (int) $batch->booking_product_id === $product->id || (!$batch->booking_product_id && $products->count() === 1))
+                    ->filter(fn($batch) => (int) $batch->booking_product_id === $product->id || (!$batch->booking_product_id && $products->count() === 1))
                     ->sum('quantity');
 
                 $remainingQty = max(
@@ -357,79 +361,428 @@ class AdminProductionController extends Controller
 
 
 
+
     public function finishBatch(Request $request, $batchId)
     {
         $batch = BookingBatch::findOrFail($batchId);
+
+        /*
+    |--------------------------------------------------------------------------
+    | 1. Validate Submitted QA Data
+    |--------------------------------------------------------------------------
+    */
+
         $validated = $request->validate([
-            'actual_dose' => 'required|numeric|min:0',
-            'visual_check' => 'required|in:pass,fail',
-            'indicator_check' => 'required|in:changed,no_change',
-            'is_damaged' => 'required|in:yes,no',
-            'damaged_qty' => 'required_if:is_damaged,yes|nullable|integer|min:1|max:' . $batch->quantity,
-            'damage_description' => 'nullable|string|max:500',
-            'qa_notes' => 'nullable|string|max:2000',
+            'actual_dose' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'visual_check' => [
+                'required',
+                'in:pass,fail',
+            ],
+
+            'indicator_check' => [
+                'required',
+                'in:changed,no_change',
+            ],
+
+            'is_damaged' => [
+                'required',
+                'in:yes,no',
+            ],
+
+            'damaged_qty' => [
+                'required_if:is_damaged,yes',
+                'nullable',
+                'integer',
+                'min:1',
+                'max:' . $batch->quantity,
+            ],
+
+            'damage_description' => [
+                'nullable',
+                'string',
+                'max:500',
+            ],
+
+            'qa_notes' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
         ]);
 
         try {
-            DB::transaction(function () use ($validated, $batchId) {
+            /*
+        |--------------------------------------------------------------------------
+        | 2. Save QA and Evaluate Batch Completion
+        |--------------------------------------------------------------------------
+        */
+
+            $result = DB::transaction(function () use ($validated, $batchId) {
+
                 $candidate = BookingBatch::findOrFail($batchId);
-                $booking = Booking::whereKey($candidate->booking_id)->lockForUpdate()->firstOrFail();
-                $batch = BookingBatch::whereKey($batchId)->lockForUpdate()->firstOrFail();
-                if (($batch->status !== 'processing') && !SuperadminAccess::overriding()) {
-                    throw new \RuntimeException('The batch must be in progress.');
+
+                $booking = Booking::whereKey($candidate->booking_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $batch = BookingBatch::whereKey($batchId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                /*
+            |--------------------------------------------------------------------------
+            | 3. Verify Production Status
+            |--------------------------------------------------------------------------
+            */
+
+                if ($batch->status !== 'processing') {
+                    throw new \RuntimeException(
+                        'Only batches in progress can be finished.'
+                    );
                 }
-                $booking = Booking::whereKey($batch->booking_id)->lockForUpdate()->firstOrFail();
-                \App\Services\WarehouseInventory::audit('batch.checks_recorded', 'booking_batch', $batch->id, $validated);
+
+                /*
+            |--------------------------------------------------------------------------
+            | 4. Identify the Correct Product
+            |--------------------------------------------------------------------------
+            */
+
+                $booking->load('products');
+
+                $product = $batch->booking_product_id !== null
+                    ? $booking->products->firstWhere(
+                        'id',
+                        $batch->booking_product_id
+                    )
+                    : (
+                        $booking->products->count() === 1
+                        ? $booking->products->first()
+                        : null
+                    );
+
+                /*
+            |--------------------------------------------------------------------------
+            | 5. Save Actual QA Measurements
+            |--------------------------------------------------------------------------
+            |
+            | Actual measurements are always preserved.
+            | Failed checks do not become passing values automatically.
+            |
+            */
+
                 BatchQa::updateOrCreate(
-                    ['batch_id' => $batch->id],
+                    [
+                        'batch_id' => $batch->id,
+                    ],
                     [
                         'actual_dose' => $validated['actual_dose'],
+
                         'visual_check' => $validated['visual_check'],
+
                         'indicator_check' => $validated['indicator_check'],
-                        'is_damaged' => $validated['is_damaged'] === 'yes',
-                        'damaged_qty' => $validated['is_damaged'] === 'yes' ? $validated['damaged_qty'] : 0,
-                        'damage_description' => $validated['is_damaged'] === 'yes' ? ($validated['damage_description'] ?? null) : null,
-                        'qa_notes' => $validated['qa_notes'] ?? null,
+
+                        'is_damaged' =>
+                        $validated['is_damaged'] === 'yes',
+
+                        'damaged_qty' =>
+                        $validated['is_damaged'] === 'yes'
+                            ? $validated['damaged_qty']
+                            : 0,
+
+                        'damage_description' =>
+                        $validated['is_damaged'] === 'yes'
+                            ? ($validated['damage_description'] ?? null)
+                            : null,
+
+                        'qa_notes' =>
+                        $validated['qa_notes'] ?? null,
+
                         'inspected_at' => now(),
                     ]
                 );
-                // Data QA gagal tetap disimpan, tetapi batch tidak dapat dirilis.
-                if (!SuperadminAccess::overriding() && ($validated['visual_check'] !== 'pass' || $validated['indicator_check'] !== 'changed' || $validated['is_damaged'] === 'yes')) {
-                    return;
+
+                \App\Services\WarehouseInventory::audit(
+                    'batch.checks_recorded',
+                    'booking_batch',
+                    $batch->id,
+                    $validated
+                );
+
+                /*
+            |--------------------------------------------------------------------------
+            | 6. Evaluate QA Checks
+            |--------------------------------------------------------------------------
+            */
+
+                $failedChecks = [];
+
+                // Visual inspection
+                if ($validated['visual_check'] !== 'pass') {
+                    $failedChecks[] = 'Visual inspection failed';
                 }
-                $lastSessionEnd = DB::table('irradiation_sessions')->where('booking_batch_id', $batch->id)->whereNull('voided_at')->max('ended_at');
-                if ((!$lastSessionEnd) && !SuperadminAccess::overriding()) {
-                    throw new \RuntimeException('Record at least one completed irradiation run before finishing the batch.');
+
+                // Irradiation indicator
+                if ($validated['indicator_check'] !== 'changed') {
+                    $failedChecks[] = 'Irradiation indicator did not change';
                 }
-                \App\Services\WarehouseInventory::audit('batch.finished', 'booking_batch', $batch->id, $validated);
-                $batch->update(['status' => 'done', 'finished_at' => $lastSessionEnd]);
-                $totalOrdered = (int) $booking->products()->sum('quantity');
-                $totalBatched = (int) $booking->batches()->sum('quantity');
-                $hasUnfinished = $booking->batches()->where('status', '!=', 'done')->exists();
-                $productsComplete = $booking->products->every(function ($product) use ($booking) {
-                    $batches = $booking->batches()->where('booking_product_id', $product->id);
-                    if ($booking->products->count() === 1) $batches->orWhere(fn($q) => $q->where('booking_id', $booking->id)->whereNull('booking_product_id'));
-                    return (int) $batches->sum('quantity') === (int) $product->quantity;
-                });
+
+                // Physical damage
+                if ($validated['is_damaged'] === 'yes') {
+                    $failedChecks[] = 'Product damage was recorded';
+                }
+
+                /*
+            |--------------------------------------------------------------------------
+            | 7. Verify Actual Dose Against Product Specification
+            |--------------------------------------------------------------------------
+            |
+            | Target Dose != Actual Dose is not automatically a failure.
+            |
+            | Example:
+            | Target Dose   : 6 kGy
+            | Minimum Dose  : 5 kGy
+            | Maximum Dose  : 8 kGy
+            | Measured Dose : 6.5 kGy
+            |
+            | Result: Within the configured dose limits.
+            |
+            */
+
+                $actualDose = (float) $validated['actual_dose'];
+
+                if (!$product) {
+
+                    $failedChecks[] =
+                        'The batch is not assigned to a valid product';
+                } elseif (
+                    $product->dmin === null ||
+                    !is_numeric($product->dmin) ||
+                    (
+                        $product->dmax !== null &&
+                        !is_numeric($product->dmax)
+                    )
+                ) {
+
+                    $failedChecks[] =
+                        'Product dose specifications are incomplete';
+                } else {
+
+                    $minimumDose = (float) $product->dmin;
+
+                    $maximumDose = $product->dmax !== null
+                        ? (float) $product->dmax
+                        : null;
+
+                    if (
+                        $maximumDose !== null &&
+                        $maximumDose < $minimumDose
+                    ) {
+                        $failedChecks[] =
+                            'Product dose limits are invalid';
+                    } elseif ($actualDose < $minimumDose) {
+
+                        $failedChecks[] = sprintf(
+                            'Measured dose %.3f kGy is below minimum %.3f kGy',
+                            $actualDose,
+                            $minimumDose
+                        );
+                    } elseif (
+                        $maximumDose !== null &&
+                        $actualDose > $maximumDose
+                    ) {
+
+                        $failedChecks[] = sprintf(
+                            'Measured dose %.3f kGy exceeds maximum %.3f kGy',
+                            $actualDose,
+                            $maximumDose
+                        );
+                    }
+                }
+
+                /*
+            |--------------------------------------------------------------------------
+            | 8. Verify Completed Irradiation Session
+            |--------------------------------------------------------------------------
+            |
+            | Do not infer production time from form submission.
+            | The completed run must already be recorded.
+            |
+            */
+
+                $lastSessionEnd = DB::table('irradiation_sessions')
+                    ->where('booking_batch_id', $batch->id)
+                    ->whereNull('voided_at')
+                    ->whereNotNull('ended_at')
+                    ->max('ended_at');
+
+                if (!$lastSessionEnd) {
+                    $failedChecks[] =
+                        'Record at least one completed irradiation run';
+                }
+
+                /*
+            |--------------------------------------------------------------------------
+            | 9. Keep Batch Open When Any Check Fails
+            |--------------------------------------------------------------------------
+            |
+            | QA data has been saved, but production remains in progress.
+            | No manager approval or legacy Quality Review is required.
+            |
+            */
+
+                if (!empty($failedChecks)) {
+
+                    \App\Services\WarehouseInventory::audit(
+                        'batch.checks_failed',
+                        'booking_batch',
+                        $batch->id,
+                        [
+                            'failed_checks' => $failedChecks,
+                            'actual_dose' => $actualDose,
+                        ]
+                    );
+
+                    return [
+                        'completed' => false,
+                        'failed_checks' => $failedChecks,
+                    ];
+                }
+
+                /*
+            |--------------------------------------------------------------------------
+            | 10. Finish the Batch
+            |--------------------------------------------------------------------------
+            */
+
+                $batch->update([
+                    'status' => 'done',
+                    'finished_at' => $lastSessionEnd,
+                ]);
+
+                \App\Services\WarehouseInventory::audit(
+                    'batch.finished',
+                    'booking_batch',
+                    $batch->id,
+                    [
+                        'actual_dose' => $actualDose,
+                        'finished_at' => $lastSessionEnd,
+                    ]
+                );
+
+                /*
+            |--------------------------------------------------------------------------
+            | 11. Verify All Products Are Fully Allocated
+            |--------------------------------------------------------------------------
+            */
+
+                $allBatches = $booking->batches()->get();
+
+                $productsComplete = $booking->products->every(
+                    function ($orderedProduct) use ($booking, $allBatches) {
+
+                        $allocatedQuantity = $allBatches
+                            ->filter(function ($item) use (
+                                $orderedProduct,
+                                $booking
+                            ) {
+                                return
+                                    (int) $item->booking_product_id ===
+                                    (int) $orderedProduct->id
+
+                                    || (
+                                        $item->booking_product_id === null &&
+                                        $booking->products->count() === 1
+                                    );
+                            })
+                            ->sum('quantity');
+
+                        return (int) $allocatedQuantity ===
+                            (int) $orderedProduct->quantity;
+                    }
+                );
+
+                /*
+            |--------------------------------------------------------------------------
+            | 12. Check All Batch Completion
+            |--------------------------------------------------------------------------
+            */
+
+                $hasUnfinished = $allBatches->contains(
+                    fn($item) => $item->status !== 'done'
+                );
+
+                /*
+            |--------------------------------------------------------------------------
+            | 13. Complete the Booking
+            |--------------------------------------------------------------------------
+            */
+
                 if ($productsComplete && !$hasUnfinished) {
-                    $booking->update(['status' => 'completed']);
+
+                    $booking->update([
+                        'status' => 'completed',
+                    ]);
+
+                    \App\Services\WarehouseInventory::audit(
+                        'booking.production_completed',
+                        'booking',
+                        $booking->id,
+                        [
+                            'completed_batch_id' => $batch->id,
+                        ]
+                    );
                 }
-            });
-            $qaPassed = BookingBatch::findOrFail($batchId)->status === 'done' && (SuperadminAccess::overriding() || ($validated['visual_check'] === 'pass'
-                && $validated['indicator_check'] === 'changed'
-                && $validated['is_damaged'] === 'no'));
-            $completedBatch = BookingBatch::findOrFail($batchId);
-            $product = $completedBatch->booking->products->firstWhere('id', $completedBatch->booking_product_id)
-                ?? ($completedBatch->booking->products->count() === 1 ? $completedBatch->booking->products->first() : null);
-            $doseDifference = $product && ($product->dmin === null || $validated['actual_dose'] < $product->dmin
-                || ($product->dmax !== null && $validated['actual_dose'] > $product->dmax));
-            return back()->with($qaPassed ? 'success' : 'error', $qaPassed
-                ? 'Checks saved. The batch is complete.'.($doseDifference ? ' Warning: measured dose differs from the product limits. This does not require approval or block dispatch.' : '')
-                : 'Checks saved, but an inspection failed. The batch remains in progress for correction.');
+
+                return [
+                    'completed' => true,
+                    'booking_completed' =>
+                    $productsComplete && !$hasUnfinished,
+                    'failed_checks' => [],
+                ];
+            }, 3);
+
+            /*
+        |--------------------------------------------------------------------------
+        | 14. Show Detailed Feedback
+        |--------------------------------------------------------------------------
+        */
+
+            if (!$result['completed']) {
+
+                return back()->with(
+                    'error',
+                    'Checks saved, but the batch cannot be completed: ' .
+                        implode('; ', $result['failed_checks']) .
+                        '.'
+                );
+            }
+
+            if ($result['booking_completed']) {
+
+                return back()->with(
+                    'success',
+                    'Checks saved successfully. Batch and order completed.'
+                );
+            }
+
+            return back()->with(
+                'success',
+                'Checks saved successfully. The batch is completed.'
+            );
         } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
+
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
+
 
 
     // 🟢 TAMBAHKAN METHOD INI DI DALAM CONTROLLER
