@@ -145,12 +145,13 @@
                                     class="fa-solid fa-file-lines"></i> Open Report</a>
                         @endif
                         @if (!$isComplete)
-                        <a href="{{ route('admin.testing.edit', $test) }}"
-                            class="inline-flex items-center justify-center text-xs transition bg-white border h-11 w-11 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                            title="Edit test data"><i class="fa-solid fa-pen"></i></a>
+                            <a href="{{ route('admin.testing.edit', $test) }}"
+                                class="inline-flex items-center justify-center text-xs transition bg-white border h-11 w-11 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                                title="Edit test data"><i class="fa-solid fa-pen"></i></a>
                         @endif
                         @if (auth('admin')->user()?->role === 'superadmin')
-                            <form method="POST" action="{{ route('admin.testing.destroy', $test) }}">@csrf @method('DELETE')<button
+                            <form method="POST" action="{{ route('admin.testing.destroy', $test) }}">@csrf
+                                @method('DELETE')<button
                                     class="inline-flex items-center justify-center text-xs transition bg-white border h-11 w-11 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                                     title="Move to Trash"><i class="fa-solid fa-trash"></i></button></form>
                         @endif

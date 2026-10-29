@@ -805,187 +805,193 @@
             </div>
 
 
-            @php($measurementsLocked = $test->dosimeters->isNotEmpty() && !$test->dosimeters->contains(fn($d) => blank($d->dosimeter_number) || $d->absorbance === null || $d->dose_kgy === null))
-            @if($measurementsLocked)<p class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 print:hidden">Measurements are complete. This stage is read-only.</p>@endif
-            <fieldset @disabled($measurementsLocked) class="min-w-0">
-            <form method="POST" action="{{ route('admin.testing.dosimeters.update', $test) }}">
+            {{-- @php($measurementsLocked = $test->dosimeters->isNotEmpty() && !$test->dosimeters->contains(fn($d) => blank($d->dosimeter_number) || $d->absorbance === null || $d->dose_kgy === null))
+            @if ($measurementsLocked)
+                <p
+                    class="p-4 mb-4 text-sm border rounded-xl border-emerald-200 bg-emerald-50 text-emerald-900 print:hidden">
+                    Measurements are complete. This stage is read-only.</p>
+            @endif --}}
+            {{-- <fieldset @disabled($measurementsLocked) class="min-w-0"> --}}
+            <fieldset class="min-w-0">
+                <form method="POST" action="{{ route('admin.testing.dosimeters.update', $test) }}">
 
-                @csrf
+                    @csrf
 
-                @method('PUT')
+                    @method('PUT')
 
-                <div class="overflow-x-auto border print:overflow-visible rounded-2xl border-slate-200">
+                    <div class="overflow-x-auto border print:overflow-visible rounded-2xl border-slate-200">
 
-                    <table class="w-full text-left bg-white border-collapse">
+                        <table class="w-full text-left bg-white border-collapse">
 
-                        <thead class="bg-slate-50">
-
-                            <tr>
-
-                                <th
-                                    class="w-16 border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
-
-                                    #
-
-                                </th>
-
-                                <th
-                                    class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
-
-                                    Dosimeter ID
-
-                                </th>
-
-                                <th
-                                    class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
-
-                                    Position
-
-                                </th>
-
-                                <th
-                                    class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
-
-                                    Absorbance
-
-                                </th>
-
-                                <th
-                                    class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
-
-                                    Calculated Dose (kGy)
-
-                                </th>
-
-                                <th
-                                    class="w-16 border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 print:hidden">
-
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            <template x-for="(row, index) in rows" :key="row.key">
+                            <thead class="bg-slate-50">
 
                                 <tr>
 
-                                    <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-500"
-                                        x-text="index + 1">
+                                    <th
+                                        class="w-16 border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
 
-                                    </td>
+                                        #
 
+                                    </th>
 
-                                    {{-- Dosimeter ID --}}
+                                    <th
+                                        class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
 
-                                    <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
+                                        Dosimeter ID
 
-                                        <input :name="`readings[${index}][dosimeter_number]`"
-                                            x-model="row.dosimeter_number"
-                                            class="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2.5 text-base font-medium text-slate-700 outline-none placeholder:text-slate-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 sm:text-xs print:hidden"
-                                            placeholder="ID / serial">
+                                    </th>
 
-                                        <span class="hidden font-medium print:inline text-slate-800"
-                                            x-text="row.dosimeter_number || '-'">
+                                    <th
+                                        class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
 
-                                        </span>
+                                        Position
 
-                                    </td>
+                                    </th>
 
+                                    <th
+                                        class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
 
-                                    {{-- Position --}}
+                                        Absorbance
 
-                                    <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
+                                    </th>
 
-                                        <input :name="`readings[${index}][position]`" x-model="row.position"
-                                            class="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2.5 text-base font-medium text-slate-700 outline-none placeholder:text-slate-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 sm:text-xs print:hidden"
-                                            placeholder="e.g. Front / Center">
+                                    <th
+                                        class="border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
 
-                                        <span class="hidden font-medium print:inline text-slate-800"
-                                            x-text="row.position || '-'">
+                                        Calculated Dose (kGy)
 
-                                        </span>
+                                    </th>
 
-                                    </td>
+                                    <th
+                                        class="w-16 border-b border-slate-200 px-4 py-3 text-[9px] font-extrabold uppercase tracking-wider text-slate-400 print:hidden">
 
+                                    </th>
 
-                                    {{-- Absorbance --}}
+                                </tr>
 
-                                    <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
+                            </thead>
 
-                                        <input type="number" min="0" max="5" step="0.0001"
-                                            :name="`readings[${index}][absorbance]`" x-model="row.absorbance"
-                                            class="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2.5 text-base font-medium text-slate-700 outline-none placeholder:text-slate-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 sm:text-xs print:hidden"
-                                            placeholder="0.0000">
+                            <tbody>
 
-                                        <span class="hidden font-medium print:inline text-slate-800"
-                                            x-text="row.absorbance || '-'">
+                                <template x-for="(row, index) in rows" :key="row.key">
 
-                                        </span>
+                                    <tr>
 
-                                    </td>
+                                        <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-500"
+                                            x-text="index + 1">
 
-
-                                    {{-- Calculated Dose --}}
-
-                                    <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-800"
-                                        x-text="dose(row.absorbance)">
-
-                                    </td>
+                                        </td>
 
 
-                                    {{-- Remove --}}
+                                        {{-- Dosimeter ID --}}
 
-                                    <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600 print:hidden">
+                                        <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
 
-                                        <button type="button" @click="removeRow(index)"
-                                            class="inline-flex items-center justify-center text-xs transition bg-white border h-9 w-9 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
+                                            <input :name="`readings[${index}][dosimeter_number]`"
+                                                x-model="row.dosimeter_number"
+                                                class="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2.5 text-base font-medium text-slate-700 outline-none placeholder:text-slate-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 sm:text-xs print:hidden"
+                                                placeholder="ID / serial">
 
-                                            <i class="fa-solid fa-xmark"></i>
+                                            <span class="hidden font-medium print:inline text-slate-800"
+                                                x-text="row.dosimeter_number || '-'">
 
-                                        </button>
+                                            </span>
+
+                                        </td>
+
+
+                                        {{-- Position --}}
+
+                                        <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
+
+                                            <input :name="`readings[${index}][position]`" x-model="row.position"
+                                                class="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2.5 text-base font-medium text-slate-700 outline-none placeholder:text-slate-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 sm:text-xs print:hidden"
+                                                placeholder="e.g. Front / Center">
+
+                                            <span class="hidden font-medium print:inline text-slate-800"
+                                                x-text="row.position || '-'">
+
+                                            </span>
+
+                                        </td>
+
+
+                                        {{-- Absorbance --}}
+
+                                        <td class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600">
+
+                                            <input type="number" min="0" max="5" step="0.0001"
+                                                :name="`readings[${index}][absorbance]`" x-model="row.absorbance"
+                                                class="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2.5 text-base font-medium text-slate-700 outline-none placeholder:text-slate-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10 sm:text-xs print:hidden"
+                                                placeholder="0.0000">
+
+                                            <span class="hidden font-medium print:inline text-slate-800"
+                                                x-text="row.absorbance || '-'">
+
+                                            </span>
+
+                                        </td>
+
+
+                                        {{-- Calculated Dose --}}
+
+                                        <td class="px-4 py-3 text-xs font-bold border-b border-slate-100 text-slate-800"
+                                            x-text="dose(row.absorbance)">
+
+                                        </td>
+
+
+                                        {{-- Remove --}}
+
+                                        <td
+                                            class="px-4 py-3 text-xs border-b border-slate-100 text-slate-600 print:hidden">
+
+                                            <button type="button" @click="removeRow(index)"
+                                                class="inline-flex items-center justify-center text-xs transition bg-white border h-9 w-9 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
+
+                                                <i class="fa-solid fa-xmark"></i>
+
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                </template>
+
+
+                                <tr x-show="rows.length === 0">
+
+                                    <td colspan="6" class="px-4 py-10 text-sm text-center border-b-0 text-slate-400">
+
+                                        No dosimeter reading.
+                                        This section is optional.
 
                                     </td>
 
                                 </tr>
 
-                            </template>
+                            </tbody>
+
+                        </table>
+
+                    </div>
 
 
-                            <tr x-show="rows.length === 0">
+                    <div class="flex justify-end mt-4 print:hidden">
 
-                                <td colspan="6" class="px-4 py-10 text-sm text-center border-b-0 text-slate-400">
+                        <button type="submit"
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99]">
 
-                                    No dosimeter reading.
-                                    This section is optional.
+                            <i class="fa-solid fa-floppy-disk"></i>
 
-                                </td>
+                            Save Dosimeter Data
 
-                            </tr>
+                        </button>
 
-                        </tbody>
+                    </div>
 
-                    </table>
-
-                </div>
-
-
-                <div class="flex justify-end mt-4 print:hidden">
-
-                    <button type="submit"
-                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99]">
-
-                        <i class="fa-solid fa-floppy-disk"></i>
-
-                        Save Dosimeter Data
-
-                    </button>
-
-                </div>
-
-            </form>
+                </form>
             </fieldset>
 
         </section>
