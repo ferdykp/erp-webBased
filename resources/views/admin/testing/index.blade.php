@@ -144,7 +144,7 @@
                                 class="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99]"><i
                                     class="fa-solid fa-file-lines"></i> Open Report</a>
                         @endif
-                        @if (!$isComplete)
+                        @if (!$isComplete || \App\Services\SuperadminAccess::isSuperadmin())
                             <a href="{{ route('admin.testing.edit', $test) }}"
                                 class="inline-flex items-center justify-center text-xs transition bg-white border h-11 w-11 shrink-0 rounded-xl border-slate-200 text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                                 title="Edit test data"><i class="fa-solid fa-pen"></i></a>

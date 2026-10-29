@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/** Stage rules shared by UI and backend. Role privileges never bypass these rules. */
+/** Stage rules shared by UI and backend, including scoped historical corrections. */
 class WorkflowState
 {
     public static function handedOver(Booking $booking): bool
@@ -76,9 +76,14 @@ class WorkflowState
         if ($batch) $batch=BookingBatch::whereKey($batch->id)->lockForUpdate()->firstOrFail();
         if ($test) {
             $test=ProductTest::whereKey($test->id)->lockForUpdate()->firstOrFail();
-            if (str_contains($name,'dosimeters.update')) {
+            $canCorrect = SuperadminAccess::isSuperadmin() && in_array($name, [
+                'admin.testing.update',
+                'admin.testing.parameters.update',
+                'admin.testing.dosimeters.update',
+            ], true);
+            if (!$canCorrect && str_contains($name,'dosimeters.update')) {
                 self::require(!$test->dosimeters()->exists() || $test->dosimeters()->where(fn($q)=>$q->whereNull('absorbance')->orWhereNull('dose_kgy')->orWhereNull('dosimeter_number'))->exists());
-            } else self::require($test->status !== 'completed');
+            } elseif (!$canCorrect) self::require($test->status !== 'completed');
         }
         if ($booking) {
             self::require(!self::handedOver($booking));

@@ -68,7 +68,9 @@ class ProductTestingController extends Controller
 
     public function edit(ProductTest $test)
     {
-        if ($test->status === 'completed') return redirect()->route('admin.testing.report',$test);
+        if ($test->status === 'completed' && !SuperadminAccess::isSuperadmin()) {
+            return redirect()->route('admin.testing.report', $test);
+        }
         return view('admin.testing.form', compact('test'));
     }
 
@@ -92,7 +94,9 @@ class ProductTestingController extends Controller
 
     public function parameters(ProductTest $test)
     {
-        if ($test->status === 'completed') return redirect()->route('admin.testing.report',$test);
+        if ($test->status === 'completed' && !SuperadminAccess::isSuperadmin()) {
+            return redirect()->route('admin.testing.report', $test);
+        }
         $productionLines = ProductionLine::orderBy('name')->get();
         return view('admin.testing.parameters', compact('test', 'productionLines'));
     }
@@ -123,7 +127,7 @@ class ProductTestingController extends Controller
             'scan_gear' => $validated['scan_gear'] ?? null,
             'process_notes' => $validated['process_notes'] ?? null,
             'status' => 'completed',
-            'processed_at' => now(),
+            'processed_at' => $test->processed_at ?? now(),
         ]);
 
         return redirect()
@@ -179,7 +183,7 @@ class ProductTestingController extends Controller
             $test = ProductTest::whereKey($test->id)->lockForUpdate()->firstOrFail();
             $before = $test->dosimeters()->get()->toArray();
             $tail = $test->dosimeters()->where('sequence', '>', $rows->count())->get();
-            if (($tail->contains(fn($row) => $row->absorbance !== null || filled($row->dosimeter_number))) && !SuperadminAccess::overriding()) {
+            if (($tail->contains(fn($row) => $row->absorbance !== null || filled($row->dosimeter_number))) && !SuperadminAccess::isSuperadmin()) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['readings' => 'Recorded dosimetry rows cannot be removed. Keep them and record a correction.']);
             }
             foreach ($tail as $row) $row->delete();
