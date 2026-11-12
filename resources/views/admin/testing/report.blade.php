@@ -1084,6 +1084,11 @@
 
             const company = @js($test->requester_organization ?: 'Company');
             const product = @js($test->sample_name ?: 'Product');
+            const targetDose = @js(
+                $test->target_dose !== null
+                    ? $format($test->target_dose) . ' kGy'
+                    : ''
+            );
             // const testCode = @js($test->test_code ?: '');
 
             const sanitizeFileName = (value) => {
@@ -1098,6 +1103,7 @@
             const parts = [
                 sanitizeFileName(company),
                 sanitizeFileName(product),
+                sanitizeFileName(targetDose),
                 // sanitizeFileName(testCode)
             ].filter(Boolean);
 
