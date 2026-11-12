@@ -312,7 +312,6 @@ class OrderDispatchController extends Controller
                 !$qa ||
                 $qa->actual_dose === null ||
                 $qa->visual_check !== 'pass' ||
-                $qa->indicator_check !== 'changed' ||
                 (bool) $qa->is_damaged
             ) {
                 throw ValidationException::withMessages([

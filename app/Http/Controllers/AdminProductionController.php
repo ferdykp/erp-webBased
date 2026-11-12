@@ -526,11 +526,6 @@ class AdminProductionController extends Controller
                     $failedChecks[] = 'Visual inspection failed';
                 }
 
-                // Irradiation indicator
-                if ($validated['indicator_check'] !== 'changed') {
-                    $failedChecks[] = 'Irradiation indicator did not change';
-                }
-
                 // Physical damage
                 if ($validated['is_damaged'] === 'yes') {
                     $failedChecks[] = 'Product damage was recorded';
