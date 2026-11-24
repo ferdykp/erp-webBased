@@ -2,7 +2,7 @@
 @section('title','Settings & Master Data')
 @section('content')
 <div class="mx-auto max-w-6xl space-y-6" x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'account' }">
-    <header><p class="text-xs font-bold uppercase tracking-widest text-slate-500">Administration</p><h1 class="mt-2 text-3xl font-bold text-slate-950">Settings & Master Data</h1><p class="mt-2 text-sm text-slate-500">Manage your account and operational reference data.</p></header>
+    <header class="page-heading-card"><p class="text-xs font-bold uppercase tracking-widest text-slate-500">Administration</p><h1 class="mt-2 text-3xl font-bold text-slate-950">Settings & Master Data</h1><p class="mt-2 text-sm text-slate-500">Manage your account and operational reference data.</p></header>
     <nav class="flex flex-wrap gap-2 border-b border-slate-200 pb-3" aria-label="Settings categories">
         <button type="button" @click="tab='account'" :class="tab==='account'?'bg-slate-900 text-white':'bg-white text-slate-600'" class="rounded-xl border px-4 py-2 text-sm font-semibold">My Account</button>
         @if(in_array($role,['superadmin','manager','cargo_admin']))<button type="button" @click="tab='warehouse'" :class="tab==='warehouse'?'bg-slate-900 text-white':'bg-white text-slate-600'" class="rounded-xl border px-4 py-2 text-sm font-semibold">Warehouse Staff</button>@endif

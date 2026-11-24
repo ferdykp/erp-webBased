@@ -1,5 +1,5 @@
 <div class="overflow-x-auto">
-    <table class="w-full border-collapse">
+    <table class="app-data-table w-full border-collapse">
         <thead>
             <tr class="text-left border-b border-gray-50">
                 <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">Ticket Information

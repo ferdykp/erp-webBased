@@ -1,5 +1,5 @@
 <div class="overflow-x-auto border border-gray-200 rounded-lg">
-    <table class="w-full text-sm text-left text-gray-500">
+    <table class="app-data-table w-full text-sm text-left text-gray-500">
         <thead class="text-xs text-gray-700 uppercase border-b border-gray-200 bg-gray-50">
             <tr>
                 <th class="px-6 py-4 font-bold">Booking Code</th>

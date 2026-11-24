@@ -1,5 +1,5 @@
 <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse min-w-[800px] lg:min-w-full">
+    <table class="app-data-table w-full text-left border-collapse min-w-[800px] lg:min-w-full">
         <thead
             class="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-50">
             <tr>

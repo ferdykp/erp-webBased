@@ -17,15 +17,15 @@
     $subActive = 'bg-slate-900 text-blue-400';
 @endphp
 
-<aside data-app-sidebar id="sidebar" :class="sidebarOpen ? 'translate-x-0 sidebar-visible' : '-translate-x-full lg:translate-x-0'"
-    class="fixed inset-y-0 left-0 z-50 flex w-[min(288px,calc(100vw-16px))] flex-col border-r border-slate-800/80 bg-slate-950 text-slate-300 shadow-2xl shadow-slate-950/20 transition-transform duration-300 ease-out print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[272px] lg:shrink-0 lg:shadow-none xl:w-[280px] 2xl:w-[288px] 3xl:w-[320px] 4xl:w-[336px]">
+<aside data-app-sidebar id="sidebar" :data-collapsed="sidebarCollapsed ? 'true' : 'false'" :class="sidebarOpen ? 'translate-x-0 sidebar-visible' : '-translate-x-full lg:translate-x-0'"
+    class="fixed inset-y-0 left-0 z-50 flex w-[min(288px,calc(100vw-16px))] flex-col border-r border-slate-800/80 bg-slate-950 text-slate-300 shadow-2xl shadow-slate-950/20 transition-[transform,width] duration-300 ease-in-out print:hidden lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[272px] lg:shrink-0 lg:shadow-none xl:w-[280px] 2xl:w-[288px] 3xl:w-[320px] 4xl:w-[336px]">
 
     <div
         class="flex h-[68px] shrink-0 items-center justify-between border-b border-slate-800/80 px-4 sm:h-[72px] sm:px-5 lg:h-[76px] 2xl:h-[80px] 2xl:px-6 3xl:h-[84px] 3xl:px-7">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center min-w-0 gap-3">
+        <a href="{{ route('admin.dashboard') }}" title="Dashboard" class="flex items-center min-w-0 gap-3">
             <div
                 class="flex items-center justify-center w-10 h-10 text-white bg-blue-600 shadow-lg shrink-0 rounded-xl 3xl:h-11 3xl:w-11 shadow-blue-950/30">
-                <i class="fa-solid fa-bolt"></i>
+                <img src="{{ asset('img/ebeam-mark.svg') }}" alt="" aria-hidden="true" class="h-7 w-7">
             </div>
             <div class="min-w-0">
                 <p class="truncate text-[15px] font-extrabold 3xl:text-base tracking-tight text-white">Beam Admin</p>
@@ -38,6 +38,12 @@
             aria-label="Close navigation">
             <i class="fa-solid fa-xmark"></i>
         </button>
+        <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('beamCustom.sidebarCollapsed', sidebarCollapsed ? 'true' : 'false'); document.documentElement.classList.toggle('sidebar-collapsed', sidebarCollapsed)"
+            :aria-pressed="sidebarCollapsed.toString()" :aria-label="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+            :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+            class="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-100 lg:inline-flex">
+            <i class="fa-solid" :class="sidebarCollapsed ? 'fa-angles-right' : 'fa-angles-left'"></i>
+        </button>
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3 py-5 3xl:px-4 3xl:py-6 [scrollbar-width:thin]">
@@ -45,15 +51,17 @@
             <p class="mb-2 px-3 text-[9px] font-extrabold uppercase 3xl:text-[10px] tracking-[0.16em] text-slate-600">
                 Workspace</p>
 
-            <a href="{{ route('admin.dashboard') }}"
+            <a href="{{ route('admin.dashboard') }}" title="Dashboard"
+                data-compact-label="Home"
                 class="{{ $navBase }} {{ request()->routeIs('admin.dashboard') ? $navActive : $navIdle }}">
                 <i
                     class="fa-solid fa-table-cells-large w-5 shrink-0 text-center text-[13px] 3xl:text-sm {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-500' }}"></i>
                 <span>Dashboard</span>
             </a>
 
-            <a href="{{ route('admin.workspace.tasks') }}" class="{{ $navBase }} {{ request()->routeIs('admin.workspace.tasks') ? $navActive : $navIdle }}"><i class="fa-solid fa-list-check w-5 shrink-0 text-center"></i><span>Action Items</span></a>
-            <a href="{{ route('admin.bookings') }}"
+            <a href="{{ route('admin.workspace.tasks') }}" title="Action Items" data-compact-label="Tasks" class="{{ $navBase }} {{ request()->routeIs('admin.workspace.tasks') ? $navActive : $navIdle }}"><i class="fa-solid fa-list-check w-5 shrink-0 text-center"></i><span>Action Items</span></a>
+            <a href="{{ route('admin.bookings') }}" title="Order Management"
+                data-compact-label="Orders"
                 class="{{ $navBase }} {{ request()->routeIs('admin.bookings*', 'admin.workspace.show', 'admin.workspace.orders') ? $navActive : $navIdle }}">
                 <i class="fa-solid fa-clipboard-list w-5 shrink-0 text-center text-[13px] 3xl:text-sm"></i>
                 <span>Order Management</span>
@@ -63,7 +71,8 @@
             </a>
 
             @if(in_array($role, ['superadmin', 'manager', 'production']))
-            <a href="{{ route('admin.testing.index') }}"
+            <a href="{{ route('admin.testing.index') }}" title="Product Testing"
+                data-compact-label="Testing"
                 class="{{ $navBase }} {{ request()->routeIs('admin.testing.*') ? $navActive : $navIdle }}">
                 <i
                     class="fa-solid fa-flask-vial w-5 shrink-0 text-center text-[13px] 3xl:text-sm {{ request()->routeIs('admin.testing.*') ? 'text-white' : 'text-slate-500' }}"></i>
@@ -76,7 +85,8 @@
             @endif
 
             @if(in_array($role, ['superadmin','manager','production']))
-                <a href="{{ route('admin.workspace.production-board') }}" class="{{ $navBase }} {{ request()->routeIs('admin.workspace.production-board','admin.production.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-industry w-5 text-center"></i><span>Production</span></a>
+                <a href="{{ route('admin.workspace.production-board') }}" title="Production" data-compact-label="Production" class="{{ $navBase }} {{ request()->routeIs('admin.workspace.production-board','admin.production.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-industry w-5 text-center"></i><span>Production</span></a>
+                <a href="{{ route('admin.ebeam-weekly.index') }}" title="Weekly Monitoring" data-compact-label="Weekly" class="{{ $navBase }} {{ request()->routeIs('admin.ebeam-weekly.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-calendar-week w-5 text-center"></i><span>Weekly Monitoring</span></a>
             @endif
 
         </div>
@@ -84,36 +94,19 @@
         <div class="mb-6 space-y-1">
             <p class="mb-2 px-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-600">Management</p>
             @if(in_array($role,['superadmin','cargo_admin']))
-                <a href="{{ route('admin.pallets.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.pallets.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-warehouse w-5 text-center"></i><span>Warehouse</span></a>
+                <a href="{{ route('admin.pallets.index') }}" title="Warehouse" data-compact-label="Warehouse" class="{{ $navBase }} {{ request()->routeIs('admin.pallets.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-warehouse w-5 text-center"></i><span>Warehouse</span></a>
             @endif
-            <a href="{{ route('admin.report.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.report.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-file-lines w-5 text-center"></i><span>Documents</span></a>
-            <a href="{{ route('admin.customerList.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.customerList.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-building-user w-5 text-center"></i><span>Customers</span></a>
+            <a href="{{ route('admin.report.index') }}" title="Documents" data-compact-label="Docs" class="{{ $navBase }} {{ request()->routeIs('admin.report.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-file-lines w-5 text-center"></i><span>Documents</span></a>
+            <a href="{{ route('admin.customerList.index') }}" title="Customers" data-compact-label="Customers" class="{{ $navBase }} {{ request()->routeIs('admin.customerList.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-building-user w-5 text-center"></i><span>Customers</span></a>
             @if(in_array($role,['superadmin','manager']))
-                <a href="{{ route('admin.business.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.business.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-chart-line w-5 text-center"></i><span>Order Analytics</span></a>
+                <a href="{{ route('admin.business.index') }}" title="Order Analytics" data-compact-label="Analytics" class="{{ $navBase }} {{ request()->routeIs('admin.business.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-chart-line w-5 text-center"></i><span>Order Analytics</span></a>
             @endif
-            <a href="{{ route('admin.unified.settings') }}" class="{{ $navBase }} {{ request()->routeIs('admin.unified.settings','admin.porter.*','admin.warehouse-pics.*','admin.production-lines.*','admin.profile.profileList') ? $navActive : $navIdle }}"><i class="fa-solid fa-gear w-5 text-center"></i><span>Settings & Master Data</span></a>
+            <a href="{{ route('admin.unified.settings') }}" title="Settings & Master Data" data-compact-label="Settings" class="{{ $navBase }} {{ request()->routeIs('admin.unified.settings','admin.porter.*','admin.warehouse-pics.*','admin.production-lines.*','admin.profile.profileList') ? $navActive : $navIdle }}"><i class="fa-solid fa-gear w-5 text-center"></i><span>Settings & Master Data</span></a>
             @if($role === 'superadmin')
-                <a href="{{ route('admin.trash.index') }}" class="{{ $navBase }} {{ request()->routeIs('admin.trash.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-trash-can w-5 text-center"></i><span>Trash</span></a>
+                <a href="{{ route('admin.trash.index') }}" title="Trash" data-compact-label="Trash" class="{{ $navBase }} {{ request()->routeIs('admin.trash.*') ? $navActive : $navIdle }}"><i class="fa-solid fa-trash-can w-5 text-center"></i><span>Trash</span></a>
             @endif
         </div>
 
 </nav>
 
-    <div class="p-3 border-t shrink-0 border-slate-800/80 3xl:p-4">
-        <div class="flex items-center gap-3 px-3 py-3 rounded-xl bg-slate-900">
-            <div
-                class="flex items-center justify-center text-xs font-bold text-white rounded-lg h-9 w-9 shrink-0 bg-slate-800">
-                {{ strtoupper(substr($adminUser?->name ?? 'A', 0, 1)) }}</div>
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-semibold truncate text-slate-200 3xl:text-sm">{{ $adminUser?->name }}</p>
-                <p class="mt-0.5 truncate text-[10px] capitalize text-slate-500 3xl:text-[11px]">
-                    {{ str_replace('_', ' ', $role ?? 'admin') }}</p>
-            </div>
-            <a href="{{ route('admin.profile') }}"
-                class="inline-flex items-center justify-center w-8 h-8 text-xs transition-colors rounded-lg shrink-0 text-slate-500 hover:bg-slate-800 hover:text-slate-200"
-                title="Account settings">
-                <i class="fa-solid fa-gear"></i>
-            </a>
-        </div>
-    </div>
 </aside>

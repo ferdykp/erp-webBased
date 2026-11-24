@@ -32,7 +32,7 @@
 
         <section>
             <div class="overflow-x-auto rounded-xl border border-slate-200">
-                <table class="w-full border-collapse text-left text-xs">
+                <table class="app-data-table w-full border-collapse text-left text-xs">
                     <thead class="bg-slate-50">
                         <tr>
                             <th class="border-b border-slate-200 px-4 py-3 font-extrabold uppercase tracking-wider text-slate-500">Product Name</th>
@@ -60,7 +60,7 @@
         <section class="mt-8">
             <h2 class="mb-3 text-sm font-bold text-slate-800">Reception Details (Batches)</h2>
             <div class="overflow-x-auto rounded-xl border border-slate-200">
-                <table class="w-full border-collapse text-left text-xs">
+                <table class="app-data-table w-full border-collapse text-left text-xs">
                     <thead class="bg-slate-50">
                         <tr>
                             <th class="border-b border-slate-200 px-4 py-3 text-center font-extrabold uppercase tracking-wider text-slate-500">Batch #</th>

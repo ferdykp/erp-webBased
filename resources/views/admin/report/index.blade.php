@@ -10,7 +10,7 @@
     @endphp
 
     <div class="mx-auto w-full max-w-none space-y-6 pb-10 sm:space-y-8">
-        <section class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <section class="page-heading-card flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div class="min-w-0">
                 <div class="mb-3 flex flex-wrap items-center gap-2">
                     <span class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-blue-700">
@@ -170,7 +170,7 @@
                     <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Search</button>
                 </form>
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[860px] text-left">
+                    <table class="app-data-table w-full min-w-[860px] text-left">
                         <thead>
                             <tr class="border-b border-slate-100 bg-slate-50/70 text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-400">
                                 <th class="px-6 py-3.5">Order</th>

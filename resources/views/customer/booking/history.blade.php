@@ -14,14 +14,14 @@
             <div class="relative">
                 <i class="absolute text-sm text-gray-400 -translate-y-1/2 fa-solid fa-magnifying-glass left-4 top-1/2"></i>
                 <input type="text" placeholder="Search Kode Booking..."
-                    class="w-full py-3 pr-5 text-sm font-bold text-gray-700 transition-all bg-white border border-gray-100 shadow-sm outline-none pl-11 rounded-2xl focus:ring-4 focus:ring-blue-100 md:w-64">
+                    class="w-full rounded-2xl border border-gray-100 bg-white py-3 !pl-12 pr-5 text-sm font-bold text-gray-700 shadow-sm outline-none transition-all focus:ring-4 focus:ring-blue-100 md:w-64">
             </div>
         </div>
 
         {{-- TABLE CARD --}}
         <div class="bg-white border border-gray-100 shadow-sm rounded-[2.5rem] overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="app-data-table w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50/50">
                             <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Info

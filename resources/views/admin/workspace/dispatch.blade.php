@@ -2,27 +2,15 @@
 @section('title', 'Dispatch Goods')
 @section('content')
     <div class="max-w-5xl pb-12 mx-auto space-y-6">
-        <a href="{{ route('admin.workspace.show', ['booking' => $booking, 'stage' => 'documents']) }}"
-            class="text-sm font-medium text-blue-700">← Back to Order Workflow</a>
-        <div>
+        <div class="page-heading-card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><a href="{{ route('admin.workspace.show', ['booking' => $booking, 'stage' => 'documents']) }}"
+                class="text-sm font-medium text-blue-700">← Back to Order Workflow</a>
             <h1 class="text-3xl font-bold text-slate-900">Dispatch Goods</h1>
             <p class="mt-2 text-sm text-slate-500">Order {{ $booking->booking_code }} ·
                 {{ $booking->customer?->company_name }}</p>
-        </div>
-        @if (session('success'))
-            <div class="p-4 text-sm rounded-xl bg-emerald-50 text-emerald-800">{{ session('success') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="p-4 text-sm text-red-700 border border-red-200 rounded-xl bg-red-50"><strong>Action could not be
-                    completed.</strong>
-                <ul class="pl-5 mt-2 list-disc">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
             </div>
-        @endif
-        <section class="p-6 bg-white border rounded-2xl border-slate-200">
+        </div>
+<section class="p-6 bg-white border rounded-2xl border-slate-200">
             <h2 class="text-lg font-semibold">Dispatch Readiness</h2>
             <dl class="grid gap-4 mt-4 text-sm sm:grid-cols-3">
                 <div>

@@ -7,7 +7,7 @@
     <div class="w-full pb-12 space-y-6">
 
         {{-- ═══ HEADER ═══ --}}
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="page-heading-card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <div
                     class="inline-flex items-center gap-2 px-3 py-1 mb-3 text-xs font-semibold tracking-widest text-purple-600 uppercase border border-purple-100 rounded-full bg-purple-50">
@@ -76,7 +76,7 @@
             @else
                 {{-- Desktop Table --}}
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="w-full text-sm">
+                    <table class="app-data-table w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-50 bg-gray-50/60">
                                 <th

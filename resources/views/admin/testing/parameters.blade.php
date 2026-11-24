@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="w-full mx-auto space-y-5 max-w-none sm:space-y-6">
-        <div class="flex flex-col gap-4 sm:flex-row sm:justify-between">
+        <div class="page-heading-card flex flex-col gap-4 sm:flex-row sm:justify-between">
             <div>
                 <a href="{{ route('admin.testing.index') }}"
                     class="inline-flex items-center gap-2 text-xs font-semibold transition-colors text-slate-500 hover:text-blue-600"><i
@@ -51,19 +51,6 @@
             </div>
         </div>
 
-        @if ($errors->any())
-            <div class="flex gap-3 px-4 py-3 text-xs leading-5 border rounded-xl border-rose-200 bg-rose-50 text-rose-700">
-                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
-                <div>
-                    <p class="font-bold">Please check the process parameter.</p>
-                    <ul class="pl-5 mt-1 space-y-1 list-disc">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        @endif
 
         <div
             class="grid grid-cols-1 gap-5 xl:grid-cols-[320px_minmax(0,1fr)] 2xl:grid-cols-[360px_minmax(0,1fr)] 3xl:grid-cols-[380px_minmax(0,1fr)] 3xl:gap-7">

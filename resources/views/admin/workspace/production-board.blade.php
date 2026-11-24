@@ -9,7 +9,7 @@
         view: 'all'
     }">
         {{-- HEADER --}}
-        <header class="flex flex-wrap items-end justify-between gap-4">
+        <header class="page-heading-card flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[.16em] text-slate-500">
                     E-Beam Operations

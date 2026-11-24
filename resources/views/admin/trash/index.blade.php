@@ -2,7 +2,7 @@
 @section('title','Trash')
 @section('content')
 <div class="mx-auto max-w-6xl space-y-6">
-    <header><p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Data retention</p><h1 class="mt-2 text-3xl font-bold text-slate-950">Trash</h1><p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">Deleted records remain recoverable with their original workflow stage, relationships and evidence. Restoring a completed order does not reopen receiving or production. Permanent deletion is disabled.</p></header>
+    <header class="page-heading-card"><p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Data retention</p><h1 class="mt-2 text-3xl font-bold text-slate-950">Trash</h1><p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">Deleted records remain recoverable with their original workflow stage, relationships and evidence. Restoring a completed order does not reopen receiving or production. Permanent deletion is disabled.</p></header>
     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     @forelse($entries as $entry)
         <article class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 p-5 last:border-0">

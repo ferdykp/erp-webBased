@@ -31,7 +31,7 @@
         {{-- ═══ DIRECTORY CONTAINER ═══ --}}
         <div class="overflow-hidden bg-white border shadow-sm border-slate-200/70 rounded-2xl">
             <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left border-collapse">
+                <table class="app-data-table w-full text-xs text-left border-collapse">
                     <thead>
                         <tr
                             class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/70 border-b border-slate-100">

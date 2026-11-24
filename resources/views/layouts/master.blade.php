@@ -3,7 +3,7 @@
 @include('layouts.head')
 @stack('head')
 
-<body data-app-ui="{{ request()->routeIs('customer.booking.create') ? 'protected' : 'standard' }}" class="min-h-[100dvh] font-sans antialiased text-slate-900" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+<body data-app-ui="{{ request()->routeIs('customer.booking.create') ? 'protected' : 'standard' }}" class="min-h-[100dvh] font-sans antialiased text-slate-900" x-data="{ sidebarOpen: false, sidebarCollapsed: localStorage.getItem('beamCustom.sidebarCollapsed') !== 'false' }" @keydown.escape.window="sidebarOpen = false">
     @php $plainPage = request()->routeIs(['landing', 'customer.login', 'customer.register', 'admin.login']); @endphp
 
     @if($plainPage)
@@ -13,8 +13,9 @@
             @include('layouts.aside')
             <div class="flex min-w-0 flex-1 flex-col lg:h-[100dvh] lg:overflow-hidden">
                 @include('layouts.navbar')
-                <main data-app-scroll class="relative flex-1 overflow-y-auto">
-                    <div class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)]">
+                <main data-app-scroll data-page-main class="relative flex-1 overflow-y-auto">
+                    @include('shared.page-navigation-skeleton')
+                    <div data-page-content class="mx-auto min-h-[calc(100dvh-8rem)] w-full max-w-none px-[clamp(0.75rem,1.25vw,2rem)] py-[clamp(1rem,1.25vw,2rem)]">
                         @yield('content')
                     </div>
                     <footer class="border-t border-slate-200 bg-white py-5 text-center text-[11px] text-slate-400">

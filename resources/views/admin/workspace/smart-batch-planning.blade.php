@@ -2,7 +2,7 @@
 @section('title', 'Assisted Batch Planning')
 @section('content')
     <div class="max-w-5xl pb-10 mx-auto space-y-6" x-data="batchAssistant({{ $remaining }})">
-        <header><a href="{{ route('admin.workspace.show', ['booking' => $booking, 'stage' => 'preparation']) }}"
+        <header class="page-heading-card"><a href="{{ route('admin.workspace.show', ['booking' => $booking, 'stage' => 'preparation']) }}"
                 class="text-sm text-slate-500">← Back to order</a>
             <h1 class="mt-3 text-3xl font-bold">Assisted Batch Planning</h1>
             <p class="mt-2 text-sm text-slate-500">{{ $booking->booking_code }} · {{ $booking->customer?->company_name }}.

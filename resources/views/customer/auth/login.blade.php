@@ -28,19 +28,6 @@
                     </div>
 
                     {{-- PESAN ERROR UMUM --}}
-                    @if ($errors->any())
-                        <div class="p-4 mb-6 text-sm text-red-700 bg-red-100 border border-red-200 rounded-2xl">
-                            <div class="flex items-center">
-                                <i class="mr-2 fa-solid fa-circle-exclamation"></i>
-                                <span class="font-bold">Sign-in unsuccessful</span>
-                            </div>
-                            <ul class="mt-1 ml-6 list-disc">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
                     <form action="{{ route('customer.login') }}" method="POST" class="space-y-5">
                         @csrf

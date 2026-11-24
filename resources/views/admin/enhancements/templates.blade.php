@@ -2,20 +2,10 @@
 @section('title', 'Production Parameter Templates')
 @section('content')
     <div class="max-w-6xl p-2 mx-auto space-y-6">
-        <div><a href="{{ route('admin.workspace.tasks') }}" class="text-sm text-blue-600">← My Tasks</a>
+        <div class="page-heading-card"><a href="{{ route('admin.workspace.tasks') }}" class="text-sm text-blue-600">← My Tasks</a>
             <h1 class="mt-3 text-3xl font-bold">Production Parameter Templates</h1>
         </div>
-        @if (session('success'))
-            <div class="p-4 text-green-800 rounded-xl bg-green-50">{{ session('success') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="p-4 text-red-700 rounded-xl bg-red-50">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-        <div class="p-5 bg-white border rounded-xl">
+<div class="p-5 bg-white border rounded-xl">
             <h2 class="font-semibold">Versioned operational presets</h2>
             <p class="text-sm text-gray-500">Templates require Manager approval. Operators must confirm suitability for each
                 product and batch; this page does not change machine settings.</p>

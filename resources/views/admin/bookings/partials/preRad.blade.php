@@ -92,7 +92,7 @@
                     </div>
 
                     <div class="overflow-x-auto border border-emerald-100 rounded-[2rem] shadow-sm bg-white">
-                        <table class="w-full text-left border-collapse min-w-[600px]">
+                        <table class="app-data-table w-full text-left border-collapse min-w-[600px]">
                             <thead class="bg-emerald-50/50 text-[9px] font-black text-emerald-600 uppercase">
                                 <tr>
                                     <th class="px-6 py-4">Batch ID</th>
@@ -148,7 +148,7 @@
                     Cancel
                 </button>
                 <button type="submit" id="qcSubmitBtn"
-                    class="flex-[2] py-4 text-[11px] font-black text-white uppercase shadow-lg rounded-2xl active:scale-95 transition-all">
+                    class="flex-[2] rounded-2xl bg-blue-600 py-4 text-[11px] font-black uppercase text-white shadow-lg transition-all hover:bg-blue-700 active:scale-95">
                     Confirm & Start
                 </button>
             </div>

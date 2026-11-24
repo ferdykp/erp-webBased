@@ -22,7 +22,7 @@
         {{-- TABLE --}}
         <div class="bg-white border border-slate-100 shadow-sm rounded-[3rem] overflow-hidden">
             <div class="p-6 overflow-x-auto">
-                <table class="w-full text-left border-separate border-spacing-y-3">
+                <table class="app-data-table w-full text-left border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-[10px] font-black tracking-[0.2em] text-slate-600 uppercase">
                             <th class="px-8 py-4">#</th>

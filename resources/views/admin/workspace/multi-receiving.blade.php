@@ -9,9 +9,8 @@
     submitting: false,
     get balanced() { return this.products.every(p => this.rows.filter(r => r.product_id == p.id).reduce((sum,r) => sum + Number(r.quantity || 0),0) === p.quantity) && this.rows.every(r => r.pallet_id && Number.isSafeInteger(Number(r.quantity)) && Number(r.quantity)>0); }
 }">
-    <header><a href="{{ route('admin.workspace.show', $booking) }}" class="text-sm text-blue-700">← Back to Order</a><h1 class="mt-3 text-3xl font-bold">Receive Goods</h1><p class="mt-2 text-sm text-slate-500">{{ $booking->booking_code }} · {{ $booking->customer?->company_name }}</p></header>
+    <header class="page-heading-card"><a href="{{ route('admin.workspace.show', $booking) }}" class="text-sm text-blue-700">← Back to Order</a><h1 class="mt-3 text-3xl font-bold">Receive Goods</h1><p class="mt-2 text-sm text-slate-500">{{ $booking->booking_code }} · {{ $booking->customer?->company_name }}</p></header>
     <p class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm">Verify each product and quantity. Shared slots are allowed. Check physical capacity and compatibility according to site procedures.</p>
-    @if($errors->any())<div role="alert" class="rounded-xl bg-red-50 p-4 text-sm text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
     <form method="POST" action="{{ route('admin.bookings.storePlacement', $booking->id) }}" class="space-y-5" @submit="if (!balanced || submitting) { $event.preventDefault(); } else { submitting = true; }">
         @csrf
         <section class="rounded-2xl border bg-white p-5 space-y-4"><h2 class="text-lg font-semibold">Product Allocation</h2>

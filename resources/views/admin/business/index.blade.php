@@ -6,7 +6,7 @@
     <div class="w-full pb-10 space-y-6 md:space-y-8" x-data="{ openModal: false, selectedCustomer: {} }">
 
         {{-- HEADER SECTION --}}
-        <div class="flex flex-col justify-between gap-6 px-2 lg:flex-row lg:items-center">
+        <div class="page-heading-card flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
             <div>
                 <h2 class="text-2xl font-black tracking-tight text-center md:text-3xl text-slate-800 lg:text-left">Customer
                     Monitoring</h2>
@@ -16,7 +16,7 @@
 
             <form action="{{ route('admin.business.index') }}" method="GET" class="relative w-full group lg:w-auto">
                 <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search company or PIC..."
-                    class="w-full py-3.5 pl-12 pr-4 text-sm transition-all bg-white border outline-none lg:w-80 border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm">
+                    class="w-full rounded-2xl border border-slate-200 bg-white py-3.5 !pl-14 pr-4 text-sm shadow-sm outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 lg:w-80">
                 <i
                     class="absolute transition-colors -translate-y-1/2 fa-solid fa-magnifying-glass left-5 top-1/2 text-slate-400 group-focus-within:text-indigo-500"></i>
             </form>
@@ -25,7 +25,7 @@
         {{-- TABLE CARD --}}
         <div class="bg-white border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-sm">
             <div class="overflow-x-auto overflow-y-hidden">
-                <table class="w-full text-left border-collapse min-w-[700px]">
+                <table class="app-data-table w-full text-left border-collapse min-w-[700px]">
                     <thead
                         class="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-50">
                         <tr>
@@ -178,7 +178,7 @@
                         </h4>
 
                         <div class="-mx-6 overflow-x-auto md:mx-0">
-                            <table class="w-full text-sm text-left min-w-[600px]">
+                            <table class="app-data-table w-full text-sm text-left min-w-[600px]">
                                 <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-50">
                                     <tr>
                                         <th class="px-6 py-4">Product Info</th>

@@ -26,23 +26,13 @@
     <div x-data="receivingAssistant" data-expected="{{ $expected }}" data-unit="{{ $unit }}"
         data-slots="{{ $slotOptions->toJson() }}" class="max-w-6xl pb-12 mx-auto space-y-6">
 
-        <header><a href="{{ route('admin.workspace.show', ['booking' => $booking, 'stage' => 'receiving']) }}"
+        <header class="page-heading-card"><a href="{{ route('admin.workspace.show', ['booking' => $booking, 'stage' => 'receiving']) }}"
                 class="text-sm font-medium text-blue-600">← Back to Order</a>
             <h1 class="mt-3 text-3xl font-bold text-slate-900">Receive Goods</h1>
             <p class="mt-2 text-sm text-slate-500">{{ $booking->booking_code }} · {{ $booking->customer?->company_name }} ·
                 Verify the physical goods before saving.</p>
         </header>
-        @if ($errors->any())
-            <div class="p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50">
-                @foreach ($errors->all() as $message)
-                    <p>{{ $message }}</p>
-                @endforeach
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50">{{ session('error') }}</div>
-        @endif
-        <div x-show="errorMessage" x-cloak class="p-4 text-sm border rounded-xl border-amber-200 bg-amber-50 text-amber-800"
+<div x-show="errorMessage" x-cloak class="p-4 text-sm border rounded-xl border-amber-200 bg-amber-50 text-amber-800"
             x-text="errorMessage"></div>
         <details class="rounded-2xl border bg-white p-5"><summary class="cursor-pointer font-semibold">Current Location Contents</summary><div class="mt-4 grid gap-3 sm:grid-cols-2">@foreach($slots as $slot)<div class="rounded-lg border p-3 text-sm"><strong>Line {{ $slot->line }} / Slot {{ $slot->slot_section }}</strong>@forelse($slot->contents as $content)<p class="mt-1">{{ $content->booking?->booking_code }} · {{ $content->product_name }} · {{ $content->quantity }} {{ $content->unit ?? 'unverified unit' }}</p>@empty<p class="mt-1 text-slate-500">Empty</p>@endforelse</div>@endforeach</div></details>
         <form method="POST" action="{{ route('admin.bookings.storePlacement', $booking->id) }}"

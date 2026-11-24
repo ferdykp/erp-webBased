@@ -2,7 +2,7 @@
 @section('title', 'Action Items')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6">
-  <div><p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Operations</p><h1 class="mt-1 text-3xl font-semibold tracking-tight">Action Items</h1><p class="mt-2 text-sm text-slate-500">Choose the next task available for your role.</p></div>
+  <div class="page-heading-card"><p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Operations</p><h1 class="mt-1 text-3xl font-semibold tracking-tight">Action Items</h1><p class="mt-2 text-sm text-slate-500">Choose the next task available for your role.</p></div>
   <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">Tasks reflect the next operational stage available to your role. Open an order to continue.</div>
   <div class="space-y-3">@forelse($tasks as $task)
     <a href="{{ route('admin.workspace.show', ['booking'=>$task['booking'], 'stage'=>$task['stage']]) }}" class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 transition hover:border-slate-400">

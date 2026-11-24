@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="space-y-5 sm:space-y-6">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="page-heading-card flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-blue-600">Independent Technical
                     Workflow</p>
@@ -55,7 +55,7 @@
                     <i
                         class="absolute text-xs -translate-y-1/2 fa-solid fa-magnifying-glass left-4 top-1/2 text-slate-400"></i>
                     <input name="search" value="{{ $search }}"
-                        class="w-full min-w-0 rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3.5 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm"
+                        class="w-full min-w-0 rounded-xl border border-slate-200 bg-white py-3 !pl-12 pr-3.5 text-base font-medium text-slate-800 outline-none placeholder:text-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 sm:text-sm"
                         placeholder="Search code, sample, requester, institution...">
                 </label>
                 <select name="status"

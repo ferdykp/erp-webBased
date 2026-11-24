@@ -2,6 +2,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="light">
+    <script>try { if (sessionStorage.getItem('beamCustom.navigationPending') === 'true') document.documentElement.classList.add('navigation-entering'); document.documentElement.classList.toggle('sidebar-collapsed', localStorage.getItem('beamCustom.sidebarCollapsed') !== 'false'); } catch (_) {}</script>
     <title>@yield('title', 'BeamApp')</title>
     <script>
         window.formatSmartNumber = function (value, maxDecimals = 6, fallback = '-') {

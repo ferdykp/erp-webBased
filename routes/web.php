@@ -21,6 +21,7 @@ use App\Http\Controllers\PorterController;
 use App\Http\Controllers\WarehousePicController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductTestingController;
+use App\Http\Controllers\EbeamWeeklyRecordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,6 +145,18 @@ Route::prefix('admin')
         Route::get('/tasks', [\App\Http\Controllers\OrderWorkspaceController::class, 'tasks'])->name('admin.workspace.tasks');
         Route::get('/workspace-settings', [\App\Http\Controllers\UnifiedWorkspaceController::class, 'settings'])->name('admin.unified.settings');
         Route::get('/production-board', [\App\Http\Controllers\OrderWorkspaceController::class, 'productionBoard'])->middleware('role:superadmin|manager|production')->name('admin.workspace.production-board');
+
+        Route::middleware('role:superadmin|manager|production')->group(function () {
+            Route::get('/ebeam-weekly', [EbeamWeeklyRecordController::class, 'index'])->name('admin.ebeam-weekly.index');
+            Route::get('/ebeam-weekly/{record}/download', [EbeamWeeklyRecordController::class, 'download'])->whereNumber('record')->name('admin.ebeam-weekly.download');
+        });
+
+        Route::middleware('role:superadmin|production')->group(function () {
+            Route::get('/ebeam-weekly/create', [EbeamWeeklyRecordController::class, 'create'])->name('admin.ebeam-weekly.create');
+            Route::post('/ebeam-weekly', [EbeamWeeklyRecordController::class, 'store'])->name('admin.ebeam-weekly.store');
+            Route::get('/ebeam-weekly/{record}/edit', [EbeamWeeklyRecordController::class, 'edit'])->whereNumber('record')->name('admin.ebeam-weekly.edit');
+            Route::put('/ebeam-weekly/{record}', [EbeamWeeklyRecordController::class, 'update'])->whereNumber('record')->name('admin.ebeam-weekly.update');
+        });
 
 
         /*

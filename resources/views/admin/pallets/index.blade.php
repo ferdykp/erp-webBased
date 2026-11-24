@@ -5,7 +5,7 @@
     <div class="w-full pb-20 space-y-8" x-data="{ activeLine: @js((string) ($allLocations->first()?->line ?? '')), searchQuery: '', showConfig: false }">
 
         {{-- ═══ TOP BAR: BRANDING & SEARCH ═══ --}}
-        <div class="flex flex-col gap-4 pb-6 border-b lg:flex-row lg:items-center lg:justify-between border-slate-100">
+        <div class="page-heading-card flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <nav class="flex mb-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase gap-2">
                     <span>Logistics</span>
@@ -19,12 +19,12 @@
 
             {{-- LIVE SEARCH & CONFIG TOGGLE --}}
             <div class="flex items-center w-full gap-3 lg:w-auto">
-                <div class="relative flex-grow lg:w-72">
+                <div class="relative min-w-0 flex-1 lg:w-80 lg:flex-none">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
                         <i class="text-xs fa-solid fa-magnifying-glass text-slate-400"></i>
                     </span>
                     <input x-model="searchQuery" type="text" placeholder="Filter product or booking code..."
-                        class="w-full py-2 pr-4 text-xs font-medium transition-all bg-white border shadow-sm pl-9 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                        class="w-full rounded-xl border border-slate-200 bg-white py-3 !pl-12 pr-4 text-sm font-medium shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                 </div>
 
                 <button @click="showConfig = !showConfig"
@@ -249,7 +249,7 @@
                     </div>
 
                     <div class="overflow-x-auto max-h-[18rem] no-scrollbar">
-                        <table class="w-full text-xs text-left">
+                        <table class="app-data-table w-full text-xs text-left">
                             <thead>
                                 <tr class="text-[10px] font-bold text-slate-400 uppercase border-b border-slate-100">
                                     <th class="pb-2 pl-2">Product Details</th>
@@ -317,7 +317,7 @@
                     </div>
 
                     <div class="overflow-x-auto max-h-[18rem] no-scrollbar">
-                        <table class="w-full text-xs text-left">
+                        <table class="app-data-table w-full text-xs text-left">
                             <thead>
                                 <tr class="text-[10px] font-bold text-slate-400 uppercase border-b border-slate-100">
                                     <th class="pb-2 pl-2">Location ID</th>

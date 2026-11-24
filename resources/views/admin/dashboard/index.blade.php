@@ -35,13 +35,13 @@
 
     <div class="flex min-h-[calc(100dvh-9rem)] w-full flex-col">
     {{-- ═══ PAGE HEADER ═══ --}}
-    <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between 2xl:mb-6 3xl:mb-7">
+    <div class="page-heading-card mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between 2xl:mb-6 3xl:mb-7">
         <div>
             <h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl 2xl:text-[2rem] 3xl:text-4xl">Dashboard</h1>
             <p class="mt-1 text-sm text-gray-400 2xl:text-[15px] 3xl:text-base">Monitoring warehouse operations and bookings.</p>
         </div>
         <div
-            class="inline-flex items-center self-start gap-2 rounded-xl border border-gray-100 bg-white px-4 py-2 shadow-sm sm:self-auto 2xl:px-5 2xl:py-2.5 3xl:text-base">
+            class="inline-flex items-center self-start gap-2 rounded-xl bg-slate-50 px-4 py-2 text-slate-600 sm:self-auto 2xl:px-5 2xl:py-2.5 3xl:text-base">
             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -118,7 +118,7 @@
 
     {{-- ═══ WORKFLOW GUIDE ═══ --}}
     <div class="mb-5 2xl:mb-6 3xl:mb-7">
-        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between 2xl:mb-5">
+        <div class="page-heading-card mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between 2xl:mb-5">
             <div>
                 <h2 class="text-sm font-semibold text-gray-800 2xl:text-base 3xl:text-lg">Operational Workflow</h2>
                 <p class="mt-0.5 text-xs text-gray-400 2xl:text-sm">Follow these steps to process orders end-to-end.</p>
@@ -287,7 +287,7 @@
 
                 {{-- Desktop Table --}}
                 <div class="hidden flex-1 overflow-auto sm:block">
-                    <table class="w-full text-sm">
+                    <table class="app-data-table w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-50 bg-gray-50/60">
                                 <th

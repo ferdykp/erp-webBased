@@ -12,7 +12,7 @@
     }">
 
         {{-- HEADER --}}
-        <div class="flex flex-col justify-between gap-6 px-2 lg:flex-row lg:items-center">
+        <div class="page-heading-card flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
             <div>
                 <h2 class="text-2xl font-black tracking-tight md:text-3xl text-slate-800">Customer List</h2>
                 <p class="text-xs font-medium md:text-sm text-slate-500">Nuctech ERP - Business Management System</p>
@@ -22,7 +22,7 @@
                 <div class="relative flex-1 group">
                     <input type="text" id="search-input" name="search" value="{{ request('search') }}"
                         placeholder="Search company or PIC..."
-                        class="w-full py-3 pl-12 pr-4 text-sm transition-all bg-white border outline-none border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500">
+                        class="w-full rounded-2xl border border-slate-200 bg-white py-3 !pl-14 pr-4 text-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">
                     <i
                         class="absolute transition-colors -translate-y-1/2 fa-solid fa-magnifying-glass left-5 top-1/2 text-slate-400 group-focus-within:text-blue-500"></i>
                 </div>
@@ -281,7 +281,7 @@
                         </div>
 
                         <div class="-mx-6 overflow-x-auto md:mx-0">
-                            <table class="w-full text-sm text-left min-w-[600px]">
+                            <table class="app-data-table w-full text-sm text-left min-w-[600px]">
                                 <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-50">
                                     <tr>
                                         <th class="px-6 py-4">Product Info</th>

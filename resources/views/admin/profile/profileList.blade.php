@@ -31,7 +31,7 @@
             {{-- TABLE SECTION --}}
             <div class="p-2 sm:p-6 md:p-8">
                 <div class="overflow-x-auto border rounded-2xl border-slate-50">
-                    <table id="datatable" class="w-full text-left border-separate border-spacing-y-2">
+                    <table id="datatable" class="app-data-table w-full text-left border-separate border-spacing-y-2">
                         <thead class="bg-slate-50/50">
                             <tr>
                                 <th

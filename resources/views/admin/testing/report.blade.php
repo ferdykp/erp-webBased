@@ -46,7 +46,7 @@
             HEADER ACTIONS
         ========================================================== --}}
 
-        <div class="flex flex-col gap-4 print:hidden sm:flex-row sm:items-end sm:justify-between">
+        <div class="page-heading-card flex flex-col gap-4 print:hidden sm:flex-row sm:items-end sm:justify-between">
 
             <div>
 
@@ -821,7 +821,7 @@
 
                     <div class="overflow-x-auto border print:overflow-visible rounded-2xl border-slate-200">
 
-                        <table class="w-full text-left bg-white border-collapse">
+                        <table class="app-data-table w-full text-left bg-white border-collapse">
 
                             <thead class="bg-slate-50">
 

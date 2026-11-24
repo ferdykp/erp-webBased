@@ -126,7 +126,7 @@
 
                 {{-- Desktop View: Table --}}
                 <div class="hidden overflow-x-auto lg:block">
-                    <table class="w-full text-left border-separate border-spacing-y-3">
+                    <table class="app-data-table w-full text-left border-separate border-spacing-y-3">
                         <thead>
                             <tr class="text-[10px] font-black tracking-[0.18em] text-slate-400 uppercase">
                                 <th class="px-6 py-3">Booking</th>

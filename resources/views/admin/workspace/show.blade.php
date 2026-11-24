@@ -3,7 +3,7 @@
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6">
 <div class="flex flex-wrap items-center justify-between gap-3"><a href="{{ route('admin.workspace.orders') }}" class="text-sm font-semibold text-slate-500 hover:text-slate-950">← Orders</a><span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold capitalize text-blue-700">{{ str_replace('_', ' ', $booking->status) }}</span></div>
-<div><p class="text-xs uppercase tracking-widest text-slate-500">Order Workflow</p><h1 class="mt-1 text-3xl font-bold tracking-tight">{{ $booking->booking_code }}</h1><p class="mt-2 text-sm text-slate-500">{{ $booking->customer?->company_name ?? 'Customer not specified' }}</p></div>
+<div class="page-heading-card"><p class="text-xs uppercase tracking-widest text-slate-500">Order Workflow</p><h1 class="mt-1 text-3xl font-bold tracking-tight">{{ $booking->booking_code }}</h1><p class="mt-2 text-sm text-slate-500">{{ $booking->customer?->company_name ?? 'Customer not specified' }}</p></div>
 <div class="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-slate-700">
  <p class="font-semibold text-blue-900"><i class="fa-solid fa-route mr-2"></i>Order workflow</p>
  <p class="mt-1">Customer → Order → Receive goods → Production setup → Irradiation sessions → Dosimetry → Documents → Handover.</p>

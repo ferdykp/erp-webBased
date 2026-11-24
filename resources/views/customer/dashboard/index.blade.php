@@ -55,7 +55,7 @@
                     <i
                         class="absolute text-gray-400 transition-colors -translate-y-1/2 fa-solid fa-magnifying-glass left-4 top-1/2 group-focus-within:text-blue-600"></i>
                     <input type="text" id="search" name="search" placeholder="Search by ticket code..."
-                        class="w-full md:w-80 pl-12 pr-4 py-3.5 bg-gray-50 border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition-all outline-none text-sm">
+                        class="w-full rounded-2xl border-transparent bg-gray-50 py-3.5 !pl-12 pr-4 text-sm outline-none transition-all focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 md:w-80">
                 </div>
             </div>
 

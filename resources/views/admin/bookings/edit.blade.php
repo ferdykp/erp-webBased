@@ -26,7 +26,7 @@
     <div class="max-w-6xl pb-12 mx-auto space-y-6">
 
         {{-- Header --}}
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="page-heading-card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-4">
                 <a href="{{ route('admin.bookings') }}"
                     class="flex items-center justify-center transition bg-white border h-11 w-11 rounded-xl border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600">
@@ -60,43 +60,7 @@
                 </span>
             @endif
         </div>
-
-        {{-- Alerts --}}
-        @if (session('success'))
-            <div class="px-5 py-4 text-sm font-medium border rounded-xl border-emerald-200 bg-emerald-50 text-emerald-800">
-                <i class="mr-2 fa-solid fa-circle-check"></i>
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="px-5 py-4 text-sm font-medium text-red-800 border border-red-200 rounded-xl bg-red-50">
-                <i class="mr-2 fa-solid fa-circle-exclamation"></i>
-                {{ session('error') }}
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="px-5 py-4 border border-red-200 rounded-xl bg-red-50">
-                <div class="flex items-start gap-3">
-                    <i class="fa-solid fa-circle-exclamation mt-0.5 text-red-600"></i>
-
-                    <div>
-                        <p class="text-sm font-bold text-red-800">
-                            Data belum dapat disimpan
-                        </p>
-
-                        <ul class="mt-2 space-y-1 text-sm text-red-700 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- Operational Lock Information --}}
+{{-- Operational Lock Information --}}
         @if ($isLocked)
             <div class="p-5 border rounded-2xl border-amber-200 bg-amber-50">
                 <div class="flex items-start gap-3">

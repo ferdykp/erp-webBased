@@ -67,25 +67,6 @@
                 </div>
             </div>
             {{-- Letakkan di bawah header, sebelum tag <form> --}}
-            @if ($errors->any())
-                <div class="px-10 mb-4">
-                    <div class="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-2xl">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <i class="text-red-500 fa-solid fa-circle-exclamation"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-xs font-bold tracking-widest text-red-800 uppercase">Gagal Menyimpan:</p>
-                                <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
             {{-- FORM CONTENT --}}
             <form method="POST" action="{{ route('customer.profile.complete.store') }}" class="px-10 pb-12">

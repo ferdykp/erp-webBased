@@ -20,15 +20,6 @@
             </div>
 
             {{-- ERROR MESSAGE --}}
-            @if ($errors->any())
-                <div class="p-4 mb-6 text-sm text-red-700 bg-red-100 rounded-lg">
-                    <ul class="pl-5 space-y-1 list-disc">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             {{-- FORM --}}
             <form method="POST" action="{{ route('customer.register') }}" class="space-y-5">
