@@ -1,125 +1,97 @@
 @extends('layouts.master')
 
+@section('title', 'Staff sign in · BeamCustom')
+
 @section('content')
-    {{-- Container utama: h-screen menjaga tetap 1 layar, overflow-hidden mencegah scroll --}}
-    <section class="h-screen w-full flex items-center justify-center bg-[#f1f5f9] px-4 font-sans relative overflow-hidden">
+    <main class="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-slate-100 px-4 py-8 sm:px-6 lg:px-8">
+        <div aria-hidden="true" class="pointer-events-none absolute -left-32 -top-40 h-96 w-96 rounded-full bg-blue-200/50 blur-3xl"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute -bottom-48 -right-24 h-[28rem] w-[28rem] rounded-full bg-indigo-200/50 blur-3xl"></div>
 
-        {{-- Background Accents: Responsive sizing --}}
-        <div
-            class="absolute top-[-10%] left-[-5%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-indigo-300/30 rounded-full blur-[80px] md:blur-[100px] pointer-events-none">
-        </div>
-        <div
-            class="absolute bottom-[-10%] right-[-5%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-purple-300/30 rounded-full blur-[80px] md:blur-[100px] pointer-events-none">
-        </div>
+        <div class="relative grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_32px_100px_-40px_rgba(15,23,42,0.35)] lg:min-h-[690px] lg:grid-cols-[1.05fr_0.95fr]">
+            <section class="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-10 text-white sm:p-12 lg:flex xl:p-16">
+                <div aria-hidden="true" class="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_15%,rgba(59,130,246,0.38),transparent_45%),radial-gradient(ellipse_at_90%_85%,rgba(99,102,241,0.28),transparent_40%)]"></div>
+                <div aria-hidden="true" class="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.18)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"></div>
 
-        {{-- Wrapper: max-w dinamis berdasarkan ukuran layar --}}
-        <div class="relative z-10 w-full max-w-[340px] sm:max-w-[380px] md:max-w-[400px]">
-
-            {{-- Card --}}
-            <div
-                class="bg-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_20px_50px_rgba(15,23,42,0.1)] border border-slate-200">
-
-                {{-- Header --}}
-                <div class="flex flex-col items-center mb-6 sm:mb-8">
-                    {{-- <div
-                        class="flex items-center justify-center mb-4 transition-transform duration-500 shadow-lg cursor-default w-34 h-34 sm:w-16 sm:h-16 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl rotate-6 shadow-indigo-200 group hover:rotate-0"> --}}
-                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="text-white w-7 h-7 sm:w-8 sm:h-8" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 003.207 4c1.947 0 3.799.442 5.451 1.238m11.838 7.32a10.003 10.003 0 01-11.838 7.32c1.947 0 3.799-.442 5.451-1.238m0 0A10.003 10.003 0 0120.793 4c-1.947 0-3.799.442-5.451 1.238" />
-                        </svg> --}}
-                    {{-- <img src="{{ asset('img/logo-txt-removebg.png') }}" alt=""> --}}
-                    {{-- </div> --}}
-                    {{-- <div class="mb-5">
-                        <a href="{{ route('landing') }}"> <img src="{{ asset('img/logo-txt-removebg.png') }}"
-                                alt=""></a>
-                    </div> --}}
-                    <a href="{{ route('landing') }}" class="block max-w-sm cursor-pointer group rounded-xl">
-                        <img src="{{ asset('img/logo-txt-removebg.png') }}" alt="Post Image"
-                            class="object-cover px-8 transition-transform duration-500 ease-in-out group-hover:scale-110" />
+                <div class="relative z-10">
+                    <a href="{{ route('landing') }}" class="inline-flex items-center rounded-xl bg-white px-3 py-2.5">
+                        <img src="{{ asset('img/logo-txt-removebg.png') }}" alt="BeamCustom" class="h-8 w-auto object-contain">
                     </a>
-                    <h2 class="text-xl font-black tracking-tight sm:text-2xl text-slate-950">Staff Sign In</h2>
-                    <p class="text-[10px] sm:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-[0.15em]">Secure Staff Access</p>
                 </div>
 
-                {{-- Validation Feedback: Menggunakan Arbitrary Animation Tailwind --}}
-                {{-- @if ($errors->any())
-                    <div class="p-3 mb-5 bg-rose-50 border border-rose-200 rounded-xl animate-[shake_0.2s_ease-in-out_2]">
-                        <p
-                            class="text-[10px] sm:text-[11px] text-rose-700 text-center font-bold leading-tight uppercase tracking-wide">
-                            {{ $errors->first() }}
-                        </p>
+                <div class="relative z-10 max-w-lg py-14">
+                    <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-blue-100 backdrop-blur">
+                        <span class="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.8)]"></span>
+                        BEAMCUSTOM · OPERATIONS
                     </div>
-                @endif --}}
-                {{-- Validation Feedback: Menggunakan Arbitrary Animation Tailwind --}}
+                    <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight xl:text-5xl">Keep every operation<br><span class="text-blue-300">moving with clarity.</span></h1>
+                    <p class="mt-6 max-w-md text-base leading-7 text-slate-300">A secure workspace for the people who keep each order, production step, and handover on track.</p>
+                </div>
 
-                <form action="{{ route('admin.login') }}" method="POST" class="space-y-4 sm:space-y-5">
-                    @csrf
+                <div class="relative z-10 flex items-center justify-between border-t border-white/15 pt-5 text-xs text-slate-400">
+                    <span>Staff workspace</span>
+                    <span class="inline-flex items-center gap-2"><svg class="h-4 w-4 text-blue-300" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 3 8.1 7 10 4-1.9 7-5.4 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Protected sign in</span>
+                </div>
+            </section>
 
-                    {{-- Email --}}
-                    <div class="space-y-1.5">
-                        <label
-                            class="text-[10px] sm:text-[11px] font-extrabold text-slate-700 uppercase tracking-widest ml-1">Corporate
-                            Email</label>
-                        <input type="email" name="email" value="{{ old('email') }}" required autoFocus
-                            class="w-full px-4 sm:px-5 py-3 sm:py-3.5 transition-all border-2 bg-slate-50 border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 text-sm font-medium text-slate-900 placeholder:text-slate-400"
-                            placeholder="name@company.com">
+            <section class="flex items-center justify-center px-6 py-10 sm:px-12 lg:px-14 xl:px-20">
+                <div class="w-full max-w-md">
+                    <a href="{{ route('landing') }}" class="mb-10 inline-flex items-center rounded-lg bg-white px-2 py-1.5 lg:hidden">
+                        <img src="{{ asset('img/logo-txt-removebg.png') }}" alt="BeamCustom" class="h-8 w-auto object-contain">
+                    </a>
+                    <div class="mb-8">
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Staff portal</p>
+                        <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Welcome back</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-500">Sign in with your staff account to continue to your workspace.</p>
                     </div>
 
-                    {{-- Password --}}
-                    <div class="space-y-1.5">
-                        <label
-                            class="text-[10px] sm:text-[11px] font-extrabold text-slate-700 uppercase tracking-widest ml-1">Password</label>
-                        <div class="relative">
-                            <input type="password" name="password" id="admin_password" required
-                                class="w-full px-4 sm:px-5 py-3 sm:py-3.5 transition-all border-2 bg-slate-50 border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 text-sm font-medium text-slate-900 placeholder:text-slate-400"
-                                placeholder="••••••••">
-
-                            <button type="button" onclick="togglePassword('admin_password', 'p-icon')"
-                                class="absolute transition-colors -translate-y-1/2 right-4 top-1/2 text-slate-400 hover:text-indigo-600">
-                                <svg id="p-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
+                    <form action="{{ route('admin.login') }}" method="POST" class="space-y-5">
+                        @csrf
+                        <div>
+                            <label for="admin_email" class="mb-2 block text-sm font-semibold text-slate-700">Work email</label>
+                            <input id="admin_email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="name@company.com"
+                                @class(['w-full rounded-xl border bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10', 'border-rose-400' => $errors->has('email'), 'border-slate-200' => !$errors->has('email')])>
+                            @error('email')<p class="mt-2 text-sm font-medium text-rose-600" role="alert">{{ $message }}</p>@enderror
                         </div>
-                    </div>
 
-                    {{-- Submit Button --}}
-                    <div class="pt-2">
-                        <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" name="remember" value="1" @checked(old('remember')) class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><span>Remember this device</span></label><a href="{{ route('admin.password.request') }}" class="block mt-2 text-sm font-semibold text-blue-700 hover:underline">Forgot password?</a>
-                    <button type="submit"
-                            class="w-full py-3.5 sm:py-4 bg-slate-950 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-indigo-100 hover:bg-indigo-600 transition-all active:scale-[0.97]">
+                        <div>
+                            <div class="mb-2 flex items-center justify-between">
+                                <label for="admin_password" class="text-sm font-semibold text-slate-700">Password</label>
+                                <a href="{{ route('admin.password.request') }}" class="text-xs font-semibold text-blue-700 transition hover:text-blue-900 hover:underline">Forgot password?</a>
+                            </div>
+                            <div class="relative">
+                                <input id="admin_password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password"
+                                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 pr-16 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+                                <button type="button" data-password-toggle="admin_password" aria-label="Show password" aria-pressed="false" class="absolute inset-y-0 right-3 my-auto rounded-lg px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-blue-600">Show</button>
+                            </div>
+                        </div>
+
+                        <label class="flex cursor-pointer items-center gap-3 text-sm text-slate-600">
+                            <input type="checkbox" name="remember" value="1" @checked(old('remember')) class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span>Remember this device</span>
+                        </label>
+
+                        <button type="submit" class="group flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:bg-blue-700 focus-visible:outline-blue-600 active:scale-[0.99]">
                             Sign in to workspace
+                            <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                    </div>
-                </form>
-            </div>
+                    </form>
 
-            {{-- Footer Help --}}
-            <p class="mt-6 text-center text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-tight">
-                Access Issues? <a href="#"
-                    class="text-indigo-700 underline hover:text-indigo-900 underline-offset-4 decoration-2">Contact System
-                    Admin</a>
-            </p>
+                    <p class="mt-8 border-t border-slate-100 pt-5 text-center text-xs leading-5 text-slate-400">Need help accessing your account?<br><span class="font-medium text-slate-500">Contact your system administrator.</span></p>
+                </div>
+            </section>
         </div>
-    </section>
+    </main>
 
-    {{-- Script untuk Toggle Password --}}
     <script>
-        function togglePassword(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('text-slate-400', 'text-indigo-600');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('text-indigo-600', 'text-slate-400');
-            }
-        }
+        document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const input = document.getElementById(button.dataset.passwordToggle);
+                const visible = input.type === 'password';
+                input.type = visible ? 'text' : 'password';
+                button.textContent = visible ? 'Hide' : 'Show';
+                button.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+                button.setAttribute('aria-pressed', String(visible));
+            });
+        });
     </script>
 @endsection
