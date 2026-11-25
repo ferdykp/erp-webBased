@@ -63,7 +63,7 @@
                 <label class="mt-5 block text-sm font-semibold">Staff Role<select name="role" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3">@foreach(['superadmin'=>'Superadmin','manager'=>'Manager','production'=>'Production','cargo_admin'=>'Cargo Admin'] as $value=>$label)<option value="{{ $value }}" @selected(old('role',$user->role) === $value)>{{ $label }}</option>@endforeach</select></label><p class="mt-2 text-xs text-slate-500">Changing a role requires confirmation and a reason in the audit history.</p>
                 @endif
                 @if(\App\Services\SuperadminAccess::isSuperadmin() && (int) $user->id !== (int) auth('admin')->id())
-                <details class="mt-5 rounded-xl border border-amber-200 p-4 text-sm"><summary class="cursor-pointer font-semibold">Reset Staff Password</summary><p class="mt-2 text-slate-600">Optional. Requires confirmation and a reason. Leave blank to keep the existing password.</p><label class="mt-3 block">New Password<input name="password" type="password" autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border p-3"></label><label class="mt-3 block">Confirm New Password<input name="password_confirmation" type="password" autocomplete="new-password" minlength="8" class="mt-1 w-full rounded-lg border p-3"></label></details><div class="mt-4 space-y-3 rounded-xl border border-amber-200 p-3 text-sm"><label class="block">Reason for account or role change<input name="override_reason" maxlength="2000" class="mt-1 w-full rounded-lg border p-3"></label><label class="flex items-start gap-2"><input type="checkbox" name="confirmed" value="1" class="mt-1">I confirm this account change.</label></div>
+                <details class="mt-5 rounded-xl border border-amber-200 p-4 text-sm"><summary class="cursor-pointer font-semibold">Reset Staff Password</summary><p class="mt-2 text-slate-600">Optional. Requires confirmation and a reason. Leave blank to keep the existing password.</p><label class="mt-3 block">New Password<input name="password" type="password" autocomplete="new-password" minlength="12" class="mt-1 w-full rounded-lg border p-3"></label><label class="mt-3 block">Confirm New Password<input name="password_confirmation" type="password" autocomplete="new-password" minlength="12" class="mt-1 w-full rounded-lg border p-3"></label></details><div class="mt-4 space-y-3 rounded-xl border border-amber-200 p-3 text-sm"><label class="block">Reason for account or role change<input name="override_reason" maxlength="2000" class="mt-1 w-full rounded-lg border p-3"></label><label class="flex items-start gap-2"><input type="checkbox" name="confirmed" value="1" class="mt-1">I confirm this account change.</label></div>
                 @endif
                 <div class="pt-8">
                     <button type="submit"
@@ -121,7 +121,7 @@
                                 New Password
                             </label>
                             <div class="relative flex items-center">
-                                <input type="password" id="password" name="password" required minlength="8"
+                                <input type="password" id="password" name="password" required minlength="12"
                                     class="w-full px-5 py-4 pr-12 mt-2 font-bold transition-all border-2 border-transparent outline-none text-slate-700 bg-slate-50 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100/50 focus:border-blue-600">
                                 <button type="button" onclick="togglePassword('password', 'icon-new')"
                                     class="absolute z-10 mt-2 right-4 text-slate-400 hover:text-blue-600 focus:outline-none">
@@ -131,7 +131,7 @@
                             {{-- Minimum Requirement --}}
                             <p id="length-info"
                                 class="mt-2 ml-1 text-xs font-bold text-slate-400 transition-colors flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-info text-[10px]"></i> Minimum 8 characters
+                                <i class="fa-solid fa-circle-info text-[10px]"></i> Minimum 12 characters
                             </p>
                         </div>
 
@@ -218,8 +218,8 @@
             const passVal = passwordInput.value;
             const confirmVal = confirmInput.value;
 
-            // 1. Minimum 8 Characters Checker
-            if (passVal.length >= 8) {
+            // 1. Minimum 12 Characters Checker
+            if (passVal.length >= 12) {
                 lengthInfo.classList.remove('text-slate-400', 'text-red-500');
                 lengthInfo.classList.add('text-emerald-600');
                 lengthInfo.querySelector('i').className = 'fa-solid fa-circle-check text-[10px]';

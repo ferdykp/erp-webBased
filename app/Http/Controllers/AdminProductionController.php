@@ -298,8 +298,17 @@ class AdminProductionController extends Controller
             });
 
             return back()->with('success', 'Batch created.');
-        } catch (\Throwable $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Batch creation failed', [
+                'booking_id' => $validated['booking_id'],
+                'exception' => $e,
+            ]);
+
+            return back()->with('error', 'Could not create the batch. Please try again.');
         }
     }
 

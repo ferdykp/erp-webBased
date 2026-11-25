@@ -648,7 +648,7 @@
                 <div
                     class="flex justify-center p-3 border rounded-xl border-slate-200 bg-slate-50 print:bg-white print:p-2">
 
-                    <img src="{{ asset('storage/' . $test->image) }}" alt="Test Sample Image" loading="eager"
+                    <img src="{{ route('admin.testing.image', $test) }}" alt="Test Sample Image" loading="eager"
                         class="block w-auto max-w-full max-h-[400px] object-contain rounded-lg shadow-sm print:max-h-[280px] print:max-w-full print:rounded-md print:shadow-none">
 
                 </div>

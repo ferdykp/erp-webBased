@@ -556,7 +556,7 @@
                     @if ($test?->image)
                         <div class="flex items-center gap-4 p-3 border rounded-xl border-slate-200 bg-slate-50 w-fit">
 
-                            <img src="{{ asset('storage/' . $test->image) }}" alt="Preview"
+                            <img src="{{ route('admin.testing.image', $test) }}" alt="Preview"
                                 class="object-cover w-16 h-16 border rounded-lg border-slate-200">
 
                             <div>

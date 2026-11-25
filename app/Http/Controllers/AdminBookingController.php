@@ -602,14 +602,14 @@ class AdminBookingController extends Controller
 
         if ($request->hasFile('product_photo')) {
 
-            $photoPath = $request->file('product_photo')->store('products', 'public');
+            $photoPath = $request->file('product_photo')->store('products', 'local');
 
             try {
 
                 $booking->products()->firstOrFail()->update(['photo_path' => $photoPath]);
             } catch (\Throwable $e) {
 
-                Storage::disk('public')->delete($photoPath);
+                Storage::disk('local')->delete($photoPath);
 
                 throw $e;
             }
@@ -1187,9 +1187,12 @@ class AdminBookingController extends Controller
 
         $product = BookingProduct::query()->findOrFail($id);
 
-        abort_unless($product->photo_path && Storage::disk('public')->exists($product->photo_path), 404);
+        abort_unless($product->photo_path && Storage::disk('local')->exists($product->photo_path), 404);
 
-        return response()->file(Storage::disk('public')->path($product->photo_path));
+        return response()->file(Storage::disk('local')->path($product->photo_path), [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function show(int $id)

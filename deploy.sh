@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 echo "=== DEPLOY START ==="
 
@@ -15,6 +16,9 @@ php artisan optimize:clear
 
 echo "Run migration..."
 php artisan migrate --force
+
+echo "Move sensitive uploads to private storage..."
+php artisan uploads:secure
 
 echo "Build assets..."
 npm install

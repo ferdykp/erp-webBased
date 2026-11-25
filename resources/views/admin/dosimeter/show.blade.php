@@ -66,7 +66,8 @@
                     ($record->details->whereNotNull('absorbance')->count() > 0 ||
                         $record->details->whereNotNull('dosimeter_number')->count() > 0);
 
-                $firstDetailImage = $record?->details->where('tablet_number', 1)->first()?->image;
+                $firstDetail = $record?->details->firstWhere('tablet_number', 1);
+                $firstDetailImage = $firstDetail?->image;
             @endphp
 
             <div id="quantity-section" class="p-8 border-b border-gray-50 bg-gray-50/30 {{ $hasData ? 'hidden' : '' }}">
@@ -122,8 +123,8 @@
                     <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Attached Log Image
                     </p>
                     @if ($firstDetailImage)
-                        <a href="{{ asset('storage/' . $firstDetailImage) }}" target="_blank" class="inline-block">
-                            <img src="{{ asset('storage/' . $firstDetailImage) }}"
+                        <a href="{{ route('admin.dosimeter.details.image', $firstDetail) }}" target="_blank" rel="noopener" class="inline-block">
+                            <img src="{{ route('admin.dosimeter.details.image', $firstDetail) }}"
                                 class="transition-all border border-gray-200 shadow-sm max-h-48 rounded-xl hover:opacity-90">
                         </a>
                     @endif

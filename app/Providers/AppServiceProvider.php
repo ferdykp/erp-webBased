@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Validation\Rules\Password;
 use App\Models\Admin;
 use Illuminate\Support\Facades\URL; // <-- IMPORT INI
 
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Password::defaults(fn () => Password::min(12));
         \Illuminate\Support\Facades\Gate::before(fn ($user) => $user instanceof Admin && $user->role === 'superadmin' ? true : null);
         $this->app->scoped(\App\Services\AdminRecordHistory::class);
         \Illuminate\Support\Facades\Event::listen('eloquent.created: *', function ($event, $payload) {

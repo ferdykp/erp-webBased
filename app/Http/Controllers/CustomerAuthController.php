@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
 class CustomerAuthController extends Controller
 {
@@ -85,7 +87,7 @@ class CustomerAuthController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'min:8', 'confirmed'],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         DB::beginTransaction();
@@ -111,10 +113,11 @@ class CustomerAuthController extends Controller
             return redirect()->route('customer.login')->with('success', 'Registrasi Berhasil!');
         } catch (\Throwable $e) {
             DB::rollBack();
+            Log::error('Customer registration failed', ['exception' => $e]);
 
             return back()
-                ->withErrors(['error' => 'Gagal: ' . $e->getMessage()])
-                ->withInput();
+                ->withErrors(['error' => 'Registration could not be completed. Please try again.'])
+                ->withInput($request->except(['password', 'password_confirmation']));
         }
     }
 

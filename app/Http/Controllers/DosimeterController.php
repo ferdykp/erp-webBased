@@ -181,7 +181,7 @@ class DosimeterController extends Controller
                     }
                 }
                 $uploadedImagePath = $request->hasFile('global_image')
-                    ? $request->file('global_image')->store('dosimeter_images', 'public')
+                    ? $request->file('global_image')->store('dosimeter_images', 'local')
                     : null;
 
                 foreach ($validated['absorbance'] as $tabletNumber => $value) {
@@ -230,6 +230,16 @@ class DosimeterController extends Controller
         if (($booking->status !== 'completed' || DB::table('order_dispatches')->where('booking_id', $booking->id)->where('status', 'dispatched')->exists()) && !SuperadminAccess::overriding()) {
             throw \Illuminate\Validation\ValidationException::withMessages(['dosimetry' => 'Dosimetry can be recorded after production is complete and before dispatch. Dispatched evidence is locked.']);
         }
+    }
+
+    public function image(DosimeterDetail $detail)
+    {
+        abort_unless($detail->image && Storage::disk('local')->exists($detail->image), 404);
+
+        return response()->file(Storage::disk('local')->path($detail->image), [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function destroyDetail(Request $request, DosimeterDetail $detail)

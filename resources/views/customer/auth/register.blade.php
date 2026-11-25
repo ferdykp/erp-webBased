@@ -50,9 +50,9 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">
                         Password
                     </label>
-                    <input type="password" name="password" required
+                    <input type="password" name="password" required minlength="12"
                         class="w-full px-4 py-3 transition border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                        placeholder="Minimum 8 characters">
+                        placeholder="Minimum 12 characters">
                 </div>
 
                 {{-- Confirm Password --}}
@@ -60,7 +60,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">
                         Confirm Password
                     </label>
-                    <input type="password" name="password_confirmation" required
+                    <input type="password" name="password_confirmation" required minlength="12"
                         class="w-full px-4 py-3 transition border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
                         placeholder="Re-enter password">
                 </div>

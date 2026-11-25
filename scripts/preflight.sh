@@ -18,6 +18,9 @@ if [ -f .env ]; then
  grep -Eq '^APP_DEBUG=(false|0)\s*$' .env && pass 'Debug disabled' || fail 'Set APP_DEBUG=false before launch'
  grep -Eq '^APP_KEY=base64:[^[:space:]]+' .env && pass 'Application key set' || fail 'Missing APP_KEY'
  grep -Eq '^APP_URL=https://' .env && pass 'HTTPS application URL' || warn 'Configure APP_URL with HTTPS in production'
+ if grep -Eq '^APP_ENV=production\s*$' .env; then
+  grep -Eq '^SESSION_SECURE_COOKIE=true\s*$' .env && pass 'Secure session cookie enabled' || fail 'Set SESSION_SECURE_COOKIE=true in production'
+ fi
 fi
 [ -f vendor/autoload.php ] && pass 'Composer dependencies installed' || fail 'Run composer install'
 [ -f public/build/manifest.json ] && pass 'Vite manifest present' || fail 'Run npm ci && npm run build'

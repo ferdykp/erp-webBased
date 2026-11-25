@@ -9,6 +9,7 @@ use App\Models\ProductTestDosimeter;
 use App\Models\ProductionLine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductTestingController extends Controller
 {
@@ -50,7 +51,7 @@ class ProductTestingController extends Controller
         $validated = $this->validateTestData($request);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('product-tests', 'public');
+            $validated['image'] = $request->file('image')->store('product-tests', 'local');
         }
 
         $test = DB::transaction(function () use ($validated) {
@@ -80,7 +81,7 @@ class ProductTestingController extends Controller
 
         if ($request->hasFile('image')) {
             // Keep previous evidence files so retained history remains usable.
-            $validated['image'] = $request->file('image')->store('product-tests', 'public');
+            $validated['image'] = $request->file('image')->store('product-tests', 'local');
         }
 
         $test->update($validated);
@@ -152,6 +153,16 @@ class ProductTestingController extends Controller
         ];
 
         return view('admin.testing.report', compact('test', 'doseStats'));
+    }
+
+    public function image(ProductTest $test)
+    {
+        abort_unless($test->image && Storage::disk('local')->exists($test->image), 404);
+
+        return response()->file(Storage::disk('local')->path($test->image), [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function storeDosimeters(Request $request, ProductTest $test)

@@ -62,12 +62,12 @@ foreach (['admin', 'customer'] as $portal) {
 Route::prefix('customer')->middleware('nocache')->group(function () {
     // Guest Routes
     Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
-    Route::post('/register', [CustomerAuthController::class, 'register']);
+    Route::post('/register', [CustomerAuthController::class, 'register'])->middleware('throttle:5,1');
     Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
     Route::post('/login', [CustomerAuthController::class, 'login'])->middleware('throttle:5,1');
 
     // Authenticated Customer Routes (Guard: customer)
-    Route::middleware(['auth:customer', 'customer.only'])->group(function () {
+    Route::middleware(['auth:customer', 'customer.only', 'auth.session'])->group(function () {
         Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
         // Dashboard
         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
@@ -109,7 +109,7 @@ Route::prefix('admin')->middleware('nocache')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
-    ->middleware(['auth:admin', 'nocache', 'superadmin.audit', 'confirm.delete'])
+    ->middleware(['auth:admin', 'auth.session', 'nocache', 'superadmin.audit', 'confirm.delete'])
     ->group(function () {
         Route::get('/trash', [\App\Http\Controllers\TrashController::class,'index'])->middleware('role:superadmin')->name('admin.trash.index');
         Route::post('/trash/{id}/restore', [\App\Http\Controllers\TrashController::class,'restore'])->whereNumber('id')->middleware('role:superadmin')->name('admin.trash.restore');
@@ -189,6 +189,8 @@ Route::prefix('admin')
             )
                 ->whereNumber('detail')
                 ->name('admin.dosimeter.details.destroy');
+            Route::get('/dosimeter/details/{detail}/image', [DosimeterController::class, 'image'])
+                ->whereNumber('detail')->name('admin.dosimeter.details.image');
 
             // Step 1 – Process Parameter Setting
             Route::get('/production/parameter', [AdminProductionController::class, 'parameterSetting'])->name('admin.production.parameter');
@@ -242,6 +244,7 @@ Route::prefix('admin')
             Route::get('/product-testing/{test}/parameters', [ProductTestingController::class, 'parameters'])->middleware('role:superadmin|production')->name('admin.testing.parameters');
             Route::put('/product-testing/{test}/parameters', [ProductTestingController::class, 'storeParameters'])->middleware('role:superadmin|production')->name('admin.testing.parameters.update');
             Route::get('/product-testing/{test}/report', [ProductTestingController::class, 'report'])->middleware('role:superadmin|manager|production')->name('admin.testing.report');
+            Route::get('/product-testing/{test}/image', [ProductTestingController::class, 'image'])->middleware('role:superadmin|manager|production')->name('admin.testing.image');
             Route::put('/product-testing/{test}/dosimeters', [ProductTestingController::class, 'storeDosimeters'])->middleware('role:superadmin|production')->name('admin.testing.dosimeters.update');
 
             // Warehouse check-in is an operational action and is available to cargo/production staff.

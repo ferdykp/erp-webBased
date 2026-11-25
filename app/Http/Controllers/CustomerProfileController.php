@@ -257,7 +257,7 @@ class CustomerProfileController extends Controller
             \Log::error('Update Profile Error: ' . $e->getMessage());
 
             return back()->withErrors([
-                'error' => 'Gagal menyimpan: ' . $e->getMessage()
+                'error' => 'Unable to save your profile. Please try again.'
             ])->withInput();
         }
     }

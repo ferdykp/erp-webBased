@@ -61,7 +61,7 @@
                     <div class="group">
                         <label
                             class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-blue-600">Password</label>
-                        <input type="password" name="password" required placeholder="••••••••"
+                        <input type="password" name="password" required minlength="12" placeholder="12 characters minimum"
                             class="w-full px-5 py-4 mt-2 font-bold transition-all border-2 border-transparent outline-none text-slate-700 bg-slate-50 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100/50 focus:border-blue-600">
                     </div>
 
@@ -70,7 +70,7 @@
                         <label
                             class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-blue-600">Confirm
                             Password</label>
-                        <input type="password" name="password_confirmation" required placeholder="••••••••"
+                        <input type="password" name="password_confirmation" required minlength="12" placeholder="Confirm password"
                             class="w-full px-5 py-4 mt-2 font-bold transition-all border-2 border-transparent outline-none text-slate-700 bg-slate-50 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100/50 focus:border-blue-600">
                     </div>
 
