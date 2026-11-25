@@ -1,6 +1,6 @@
 # Workflow locks and recoverable Trash — 17 October 2026
 
-This change supersedes the workflow-bypass behavior described in `RBAC_SUPERADMIN_2026-10-17.md`. The latest requirement is that **every role, including Superadmin, follows the process sequence**. Role access still controls which modules/actions a staff member may use; it does not reopen a completed stage.
+**Every role, including Superadmin, follows the process sequence.** Role access still controls which modules/actions a staff member may use; it does not reopen a completed stage.
 
 ## Stage rules
 
